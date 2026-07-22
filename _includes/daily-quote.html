@@ -1,0 +1,73 @@
+<!-- 每日一言 -->
+<style>
+  #daily-quote {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 999;
+    font-size: 14px;
+    color: rgba(255,255,255,0.85);
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(6px);
+    padding: 8px 16px;
+    border-radius: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    max-width: 320px;
+    line-height: 1.4;
+    pointer-events: none;
+    font-family: "Georgia", serif;
+    font-style: italic;
+    letter-spacing: 0.3px;
+    transition: opacity 0.5s;
+  }
+  #daily-quote .author {
+    font-style: normal;
+    font-size: 12px;
+    opacity: 0.8;
+    margin-left: 6px;
+  }
+  @media (max-width: 600px) {
+    #daily-quote {
+      font-size: 12px;
+      max-width: 200px;
+      top: 10px;
+      left: 10px;
+      padding: 6px 12px;
+    }
+  }
+</style>
+
+<div id="daily-quote">✨ 加载中...</div>
+
+<script>
+  (function() {
+    const container = document.getElementById('daily-quote');
+    // 使用 "一言" 公共 API（https://hitokoto.cn/）
+    fetch('https://v1.hitokoto.cn/?c=i')  // c=i 表示获取“一言”类型的句子
+      .then(response => response.json())
+      .then(data => {
+        if (data.hitokoto) {
+          let html = data.hitokoto;
+          if (data.from_who) {
+            html += `<span class="author">—— ${data.from_who}</span>`;
+          } else if (data.from) {
+            html += `<span class="author">—— ${data.from}</span>`;
+          }
+          container.innerHTML = html;
+        } else {
+          container.textContent = '🌿 行到水穷处，坐看云起时。';
+        }
+      })
+      .catch(() => {
+        // 备用句子（如果 API 请求失败）
+        const fallbackQuotes = [
+          '行到水穷处，坐看云起时。',
+          '愿此行，终抵群星。',
+          '万物皆有裂痕，那是光照进来的地方。',
+          '生活不是等待暴风雨过去，而是学会在雨中跳舞。'
+        ];
+        const idx = Math.floor(Math.random() * fallbackQuotes.length);
+        container.textContent = '✨ ' + fallbackQuotes[idx];
+      });
+  })();
+</script>
