@@ -22,10 +22,7 @@ highlight_theme: default # "default" (default), "tomorrow", "tomorrow-night", "t
 url     : "https://xinglan2012.github.io"
 baseurl : ""
 title   : 星澜的博客
-description: >
-  这是Xinglan的博客，用代码和文字记录生活
-  遇见你，刹那惊鸿，如夏花点燃生命的火；别离后，静美归途，似秋叶铺满来时的路。
-
+description: "这是Xinglan的博客，用代码和文字记录生活。遇见你，刹那惊鸿，如夏花点燃生命的火；别离后，静美归途，似秋叶铺满来时的路。"
 ## => Language and Timezone
 ##############################
 lang:  "zh-Hans"
