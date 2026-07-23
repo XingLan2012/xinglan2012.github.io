@@ -151,3 +151,101 @@ layout: home
     });
   })();
 </script>
+<style>
+  /* 鼠标轨迹光点 */
+  .trail-dot {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    border-radius: 50%;
+    background: #ffd700;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+    animation: trailFade 1.2s ease-out forwards;
+  }
+  @keyframes trailFade {
+    0% {
+      opacity: 0.8;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.2);
+    }
+  }
+
+  /* 可选：轨迹星星（✧ 形状） */
+  .trail-star {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    font-size: 12px;
+    color: #ffec8b;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    animation: starTrail 1.5s ease-out forwards;
+  }
+  @keyframes starTrail {
+    0% {
+      opacity: 0.9;
+      transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.2) rotate(180deg);
+    }
+  }
+</style>
+
+<script>
+  (function() {
+    // 控制生成频率（毫秒）
+    const interval = 60; // 每60ms生成一个点，数值越大越稀疏
+    let lastTime = 0;
+
+    // 可选：是否使用星星符号（true）还是光点（false）
+    const useStarSymbol = true;
+
+    // 颜色池
+    const colors = ['#ffd700', '#ffec8b', '#fff4c2', '#88ddff', '#ffaa88'];
+
+    document.addEventListener('mousemove', function(e) {
+      const now = Date.now();
+      if (now - lastTime < interval) return;
+      lastTime = now;
+
+      const x = e.clientX;
+      const y = e.clientY;
+
+      // 随机选择生成光点或星星（可以混合）
+      if (useStarSymbol && Math.random() > 0.6) {
+        // 生成星星符号 ✧
+        const star = document.createElement('div');
+        star.className = 'trail-star';
+        star.textContent = ['✧', '✦', '·', '⋆'][Math.floor(Math.random() * 4)];
+        star.style.left = x + 'px';
+        star.style.top = y + 'px';
+        star.style.color = colors[Math.floor(Math.random() * colors.length)];
+        star.style.fontSize = (Math.random() * 8 + 8) + 'px';
+        // 随机旋转
+        const rot = Math.random() * 360;
+        star.style.setProperty('--rot', rot + 'deg');
+        document.body.appendChild(star);
+        setTimeout(() => star.remove(), 1600);
+      } else {
+        // 生成圆形光点
+        const dot = document.createElement('div');
+        dot.className = 'trail-dot';
+        const size = Math.random() * 6 + 4; // 4~10px
+        dot.style.width = size + 'px';
+        dot.style.height = size + 'px';
+        dot.style.left = x + 'px';
+        dot.style.top = y + 'px';
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        dot.style.background = color;
+        dot.style.boxShadow = `0 0 12px ${color}`;
+        dot.style.animationDuration = (Math.random() * 0.6 + 0.8) + 's'; // 0.8~1.4s
+        document.body.appendChild(dot);
+        setTimeout(() => dot.remove(), 1600);
+      }
+    });
+  })();
+</script>
