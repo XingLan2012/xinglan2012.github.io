@@ -22,11 +22,16 @@
       </div>
     </div>
 
-    <!-- ✦ 页脚：左时间 · 右每日一句 ✦ -->
+    <!-- ✦ 页脚主内容 ✦ -->
     <div class="site-info mt-2">
       <div class="footer__dual">
         <span class="footer__time" id="footerTime">✦ 加载中...</span>
         <span class="footer__quote" id="footerQuote">✨ 加载中...</span>
+      </div>
+      <!-- 保留原有商标信息 -->
+      <div class="footer__brand mt-1">
+        <span> © Xinglan</span>
+        <span class="footer__sep">·</span>
       </div>
     </div>
 
@@ -43,20 +48,46 @@
     font-size: 13px;
     opacity: 0.85;
     letter-spacing: 0.3px;
-    font-family: "Georgia", serif;
   }
   .footer__time {
-    font-style: normal;
+    font-family: -apple-system, "SF Pro Display", "PingFang SC", sans-serif;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.5px;
+    font-size: 13px;
+    opacity: 0.9;
   }
   .footer__quote {
+    font-family: "Georgia", "KaiTi", serif;
     font-style: italic;
     text-align: right;
+    font-size: 13px;
   }
   .footer__quote .author {
     font-style: normal;
     font-size: 12px;
     opacity: 0.7;
     margin-left: 4px;
+  }
+  .footer__brand {
+    font-size: 12px;
+    opacity: 0.6;
+    letter-spacing: 0.3px;
+    text-align: center;
+    margin-top: 6px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 8px;
+  }
+  .footer__brand a {
+    opacity: 0.8;
+    text-decoration: none;
+  }
+  .footer__brand a:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+  .footer__sep {
+    margin: 0 8px;
+    opacity: 0.4;
   }
   @media (max-width: 600px) {
     .footer__dual {
@@ -66,6 +97,16 @@
     }
     .footer__quote {
       text-align: left;
+    }
+    .footer__brand {
+      font-size: 11px;
+    }
+    .footer__brand .footer__sep {
+      display: none;
+    }
+    .footer__brand span {
+      display: inline-block;
+      margin-right: 4px;
     }
   }
 </style>
