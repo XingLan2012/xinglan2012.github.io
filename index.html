@@ -4,15 +4,26 @@ layout: home
 #   excerpt_type: html
 ---
 <style>
-  /* ========== 全局暗夜星澜背景 ========== */
-  body, html {
+  /* ========== 星澜模式（Hero展开时）：强制深色星空背景 ========== */
+  body.starry-mode,
+  body.starry-mode html {
     background: linear-gradient(135deg, #0a0e27 0%, #151040 35%, #0d1b3e 65%, #0a0e27 100%) !important;
     min-height: 100vh;
   }
-
-  /* 主内容区背景透明，让星空透出来 */
-  .page__content, .main, .hero-section, .home-layout-content {
+  body.starry-mode .page__content,
+  body.starry-mode .main,
+  body.starry-mode .home-layout-content {
     background: transparent !important;
+  }
+
+  /* ========== 非星澜模式（Hero收起后）：使用 dark 主题原本的背景逻辑 ========== */
+  body:not(.starry-mode) {
+    /* 完全交给 TeXt dark 主题控制，不做任何覆盖 */
+  }
+  body:not(.starry-mode) .page__content,
+  body:not(.starry-mode) .main,
+  body:not(.starry-mode) .home-layout-content {
+    /* 恢复默认背景 */
   }
 
   /* ========== CSS 星空背景容器 ========== */
@@ -28,7 +39,8 @@ layout: home
     transition: opacity 1.2s ease;
   }
   .starfield.dimmed {
-    opacity: 0.12;
+    opacity: 0;
+    pointer-events: none;
   }
 
   .starfield::before {
@@ -421,25 +433,41 @@ layout: home
     const toggleBtn = document.getElementById('heroToggleBtn');
 
     function hideHero() {
+      // hero 收起
       hero.classList.add('hidden');
+      // 星空完全消失
       starfield.classList.add('dimmed');
       meteors.forEach(function(m) { m.classList.add('dimmed'); });
+      // 移除 body 的星澜模式 → 恢复 dark 主题原本背景
+      document.body.classList.remove('starry-mode');
+      // 显示浮动按钮
       toggleBtn.classList.add('visible');
+      // 记住状态
       localStorage.setItem('heroHidden', 'true');
-      // 等动画完成后滚动
+      // 平滑滚动到正文
       setTimeout(function() {
         window.scrollTo({ top: window.innerHeight * 0.55, behavior: 'smooth' });
       }, 500);
     }
 
     function showHero() {
+      // hero 展开
       hero.classList.remove('hidden');
+      // 星空恢复
       starfield.classList.remove('dimmed');
       meteors.forEach(function(m) { m.classList.remove('dimmed'); });
+      // 启用 body 星澜模式 → 深色星空背景
+      document.body.classList.add('starry-mode');
+      // 隐藏浮动按钮
       toggleBtn.classList.remove('visible');
+      // 滚回顶部
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      // 记住状态
       localStorage.setItem('heroHidden', 'false');
     }
+
+    // 页面加载时初始化：默认启用星澜模式
+    document.body.classList.add('starry-mode');
 
     // 「开始旅程」点击
     document.getElementById('startJourneyBtn').addEventListener('click', hideHero);
