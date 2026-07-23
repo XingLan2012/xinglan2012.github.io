@@ -1,0 +1,57 @@
+<!-- 动态背景轮播（bg1~bg3） -->
+<style>
+  /* ========== 背景轮播容器 ========== */
+  .bg-slideshow {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    background: #121212;
+  }
+  .bg-slide {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transition: opacity 1.8s ease;
+    will-change: opacity;
+  }
+  .bg-slide.active { opacity: 1; }
+
+  /* 让内容区背景透明，透出轮播图 */
+  .page__main-inner { background: transparent !important; }
+  .page__content { background: transparent !important; }
+  .main { background: transparent !important; }
+  article { background: transparent !important; }
+
+  /* 但文章卡片、代码块等内部元素保留 TeXt 默认背景不透明，保证可读性 */
+</style>
+
+<div class="bg-slideshow" id="bgSlideshow">
+  <div class="bg-slide active" style="background-image: url(/assets/images/bg/bg1.png);"></div>
+  <div class="bg-slide" style="background-image: url(/assets/images/bg/bg2.png);"></div>
+  <div class="bg-slide" style="background-image: url(/assets/images/bg/bg3.png);"></div>
+</div>
+
+<script>
+(function() {
+  var slides = document.querySelectorAll('.bg-slide');
+  if (!slides.length) return;
+  var current = 0;
+  // 预加载
+  for (var i = 1; i <= 3; i++) { var img = new Image(); img.src = '/assets/images/bg/bg' + i + '.png'; }
+  setInterval(function() {
+    var prev = current;
+    current = (current + 1) % slides.length;
+    slides[prev].classList.remove('active');
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() { slides[current].classList.add('active'); });
+    });
+  }, 7000);
+})();
+</script>

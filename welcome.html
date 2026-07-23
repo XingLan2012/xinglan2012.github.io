@@ -8,7 +8,7 @@ key: page-welcome
 ---
 
 <style>
-  /* 纯黑背景 + 金色星澜风格 */
+  /* 金色星澜风格 — 背景由全局 bg-slideshow 接管 */
   body,
   html,
   .page,
@@ -17,7 +17,13 @@ key: page-welcome
   .article__content,
   .main,
   .hero-welcome {
-    background: #000000 !important;
+    background: transparent !important;
+  }
+
+  /* 文章内容区加一层半透明暗色衬底，保证文字可读 */
+  .page__content {
+    background: rgba(0, 0, 0, 0.55) !important;
+    backdrop-filter: blur(2px);
   }
 
   .page__content,
