@@ -7,6 +7,38 @@ titles:
 key: page-about
 ---
 
+<style>
+  /* 关于页面所有文字变为白色 */
+  .page__content,
+  .article-content,
+  .main,
+  .page__content p,
+  .page__content h1,
+  .page__content h2,
+  .page__content h3,
+  .page__content li,
+  .page__content blockquote,
+  .page__content .author-profile,
+  .page__content .author-links {
+    color: #ffffff !important;
+  }
+
+  /* 链接颜色改为浅色（带下划线或高亮） */
+  .page__content a {
+    color: #ffd700 !important;  /* 金色，与星星呼应 */
+    text-decoration: underline;
+  }
+  .page__content a:hover {
+    color: #ffffff !important;
+  }
+
+  /* 如果引用的诗句部分想特殊样式 */
+  .page__content blockquote {
+    border-left-color: rgba(255, 215, 0, 0.5);
+    color: #f0f0f0 !important;
+  }
+</style>
+
 
 我是星澜（bushi），一个OIer
 喜欢在Minecraft的河边看星空。
