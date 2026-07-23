@@ -1,3 +1,56 @@
-<!-- start custom head snippets -->
+<!-- 随机背景图片 -->
+<style>
+  /* 背景层：使用 body::before 避免影响内容 */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    background-image: var(--bg-image);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: brightness(0.5) blur(10px);  /* 50% 亮度 + 10px 模糊 */
+    transition: background-image 1s ease;
+  }
+  body {
+    background: transparent;
+  }
 
-<!-- end custom head snippets -->
+  /* 为内容区域添加半透明背景，提升文字可读性 */
+  .main {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(4px);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 1200px;
+  }
+
+  /* 每日一言适配背景（可选） */
+  #daily-quote {
+    background: rgba(0, 0, 0, 0.4) !important;
+    backdrop-filter: blur(6px) !important;
+    color: #fff !important;
+  }
+</style>
+
+<script>
+  (function() {
+    const totalImages = 3;
+    const imgDir = '/assets/images/bg/';
+    const ext = 'jpg'; 
+
+    const idx = Math.floor(Math.random() * totalImages) + 1;
+    const imgUrl = imgDir + 'bg' + idx + '.' + ext;
+    document.documentElement.style.setProperty('--bg-image', 'url(' + imgUrl + ')');
+
+    // 可选：预加载下一张图片（提升切换体验）
+    const nextIdx = (idx % totalImages) + 1;
+    const nextImg = new Image();
+    nextImg.src = imgDir + 'bg' + nextIdx + '.' + ext;
+  })();
+</script>
