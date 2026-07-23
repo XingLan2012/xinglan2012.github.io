@@ -1,15 +1,14 @@
-"""执行 git add / commit / push"""
-import subprocess, sys, os
+import subprocess, os
 os.chdir(r"C:\Users\何梓熠\Documents\code\xinglan2012.github.io")
 
 steps = [
-    ("git", "add", "-A"),
-    ("git", "commit", "-m", "refactor: welcome.html纯黑背景，index.html进入正页后还原为dark主题默认bg逻辑"),
-    ("git", "push"),
+    (["git", "add", "-A"], "git add"),
+    (["git", "status"], "git status"),
+    (["git", "commit", "-m", "feat: index.html动态背景轮播(bg1~bg3)，移除旧渐变背景"], "git commit"),
+    (["git", "push"], "git push"),
 ]
-for cmd in steps:
-    label = cmd[1]
-    print(f"\n=== git {label} ===")
+for cmd, label in steps:
+    print(f"=== {label} ===")
     r = subprocess.run(cmd, capture_output=True, text=True)
     out = (r.stdout or "").strip()
     err = (r.stderr or "").strip()
@@ -17,7 +16,9 @@ for cmd in steps:
         print(out)
     if err:
         print(err)
-    if r.returncode != 0 and "nothing to commit" not in err and "Everything up-to-date" not in err:
-        print(f"⚠ 返回码 {r.returncode}", file=sys.stderr)
+    if r.returncode != 0:
+        if "nothing to commit" in err or "Everything up-to-date" in err:
+            break
+        print(f"⚠ 退出码 {r.returncode}")
         break
 print("\n✅ 完成")

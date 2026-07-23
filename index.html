@@ -4,10 +4,39 @@ layout: home
 #   excerpt_type: html
 ---
 <style>
-  /* ========== 星澜模式（Hero展开时）：强制深色星空背景 ========== */
+  /* ========== 动态背景轮播容器 ========== */
+  .bg-slideshow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background: #121212; /* dark 主题底色作为 fallback */
+  }
+
+  .bg-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transition: opacity 1.8s ease;
+    will-change: opacity;
+  }
+  .bg-slide.active {
+    opacity: 1;
+  }
+
+  /* ========== 星澜模式（Hero展开时）：背景已被 slideshow 接管，body 只需保证内容区透明 ========== */
   body.starry-mode,
   body.starry-mode html {
-    background: linear-gradient(135deg, #0a0e27 0%, #151040 35%, #0d1b3e 65%, #0a0e27 100%) !important;
     min-height: 100vh;
   }
   body.starry-mode .page__content,
@@ -16,9 +45,9 @@ layout: home
     background: transparent !important;
   }
 
-  /* ========== 非星澜模式（Hero收起后）：使用 dark 主题原本的背景逻辑 ========== */
+  /* ========== 非星澜模式（Hero收起后）：slideshow 持续，仅星空消失 ========== */
   body:not(.starry-mode) {
-    /* 完全交给 TeXt dark 主题控制，不做任何覆盖 */
+    /* slideshow 仍在，dark 主题默认背景作为 fallback */
   }
   body:not(.starry-mode) .page__content,
   body:not(.starry-mode) .main,
@@ -26,7 +55,7 @@ layout: home
     /* 恢复默认背景 */
   }
 
-  /* ========== CSS 星空背景容器 ========== */
+  /* ========== 星空背景容器（叠在 slideshow 上方，但内容下方） ========== */
   .starfield {
     position: fixed;
     top: 0;
@@ -34,7 +63,7 @@ layout: home
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 0;
+    z-index: 1;
     overflow: hidden;
     transition: opacity 1.2s ease;
   }
@@ -79,7 +108,7 @@ layout: home
     background: #fff;
     border-radius: 50%;
     pointer-events: none;
-    z-index: 1;
+    z-index: 2;
     opacity: 0;
     transition: opacity 1s ease;
   }
@@ -122,7 +151,7 @@ layout: home
   /* ========== Hero 欢迎区 ========== */
   .hero-section {
     position: relative;
-    z-index: 2;
+    z-index: 3;
     text-align: center;
     padding: 80px 20px 60px;
     margin-bottom: 10px;
@@ -366,6 +395,13 @@ layout: home
   }
 </style>
 
+<!-- ========== 动态背景轮播层 ========== -->
+<div class="bg-slideshow" id="bgSlideshow">
+  <div class="bg-slide active" style="background-image: url(/assets/images/bg/bg1.png);"></div>
+  <div class="bg-slide" style="background-image: url(/assets/images/bg/bg2.png);"></div>
+  <div class="bg-slide" style="background-image: url(/assets/images/bg/bg3.png);"></div>
+</div>
+
 <!-- ========== 星空背景层 ========== -->
 <div class="starfield" id="starfield"></div>
 
@@ -392,6 +428,34 @@ layout: home
 <div class="hero-toggle-btn" id="heroToggleBtn" title="重返星澜">✦</div>
 
 <script>
+  // ========== 动态背景轮播 ==========
+  (function() {
+    const slides = document.querySelectorAll('.bg-slide');
+    let current = 0;
+    const interval = 7000; // 每 7 秒切换
+    const fadeTime = 1800; // 与 CSS transition 一致
+
+    function nextSlide() {
+      const prev = current;
+      current = (current + 1) % slides.length;
+      slides[prev].classList.remove('active');
+      // 用 requestAnimationFrame 确保浏览器正确触发 transition
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          slides[current].classList.add('active');
+        });
+      });
+    }
+
+    // 预加载：用 Image 对象确保浏览器缓存图片
+    for (let i = 1; i <= 3; i++) {
+      const img = new Image();
+      img.src = '/assets/images/bg/bg' + i + '.png';
+    }
+
+    setInterval(nextSlide, interval);
+  })();
+
   // ========== 生成星空（box-shadow 性能优化） ==========
   (function() {
     const style = document.createElement('style');
@@ -435,10 +499,10 @@ layout: home
     function hideHero() {
       // hero 收起
       hero.classList.add('hidden');
-      // 星空完全消失
+      // 星空完全消失（动态背景仍在轮播）
       starfield.classList.add('dimmed');
       meteors.forEach(function(m) { m.classList.add('dimmed'); });
-      // 移除 body 的星澜模式 → 恢复 dark 主题原本背景
+      // 移除 body 的星澜模式
       document.body.classList.remove('starry-mode');
       // 显示浮动按钮
       toggleBtn.classList.add('visible');
@@ -453,10 +517,10 @@ layout: home
     function showHero() {
       // hero 展开
       hero.classList.remove('hidden');
-      // 星空恢复
+      // 星空恢复（动态背景持续轮播）
       starfield.classList.remove('dimmed');
       meteors.forEach(function(m) { m.classList.remove('dimmed'); });
-      // 启用 body 星澜模式 → 深色星空背景
+      // 启用 body 星澜模式
       document.body.classList.add('starry-mode');
       // 隐藏浮动按钮
       toggleBtn.classList.remove('visible');
