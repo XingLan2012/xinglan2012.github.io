@@ -22,15 +22,96 @@
       </div>
     </div>
 
-    <!-- ✦ 星澜专属页脚 ✦ -->
+    <!-- ✦ 页脚：左时间 · 右每日一句 ✦ -->
     <div class="site-info mt-2">
-      <div class="footer__custom">
-        ✦ 星澜之境 ✦<br>
-        <span class="footer__motto">愿此苦旅，终抵群星</span>
-        @<span class="footer__year">— {{ 'now' | date: '%Y' }}</span>
-        Build
+      <div class="footer__dual">
+        <span class="footer__time" id="footerTime">✦ 加载中...</span>
+        <span class="footer__quote" id="footerQuote">✨ 加载中...</span>
       </div>
     </div>
 
   </div>
 </footer>
+
+<style>
+  .footer__dual {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    font-size: 13px;
+    opacity: 0.85;
+    letter-spacing: 0.3px;
+    font-family: "Georgia", serif;
+  }
+  .footer__time {
+    font-style: normal;
+  }
+  .footer__quote {
+    font-style: italic;
+    text-align: right;
+  }
+  .footer__quote .author {
+    font-style: normal;
+    font-size: 12px;
+    opacity: 0.7;
+    margin-left: 4px;
+  }
+  @media (max-width: 600px) {
+    .footer__dual {
+      flex-direction: column;
+      align-items: flex-start;
+      font-size: 12px;
+    }
+    .footer__quote {
+      text-align: left;
+    }
+  }
+</style>
+
+<script>
+  (function() {
+    // 1. 更新当前时间（北京时间）
+    function updateTime() {
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const str =
+        now.getFullYear() + '年' +
+        pad(now.getMonth() + 1) + '月' +
+        pad(now.getDate()) + '日 ' +
+        pad(now.getHours()) + ':' +
+        pad(now.getMinutes()) + ':' +
+        pad(now.getSeconds());
+      document.getElementById('footerTime').textContent = '✦ ' + str;
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
+
+    // 2. 加载每日一句
+    const quoteEl = document.getElementById('footerQuote');
+    fetch('https://v1.hitokoto.cn/?c=i')
+      .then(res => res.json())
+      .then(data => {
+        if (data.hitokoto) {
+          let html = data.hitokoto;
+          if (data.from_who) {
+            html += `<span class="author">—— ${data.from_who}</span>`;
+          } else if (data.from) {
+            html += `<span class="author">—— ${data.from}</span>`;
+          }
+          quoteEl.innerHTML = html;
+        } else {
+          quoteEl.textContent = '🌿 行到水穷处，坐看云起时。';
+        }
+      })
+      .catch(() => {
+        const fallback = [
+          '行到水穷处，坐看云起时。',
+          '愿此行，终抵群星。',
+          '万物皆有裂痕，那是光照进来的地方。'
+        ];
+        quoteEl.textContent = '✨ ' + fallback[Math.floor(Math.random() * fallback.length)];
+      });
+  })();
+</script>
