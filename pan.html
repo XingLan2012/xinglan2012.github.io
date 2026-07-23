@@ -1,0 +1,220 @@
+---
+layout: default
+title: 云盘
+---
+
+<style>
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+  th {
+    background: #f0f0f0;
+  }
+  .file-name {
+    font-weight: bold;
+  }
+  .download-btn, .mirror-btn {
+    padding: 4px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    margin-right: 5px;
+  }
+  .download-btn {
+    background: #4CAF50;
+    color: white;
+  }
+  .mirror-btn {
+    background: #2196F3;
+    color: white;
+  }
+  .mirror-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .mirror-list {
+    font-size: 13px;
+    margin-top: 5px;
+  }
+  .mirror-item {
+    display: inline-block;
+    margin-right: 10px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+  }
+  .mirror-item .latency {
+    font-weight: bold;
+    margin-left: 5px;
+  }
+  .mirror-item .fast {
+    color: green;
+  }
+  .mirror-item .slow {
+    color: red;
+  }
+  .loading {
+    color: #888;
+  }
+</style>
+
+<div class="container">
+  <h1>📦 云盘</h1>
+  <p>以下为 <code>/pan</code> 目录中的文件，点击下载或选择镜像节点。</p>
+  <div id="fileList">
+    <p class="loading">加载中...</p>
+  </div>
+</div>
+
+<script>
+  // 配置区
+  const REPO_OWNER = 'XingLan2012';
+  const REPO_NAME = 'xinglan2012.github.io';
+  const PAN_PATH = 'pan';
+
+  // 镜像节点列表（可自定义增删）
+  const MIRRORS = [
+    {
+      name: 'GitHub Raw',
+      getUrl: (file) => `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${PAN_PATH}/${file}`
+    },
+    {
+      name: 'jsDelivr CDN',
+      getUrl: (file) => `https://cdn.jsdelivr.net/gh/${REPO_OWNER}/${REPO_NAME}@main/${PAN_PATH}/${file}`
+    },
+    {
+      name: 'ghproxy.com',
+      getUrl: (file) => `https://ghproxy.com/https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${PAN_PATH}/${file}`
+    },
+    {
+      name: 'FastGit',
+      getUrl: (file) => `https://raw.fastgit.org/${REPO_OWNER}/${REPO_NAME}/main/${PAN_PATH}/${file}`
+    }
+    // 可继续添加更多镜像
+  ];
+
+  // ---- 以下为业务逻辑 ----
+
+  const fileList = document.getElementById('fileList');
+
+  // 获取文件列表
+  async function fetchFileList() {
+    const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${PAN_PATH}`;
+    try {
+      const resp = await fetch(apiUrl);
+      if (!resp.ok) throw new Error('获取文件列表失败');
+      const data = await resp.json();
+      // 过滤出文件（type: file）
+      const files = data.filter(item => item.type === 'file').map(item => item.name);
+      return files;
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  }
+
+  // 测延迟（HEAD 请求）
+  async function measureLatency(url) {
+    const start = performance.now();
+    try {
+      const resp = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
+      // 由于 no-cors 限制，无法获取 status，但可以测时间
+      // 这里用 abort 控制超时
+      const end = performance.now();
+      return end - start;
+    } catch (err) {
+      return Infinity;
+    }
+  }
+
+  // 渲染文件列表
+  async function render() {
+    const files = await fetchFileList();
+    if (files.length === 0) {
+      fileList.innerHTML = '<p>暂无文件，请将文件放入 <code>/pan</code> 目录。</p>';
+      return;
+    }
+
+    let html = `<table>
+      <tr>
+        <th>文件名</th>
+        <th>操作</th>
+      </tr>`;
+    for (const file of files) {
+      html += `<tr>
+        <td class="file-name">${file}</td>
+        <td>
+          <button class="download-btn" data-file="${file}">⬇ 下载</button>
+          <button class="mirror-btn" data-file="${file}">🌐 镜像节点</button>
+          <div class="mirror-list" id="mirror-${file}"></div>
+        </td>
+      </tr>`;
+    }
+    html += '</table>';
+    fileList.innerHTML = html;
+
+    // 绑定下载事件（默认使用 GitHub Raw）
+    document.querySelectorAll('.download-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        const file = this.dataset.file;
+        // 默认使用第一个镜像（raw）
+        const url = MIRRORS[0].getUrl(file);
+        window.open(url, '_blank');
+      });
+    });
+
+    // 绑定镜像按钮
+    document.querySelectorAll('.mirror-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        const file = this.dataset.file;
+        const container = document.getElementById(`mirror-${file}`);
+        if (container.dataset.loaded) {
+          // 如果已经加载，则切换显示
+          container.style.display = container.style.display === 'none' ? 'block' : 'none';
+          return;
+        }
+        container.dataset.loaded = 'true';
+        container.innerHTML = '<span class="loading">正在测速...</span>';
+        // 异步测速
+        (async () => {
+          const results = [];
+          for (const mirror of MIRRORS) {
+            const url = mirror.getUrl(file);
+            const latency = await measureLatency(url);
+            results.push({ name: mirror.name, url, latency });
+          }
+          // 按延迟排序
+          results.sort((a, b) => a.latency - b.latency);
+          let html = '<div><strong>镜像节点（延迟由低到高）：</strong><br>';
+          for (const r of results) {
+            const cls = r.latency < 300 ? 'fast' : (r.latency < 800 ? '' : 'slow');
+            const latencyText = r.latency === Infinity ? '超时' : `${r.latency.toFixed(0)}ms`;
+            html += `<span class="mirror-item">
+              <a href="${r.url}" target="_blank">${r.name}</a>
+              <span class="latency ${cls}">${latencyText}</span>
+            </span>`;
+          }
+          html += '</div>';
+          container.innerHTML = html;
+          container.style.display = 'block';
+        })();
+      });
+    });
+  }
+
+  render();
+</script>
