@@ -5,10 +5,9 @@
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    z-index: -1;
+    z-index: 0;
     overflow: hidden;
     pointer-events: none;
-    background: #121212;
   }
   .bg-slide {
     position: absolute;
@@ -23,13 +22,12 @@
   }
   .bg-slide.active { opacity: 1; }
 
-  /* 让内容区背景透明，透出轮播图 */
+  /* 让内容区背景透明，透出轮播图（但文章卡片等内部元素保留默认样式） */
   .page__main-inner { background: transparent !important; }
   .page__content { background: transparent !important; }
   .main { background: transparent !important; }
-  article { background: transparent !important; }
-
-  /* 但文章卡片、代码块等内部元素保留 TeXt 默认背景不透明，保证可读性 */
+  .layout--articles { background: transparent !important; }
+  .layout--home { background: transparent !important; }
 </style>
 
 <div class="bg-slideshow" id="bgSlideshow">
@@ -43,7 +41,6 @@
   var slides = document.querySelectorAll('.bg-slide');
   if (!slides.length) return;
   var current = 0;
-  // 预加载
   for (var i = 1; i <= 3; i++) { var img = new Image(); img.src = '/assets/images/bg/bg' + i + '.png'; }
   setInterval(function() {
     var prev = current;
