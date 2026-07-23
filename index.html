@@ -4,49 +4,21 @@ layout: home
 #   excerpt_type: html
 ---
 <style>
-  /* 页面已有专属背景，隐藏全局 slideshow */
-  #bgSlideshow { display: none !important; }
-
-  /* ========== 纯黑背景 ========== */
-  html {
-    background: #000000 !important;
-  }
-  body,
-  body.starry-mode,
-  body:not(.starry-mode) {
-    background: #000000 !important;
-    min-height: 100vh;
-  }
-  /* 星澜模式下内容区透明，让 body 黑色透出来 */
-  body.starry-mode .page__content,
-  body.starry-mode .main,
-  body.starry-mode .home-layout-content {
-    background: transparent !important;
-  }
-  /* 非星澜模式：不干涉内容区，让 TeXt 主题控制内部背景 */
+  /* 全局背景由 bg-slideshow 接管 */
 
   /* ========== 星空背景容器 ========== */
   .starfield {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     pointer-events: none;
     z-index: 1;
     overflow: hidden;
-    transition: opacity 1.2s ease;
   }
-  .starfield.dimmed {
-    opacity: 0;
-    pointer-events: none;
-  }
-
   .starfield::before {
     content: '';
     position: absolute;
-    width: 2px;
-    height: 2px;
+    width: 2px; height: 2px;
     border-radius: 50%;
     background: transparent;
     animation: twinkle 3s ease-in-out infinite alternate;
@@ -54,13 +26,11 @@ layout: home
   .starfield::after {
     content: '';
     position: absolute;
-    width: 1px;
-    height: 1px;
+    width: 1px; height: 1px;
     border-radius: 50%;
     background: transparent;
     animation: twinkle2 5s ease-in-out infinite alternate;
   }
-
   @keyframes twinkle {
     0% { opacity: 0.3; }
     100% { opacity: 1; }
@@ -73,295 +43,246 @@ layout: home
   /* ========== 流星 ========== */
   .meteor {
     position: fixed;
-    width: 2px;
-    height: 2px;
+    width: 2px; height: 2px;
     background: #fff;
     border-radius: 50%;
     pointer-events: none;
     z-index: 2;
     opacity: 0;
-    transition: opacity 1s ease;
-  }
-  .meteor.dimmed {
-    opacity: 0 !important;
-    animation-play-state: paused !important;
   }
   .meteor::before {
     content: '';
     position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 120px;
-    height: 1.5px;
+    top: 50%; transform: translateY(-50%);
+    width: 120px; height: 1.5px;
     background: linear-gradient(to left, rgba(255,255,255,0.8), rgba(255,215,0,0.3), transparent);
     right: 2px;
   }
-
   @keyframes meteorFall {
-    0% {
-      opacity: 0;
-      transform: translate(0, 0);
-    }
-    2% {
-      opacity: 1;
-    }
-    12% {
-      opacity: 1;
-    }
-    15% {
-      opacity: 0;
-      transform: translate(-300px, 200px);
-    }
-    100% {
-      opacity: 0;
-      transform: translate(-300px, 200px);
-    }
+    0% { opacity: 0; transform: translate(0, 0); }
+    2% { opacity: 1; }
+    12% { opacity: 1; }
+    15% { opacity: 0; transform: translate(-300px, 200px); }
+    100% { opacity: 0; transform: translate(-300px, 200px); }
   }
 
-  /* ========== Hero 欢迎区 ========== */
-  .hero-section {
-    position: relative;
-    z-index: 3;
-    text-align: center;
-    padding: 80px 20px 60px;
-    margin-bottom: 10px;
-    transition: all 0.8s ease;
-    max-height: 800px;
-    overflow: hidden;
-  }
-  .hero-section.hidden {
-    opacity: 0;
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    margin-bottom: 0;
-    pointer-events: none;
-  }
-
-  .hero-section .hero-icon {
-    font-size: 48px;
-    display: block;
-    margin-bottom: 16px;
-    animation: floatGlow 3s ease-in-out infinite;
-  }
-  .hero-section.hidden .hero-icon {
-    animation: none;
-  }
-
-  @keyframes floatGlow {
-    0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 10px rgba(255,215,0,0.3)); }
-    50% { transform: translateY(-8px) scale(1.05); filter: drop-shadow(0 0 25px rgba(255,215,0,0.6)); }
-  }
-
-  .hero-section h1 {
-    font-size: 2.6em;
-    color: #ffd700;
-    text-shadow: 0 0 30px rgba(255, 215, 0, 0.3), 0 0 80px rgba(255, 215, 0, 0.1);
-    margin: 0 0 10px;
-    letter-spacing: 6px;
-    font-weight: 300;
-  }
-
-  .hero-divider {
-    width: 80px;
-    height: 1.5px;
-    background: linear-gradient(90deg, transparent, #ffd700, transparent);
-    margin: 16px auto;
-    opacity: 0.6;
-  }
-
-  .hero-section .hero-sub {
-    font-size: 1.15em;
-    color: rgba(255, 255, 255, 0.6);
-    letter-spacing: 4px;
-    margin: 8px 0 20px;
-    font-weight: 300;
-  }
-
-  .hero-section .hero-poetry {
-    color: rgba(255, 215, 0, 0.5);
-    font-style: italic;
-    font-size: 0.9em;
-    line-height: 2;
-    letter-spacing: 2px;
-    max-width: 500px;
-    margin: 0 auto;
-  }
-
-  .hero-section .hero-poetry span {
-    display: block;
-  }
-
-  /* ========== 「开始旅程」按钮 ========== */
-  .hero-btn {
-    display: inline-block;
-    margin-top: 32px;
-    padding: 13px 40px;
-    border: 1.5px solid rgba(255, 215, 0, 0.4);
-    border-radius: 30px;
-    color: #ffd700;
-    font-size: 0.95em;
-    letter-spacing: 4px;
-    cursor: pointer;
-    background: rgba(255, 215, 0, 0.05);
-    transition: all 0.4s ease;
-    user-select: none;
-    backdrop-filter: blur(4px);
-    font-family: inherit;
-  }
-  .hero-btn:hover {
-    background: rgba(255, 215, 0, 0.12);
-    border-color: #ffd700;
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.15), inset 0 0 20px rgba(255, 215, 0, 0.05);
-    transform: translateY(-3px);
-  }
-  .hero-btn:active {
-    transform: translateY(0);
-  }
-
-  /* ========== 浮动「重返星澜」按钮 ========== */
-  .hero-toggle-btn {
+  /* ========== AI 聊天按钮（浮动在右下角） ========== */
+  .ai-btn {
     position: fixed;
     bottom: 28px;
     right: 28px;
     z-index: 1000;
-    width: 44px;
-    height: 44px;
+    width: 52px;
+    height: 52px;
     border-radius: 50%;
-    border: 1.5px solid rgba(255, 215, 0, 0.25);
-    background: rgba(10, 14, 39, 0.65);
+    border: 1.5px solid rgba(255, 215, 0, 0.35);
+    background: rgba(10, 14, 39, 0.75);
     color: #ffd700;
-    font-size: 20px;
+    font-size: 22px;
     cursor: pointer;
-    display: none;
+    display: flex;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     transition: all 0.3s ease;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.4);
     line-height: 1;
+    user-select: none;
   }
-  .hero-toggle-btn.visible {
-    display: flex;
-  }
-  .hero-toggle-btn:hover {
+  .ai-btn:hover {
     border-color: #ffd700;
-    box-shadow: 0 0 24px rgba(255, 215, 0, 0.2);
+    box-shadow: 0 0 28px rgba(255, 215, 0, 0.2);
     transform: scale(1.12);
-    background: rgba(10, 14, 39, 0.85);
+    background: rgba(10, 14, 39, 0.9);
   }
 
-  /* ========== 粒子特效 ========== */
-  .star-click {
+  /* ========== AI 聊天面板 ========== */
+  .ai-panel {
     position: fixed;
-    pointer-events: none;
-    z-index: 9999;
-    font-size: 30px;
+    bottom: 92px;
+    right: 24px;
+    z-index: 999;
+    width: 360px;
+    max-height: 520px;
+    background: rgba(10, 14, 39, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 215, 0, 0.15);
+    border-radius: 16px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  .ai-panel.open {
+    display: flex;
+  }
+  .ai-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
     color: #ffd700;
+    font-size: 14px;
+    letter-spacing: 2px;
+  }
+  .ai-panel-close {
+    cursor: pointer;
+    font-size: 18px;
+    color: rgba(255, 215, 0, 0.5);
+    transition: color 0.2s;
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 1;
+  }
+  .ai-panel-close:hover { color: #ffd700; }
+  .ai-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 16px;
+    min-height: 200px;
+    max-height: 360px;
+    scroll-behavior: smooth;
+  }
+  .ai-messages::-webkit-scrollbar { width: 4px; }
+  .ai-messages::-webkit-scrollbar-track { background: transparent; }
+  .ai-messages::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.3); border-radius: 2px; }
+
+  .ai-msg {
+    margin-bottom: 12px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.85);
+    word-wrap: break-word;
+  }
+  .ai-msg.user {
+    text-align: right;
+    color: #ffd700;
+  }
+  .ai-msg.ai {
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .ai-msg .label {
+    font-size: 11px;
+    opacity: 0.5;
+    margin-bottom: 4px;
+    display: block;
+  }
+  .ai-msg .typing-dots span {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #ffd700;
+    margin: 0 2px;
+    animation: dotPulse 1.4s infinite;
+  }
+  .ai-msg .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .ai-msg .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dotPulse {
+    0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+  }
+
+  .ai-input-area {
+    display: flex;
+    padding: 10px 14px;
+    border-top: 1px solid rgba(255, 215, 0, 0.08);
+    gap: 8px;
+  }
+  .ai-input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 215, 0, 0.12);
+    border-radius: 20px;
+    padding: 8px 14px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: inherit;
+  }
+  .ai-input:focus { border-color: rgba(255, 215, 0, 0.3); }
+  .ai-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+  .ai-send {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    background: rgba(255, 215, 0, 0.1);
+    color: #ffd700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .ai-send:hover {
+    background: rgba(255, 215, 0, 0.2);
+    border-color: #ffd700;
+  }
+  .ai-send:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* ========== 粒子特效（保留） ========== */
+  .star-click {
+    position: fixed; pointer-events: none; z-index: 9999;
+    font-size: 30px; color: #ffd700;
     text-shadow: 0 0 20px rgba(255, 215, 0, 0.9), 0 0 60px rgba(255, 215, 0, 0.4);
     animation: starFly 1.6s ease-out forwards;
   }
   @keyframes starFly {
-    0% {
-      opacity: 1;
-      transform: translate(0, 0) scale(0.5) rotate(0deg);
-    }
-    40% {
-      opacity: 1;
-      transform: translate(var(--tx), var(--ty)) scale(1.4) rotate(180deg);
-    }
-    100% {
-      opacity: 0;
-      transform: translate(calc(var(--tx) * 1.5), calc(var(--ty) * 1.5)) scale(0.6) rotate(360deg);
-    }
+    0% { opacity: 1; transform: translate(0,0) scale(0.5) rotate(0deg); }
+    40% { opacity: 1; transform: translate(var(--tx),var(--ty)) scale(1.4) rotate(180deg); }
+    100% { opacity: 0; transform: translate(calc(var(--tx)*1.5),calc(var(--ty)*1.5)) scale(0.6) rotate(360deg); }
   }
-
   .halo-fixed {
-    position: fixed;
-    pointer-events: none;
-    z-index: 9998;
+    position: fixed; pointer-events: none; z-index: 9998;
     border-radius: 50%;
     border: 2px solid rgba(255, 215, 0, 0.6);
     box-shadow: 0 0 40px rgba(255, 215, 0, 0.2), inset 0 0 40px rgba(255, 215, 0, 0.1);
     animation: haloPulse 1.8s ease-out forwards;
   }
   @keyframes haloPulse {
-    0% {
-      opacity: 0.8;
-      transform: translate(-50%, -50%) scale(0.8) rotate(0deg);
-      border-color: rgba(255, 215, 0, 0.8);
-    }
-    50% {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1.2) rotate(180deg);
-      border-color: rgba(255, 215, 0, 0.9);
-    }
-    100% {
-      opacity: 0;
-      transform: translate(-50%, -50%) scale(1.0) rotate(360deg);
-      border-color: rgba(255, 215, 0, 0);
-    }
+    0% { opacity: 0.8; transform: translate(-50%,-50%) scale(0.8); border-color: rgba(255,215,0,0.8); }
+    50% { opacity: 1; transform: translate(-50%,-50%) scale(1.2); border-color: rgba(255,215,0,0.9); }
+    100% { opacity: 0; transform: translate(-50%,-50%) scale(1); border-color: transparent; }
   }
-
   .sparkle-dot {
-    position: fixed;
-    pointer-events: none;
-    z-index: 9997;
-    border-radius: 50%;
-    background: #fff4c2;
+    position: fixed; pointer-events: none; z-index: 9997;
+    border-radius: 50%; background: #fff4c2;
     box-shadow: 0 0 8px #ffd700;
     animation: dotFade 1.2s ease-out forwards;
   }
   @keyframes dotFade {
-    0% {
-      opacity: 1;
-      transform: translate(0, 0) scale(1);
-    }
-    100% {
-      opacity: 0;
-      transform: translate(var(--dx), var(--dy)) scale(0);
-    }
+    0% { opacity: 1; transform: translate(0,0) scale(1); }
+    100% { opacity: 0; transform: translate(var(--dx),var(--dy)) scale(0); }
   }
-
   .trail-dot {
-    position: fixed;
-    pointer-events: none;
-    z-index: 9999;
-    border-radius: 50%;
-    background: #ffd700;
+    position: fixed; pointer-events: none; z-index: 9999;
+    border-radius: 50%; background: #ffd700;
     box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
     animation: trailFade 1.2s ease-out forwards;
   }
   @keyframes trailFade {
-    0% {
-      opacity: 0.8;
-      transform: translate(-50%, -50%) scale(1);
-    }
-    100% {
-      opacity: 0;
-      transform: translate(-50%, -50%) scale(0.2);
-    }
+    0% { opacity: 0.8; transform: translate(-50%,-50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%,-50%) scale(0.2); }
   }
-
   .trail-star {
-    position: fixed;
-    pointer-events: none;
-    z-index: 9999;
-    font-size: 12px;
-    color: #ffec8b;
+    position: fixed; pointer-events: none; z-index: 9999;
+    font-size: 12px; color: #ffec8b;
     text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
     animation: starTrail 1.5s ease-out forwards;
   }
   @keyframes starTrail {
-    0% {
-      opacity: 0.9;
-      transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
-    }
-    100% {
-      opacity: 0;
-      transform: translate(-50%, -50%) scale(0.2) rotate(180deg);
-    }
+    0% { opacity: 0.9; transform: translate(-50%,-50%) scale(0.5) rotate(0deg); }
+    100% { opacity: 0; transform: translate(-50%,-50%) scale(0.2) rotate(180deg); }
   }
 </style>
 
@@ -369,226 +290,276 @@ layout: home
 <div class="starfield" id="starfield"></div>
 
 <!-- ========== 流星 ========== -->
-<div class="meteor" id="meteor1" style="top: 5%; left: 80%; animation: meteorFall 6s 2s infinite;"></div>
-<div class="meteor" id="meteor2" style="top: 15%; left: 60%; animation: meteorFall 8s 5s infinite;"></div>
-<div class="meteor" id="meteor3" style="top: 8%; left: 90%; animation: meteorFall 7s 10s infinite;"></div>
+<div class="meteor" style="top:5%; left:80%; animation:meteorFall 6s 2s infinite;"></div>
+<div class="meteor" style="top:15%; left:60%; animation:meteorFall 8s 5s infinite;"></div>
+<div class="meteor" style="top:8%; left:90%; animation:meteorFall 7s 10s infinite;"></div>
 
-<!-- ========== Hero 欢迎区 ========== -->
-<div class="hero-section" id="heroSection">
-  <span class="hero-icon">✦</span>
-  <h1>星澜之境</h1>
-  <div class="hero-divider"></div>
-  <p class="hero-sub">致彼岸的乌托邦</p>
-  <div class="hero-poetry">
-    <span>遇见你，刹那惊鸿，如夏花点燃生命的火</span>
-    <span>别离后，静美归途，似秋叶铺满来时的路</span>
+<!-- ========== AI 聊天按钮 ========== -->
+<div class="ai-btn" id="aiBtn" title="AI 小助手">✦</div>
+
+<!-- ========== AI 聊天面板 ========== -->
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-panel-header">
+    <span>✦ AI 小助手</span>
+    <button class="ai-panel-close" id="aiCloseBtn">✕</button>
   </div>
-  <!-- 「开始旅程」按钮 -->
-  <div class="hero-btn" id="startJourneyBtn">✦ 开始旅程</div>
+  <div class="ai-messages" id="aiMessages">
+    <div class="ai-msg ai">
+      <span class="label">✦ 星澜</span>
+      你好呀，我是星澜的小助手 ✨<br>有什么想问的，写下来就好。
+    </div>
+  </div>
+  <div class="ai-input-area">
+    <input class="ai-input" id="aiInput" type="text" placeholder="输入你的问题..." autocomplete="off">
+    <button class="ai-send" id="aiSendBtn">➤</button>
+  </div>
 </div>
 
-<!-- ========== 浮动「重返星澜」按钮 ========== -->
-<div class="hero-toggle-btn" id="heroToggleBtn" title="重返星澜">✦</div>
-
 <script>
-  // ========== 生成星空（box-shadow 性能优化） ==========
+  // ========== 生成星空 ==========
   (function() {
     const style = document.createElement('style');
-    const starCount = 300;
-    const starCount2 = 150;
-
-    let shadows1 = '';
-    for (let i = 0; i < starCount; i++) {
-      if (i > 0) shadows1 += ',';
-      const x = Math.random() * 100;
-      const y = Math.random() * 100;
-      const size = Math.random() * 2.5 + 1.5;
-      const opacity = Math.random() * 0.5 + 0.5;
-      shadows1 += `${x}vw ${y}vh ${size}px rgba(255,255,255,${opacity})`;
+    let s1 = '', s2 = '';
+    for (let i = 0; i < 300; i++) {
+      if (i) s1 += ',';
+      s1 += `${Math.random()*100}vw ${Math.random()*100}vh ${Math.random()*2.5+1.5}px rgba(255,255,255,${Math.random()*0.5+0.5})`;
     }
-
-    let shadows2 = '';
-    for (let i = 0; i < starCount2; i++) {
-      if (i > 0) shadows2 += ',';
-      const x = Math.random() * 100;
-      const y = Math.random() * 100;
-      const size = Math.random() * 1 + 0.5;
-      const opacity = Math.random() * 0.3 + 0.15;
-      shadows2 += `${x}vw ${y}vh ${size}px rgba(200,220,255,${opacity})`;
+    for (let i = 0; i < 150; i++) {
+      if (i) s2 += ',';
+      s2 += `${Math.random()*100}vw ${Math.random()*100}vh ${Math.random()*1+0.5}px rgba(200,220,255,${Math.random()*0.3+0.15})`;
     }
-
-    style.textContent = `
-      .starfield::before { box-shadow: ${shadows1}; }
-      .starfield::after { box-shadow: ${shadows2}; }
-    `;
+    style.textContent = `.starfield::before{box-shadow:${s1}}.starfield::after{box-shadow:${s2}}`;
     document.head.appendChild(style);
   })();
 
-  // ========== Hero 收起 / 展开控制 ==========
+  // ========== AI 聊天控制 ==========
   (function() {
-    const hero = document.getElementById('heroSection');
-    const starfield = document.getElementById('starfield');
-    const meteors = document.querySelectorAll('.meteor');
-    const toggleBtn = document.getElementById('heroToggleBtn');
+    const btn = document.getElementById('aiBtn');
+    const panel = document.getElementById('aiPanel');
+    const closeBtn = document.getElementById('aiCloseBtn');
+    const messages = document.getElementById('aiMessages');
+    const input = document.getElementById('aiInput');
+    const sendBtn = document.getElementById('aiSendBtn');
 
-    function hideHero() {
-      // hero 收起
-      hero.classList.add('hidden');
-      // 星空完全消失（纯黑背景保持）
-      starfield.classList.add('dimmed');
-      meteors.forEach(function(m) { m.classList.add('dimmed'); });
-      // 移除 body 的星澜模式
-      document.body.classList.remove('starry-mode');
-      // 显示浮动按钮
-      toggleBtn.classList.add('visible');
-      // 记住状态
-      localStorage.setItem('heroHidden', 'true');
-      // 平滑滚动到正文
+    const API_URL = 'https://apihub.agnes-ai.com/v1/chat/completions';
+    const API_KEY = 'sk-f9ErHsuhF4dzN5zHYLnUCn8kEI7T0xPVwzB8HDzLD97RJp1i';
+
+    let isWaiting = false;
+    let conversation = [
+      { role: 'system', content: '你是一个友善的 AI 小助手，运行在星澜之境博客上。你的名字叫星澜小助手。请用中文回答，语气温暖自然，偶尔可以使用表情符号。' }
+    ];
+
+    function openPanel() {
+      panel.classList.add('open');
+      btn.style.display = 'none';
+      setTimeout(function() { input.focus(); }, 200);
+      scrollBottom();
+    }
+
+    function closePanel() {
+      panel.classList.remove('open');
+      btn.style.display = 'flex';
+    }
+
+    btn.addEventListener('click', openPanel);
+    closeBtn.addEventListener('click', closePanel);
+
+    function addMsg(role, text) {
+      var div = document.createElement('div');
+      div.className = 'ai-msg ' + role;
+      var label = document.createElement('span');
+      label.className = 'label';
+      label.textContent = role === 'user' ? '你' : '✦ 星澜';
+      div.appendChild(label);
+      div.appendChild(document.createTextNode(text));
+      messages.appendChild(div);
+      scrollBottom();
+      return div;
+    }
+
+    function addTyping() {
+      var div = document.createElement('div');
+      div.className = 'ai-msg ai';
+      var label = document.createElement('span');
+      label.className = 'label';
+      label.textContent = '✦ 星澜';
+      div.appendChild(label);
+      var dots = document.createElement('span');
+      dots.className = 'typing-dots';
+      dots.innerHTML = '<span></span><span></span><span></span>';
+      div.appendChild(dots);
+      messages.appendChild(div);
+      scrollBottom();
+      return div;
+    }
+
+    function scrollBottom() {
       setTimeout(function() {
-        window.scrollTo({ top: window.innerHeight * 0.55, behavior: 'smooth' });
-      }, 500);
+        messages.scrollTop = messages.scrollHeight;
+      }, 50);
     }
 
-    function showHero() {
-      // hero 展开
-      hero.classList.remove('hidden');
-      // 星空恢复（纯黑背景保持）
-      starfield.classList.remove('dimmed');
-      meteors.forEach(function(m) { m.classList.remove('dimmed'); });
-      // 启用 body 星澜模式
-      document.body.classList.add('starry-mode');
-      // 隐藏浮动按钮
-      toggleBtn.classList.remove('visible');
-      // 滚回顶部
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      // 记住状态
-      localStorage.setItem('heroHidden', 'false');
+    async function askAI(text) {
+      isWaiting = true;
+      sendBtn.disabled = true;
+      input.disabled = true;
+
+      conversation.push({ role: 'user', content: text });
+      var typingEl = addTyping();
+
+      try {
+        var resp = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + API_KEY
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: conversation,
+            stream: false,
+            temperature: 0.7,
+            max_tokens: 1024
+          })
+        });
+
+        if (!resp.ok) {
+          throw new Error('API 请求失败: ' + resp.status);
+        }
+
+        var data = await resp.json();
+        var reply = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+
+        if (!reply) {
+          throw new Error('API 返回格式异常');
+        }
+
+        // 替换打字指示器为实际回复
+        typingEl.remove();
+        addMsg('ai', reply);
+        conversation.push({ role: 'assistant', content: reply });
+
+        // 控制对话长度，保留最近 10 条
+        if (conversation.length > 14) {
+          var systemMsg = conversation.shift(); // 保留 system
+          conversation = [systemMsg].concat(conversation.slice(-10));
+        }
+
+      } catch (err) {
+        typingEl.remove();
+        addMsg('ai', '唔，好像出了点问题... ' + err.message + ' 🥲');
+      }
+
+      isWaiting = false;
+      sendBtn.disabled = false;
+      input.disabled = false;
+      input.focus();
     }
 
-    // 页面加载时初始化：默认启用星澜模式
-    document.body.classList.add('starry-mode');
-
-    // 「开始旅程」点击
-    document.getElementById('startJourneyBtn').addEventListener('click', hideHero);
-
-    // 「重返星澜」点击
-    toggleBtn.addEventListener('click', showHero);
-
-    // 如果之前已收起，自动恢复状态
-    if (localStorage.getItem('heroHidden') === 'true') {
-      hideHero();
-      // 直接跳转，无动画
-      window.scrollTo({ top: window.innerHeight * 0.55 });
+    function sendMessage() {
+      var text = input.value.trim();
+      if (!text || isWaiting) return;
+      input.value = '';
+      addMsg('user', text);
+      askAI(text);
     }
+
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') sendMessage();
+    });
   })();
 
   // ========== 点击星星特效 ==========
   (function() {
-    const starSymbols = ['✦', '✧', '✶', '⁕', '⋆'];
-    const colors = ['#ffd700', '#ffec8b', '#ffb347', '#ffaa33', '#ffffff'];
-    const haloColors = [
-      'rgba(255, 215, 0, 0.6)',
-      'rgba(100, 200, 255, 0.5)',
-      'rgba(255, 150, 200, 0.5)',
-      'rgba(200, 200, 255, 0.4)'
-    ];
-    const dotBgColors = ['#ffd700', '#fff4c2', '#88ddff', '#ffaa88'];
+    var stars = ['✦','✧','✶','⁕','⋆'];
+    var colors = ['#ffd700','#ffec8b','#ffb347','#ffaa33','#ffffff'];
+    var halos = ['rgba(255,215,0,0.6)','rgba(100,200,255,0.5)','rgba(255,150,200,0.5)','rgba(200,200,255,0.4)'];
+    var dots = ['#ffd700','#fff4c2','#88ddff','#ffaa88'];
 
     document.addEventListener('click', function(e) {
-      const x = e.clientX;
-      const y = e.clientY;
+      var x = e.clientX, y = e.clientY, i, el, angle, dist, tx, ty, size;
 
-      const starCount = Math.floor(Math.random() * 2) + 2;
-      for (let i = 0; i < starCount; i++) {
-        const star = document.createElement('div');
-        star.className = 'star-click';
-        star.textContent = starSymbols[Math.floor(Math.random() * starSymbols.length)];
-        const angle = Math.random() * 2 * Math.PI;
-        const distance = Math.random() * 80 + 40;
-        const tx = Math.cos(angle) * distance;
-        const ty = Math.sin(angle) * distance - 20;
-        star.style.setProperty('--tx', tx + 'px');
-        star.style.setProperty('--ty', ty + 'px');
-        star.style.left = (x - 15) + 'px';
-        star.style.top = (y - 15) + 'px';
-        star.style.color = colors[Math.floor(Math.random() * colors.length)];
-        star.style.fontSize = (Math.random() * 16 + 22) + 'px';
-        star.style.animationDuration = (Math.random() * 0.3 + 1.3) + 's';
-        document.body.appendChild(star);
-        setTimeout(function() { star.remove(); }, 1800);
+      for (i = 0; i < 2 + Math.floor(Math.random()*2); i++) {
+        el = document.createElement('div');
+        el.className = 'star-click';
+        el.textContent = stars[Math.floor(Math.random()*stars.length)];
+        angle = Math.random() * 2 * Math.PI;
+        dist = Math.random() * 80 + 40;
+        tx = Math.cos(angle) * dist;
+        ty = Math.sin(angle) * dist - 20;
+        el.style.setProperty('--tx', tx+'px');
+        el.style.setProperty('--ty', ty+'px');
+        el.style.left = (x-15)+'px';
+        el.style.top = (y-15)+'px';
+        el.style.color = colors[Math.floor(Math.random()*colors.length)];
+        el.style.fontSize = (Math.random()*16+22)+'px';
+        el.style.animationDuration = (Math.random()*0.3+1.3)+'s';
+        document.body.appendChild(el);
+        setTimeout(function(){el.remove()},1800);
       }
 
-      const halo = document.createElement('div');
-      halo.className = 'halo-fixed';
-      halo.style.borderColor = haloColors[Math.floor(Math.random() * haloColors.length)];
-      const size = Math.floor(Math.random() * 20 + 50);
-      halo.style.width = size + 'px';
-      halo.style.height = size + 'px';
-      halo.style.left = x + 'px';
-      halo.style.top = y + 'px';
-      document.body.appendChild(halo);
-      setTimeout(function() { halo.remove(); }, 2000);
+      el = document.createElement('div');
+      el.className = 'halo-fixed';
+      el.style.borderColor = halos[Math.floor(Math.random()*halos.length)];
+      size = Math.floor(Math.random()*20+50);
+      el.style.width = size+'px'; el.style.height = size+'px';
+      el.style.left = x+'px'; el.style.top = y+'px';
+      document.body.appendChild(el);
+      setTimeout(function(){el.remove()},2000);
 
-      const dotCount = 12;
-      for (let i = 0; i < dotCount; i++) {
-        const dot = document.createElement('div');
+      for (i = 0; i < 12; i++) {
+        var dot = document.createElement('div');
         dot.className = 'sparkle-dot';
-        const angle = (i / dotCount) * 2 * Math.PI + Math.random() * 0.2;
-        const radius = size / 2 + 8;
-        const dx = Math.cos(angle) * radius;
-        const dy = Math.sin(angle) * radius;
-        dot.style.setProperty('--dx', dx + 'px');
-        dot.style.setProperty('--dy', dy + 'px');
-        dot.style.left = (x + dx - 3) + 'px';
-        dot.style.top = (y + dy - 3) + 'px';
-        dot.style.width = (Math.random() * 4 + 3) + 'px';
-        dot.style.height = dot.style.width;
-        dot.style.background = dotBgColors[Math.floor(Math.random() * 4)];
+        angle = (i/12)*2*Math.PI + Math.random()*0.2;
+        dist = size/2 + 8;
+        tx = Math.cos(angle)*dist;
+        ty = Math.sin(angle)*dist;
+        dot.style.setProperty('--dx', tx+'px');
+        dot.style.setProperty('--dy', ty+'px');
+        dot.style.left = (x+tx-3)+'px';
+        dot.style.top = (y+ty-3)+'px';
+        var sz = Math.random()*4+3;
+        dot.style.width = sz+'px'; dot.style.height = sz+'px';
+        dot.style.background = dots[Math.floor(Math.random()*4)];
         document.body.appendChild(dot);
-        setTimeout(function() { dot.remove(); }, 1400);
+        setTimeout(function(){dot.remove()},1400);
       }
     });
   })();
 
   // ========== 鼠标轨迹 ==========
   (function() {
-    const interval = 60;
-    let lastTime = 0;
-    const colors = ['#ffd700', '#ffec8b', '#fff4c2', '#88ddff', '#ffaa88'];
-    const starChars = ['✧', '✦', '·', '⋆'];
+    var interval = 60, last = 0;
+    var colors = ['#ffd700','#ffec8b','#fff4c2','#88ddff','#ffaa88'];
+    var chars = ['✧','✦','·','⋆'];
 
     document.addEventListener('mousemove', function(e) {
-      const now = Date.now();
-      if (now - lastTime < interval) return;
-      lastTime = now;
-
-      const x = e.clientX;
-      const y = e.clientY;
-
+      var now = Date.now();
+      if (now - last < interval) return;
+      last = now;
+      var x = e.clientX, y = e.clientY, el;
       if (Math.random() > 0.6) {
-        const star = document.createElement('div');
-        star.className = 'trail-star';
-        star.textContent = starChars[Math.floor(Math.random() * starChars.length)];
-        star.style.left = x + 'px';
-        star.style.top = y + 'px';
-        star.style.color = colors[Math.floor(Math.random() * colors.length)];
-        star.style.fontSize = (Math.random() * 8 + 8) + 'px';
-        document.body.appendChild(star);
-        setTimeout(function() { star.remove(); }, 1600);
+        el = document.createElement('div');
+        el.className = 'trail-star';
+        el.textContent = chars[Math.floor(Math.random()*chars.length)];
+        el.style.left = x+'px'; el.style.top = y+'px';
+        el.style.color = colors[Math.floor(Math.random()*colors.length)];
+        el.style.fontSize = (Math.random()*8+8)+'px';
+        document.body.appendChild(el);
+        setTimeout(function(){el.remove()},1600);
       } else {
-        const dot = document.createElement('div');
-        dot.className = 'trail-dot';
-        const size = Math.random() * 6 + 4;
-        dot.style.width = size + 'px';
-        dot.style.height = size + 'px';
-        dot.style.left = x + 'px';
-        dot.style.top = y + 'px';
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        dot.style.background = color;
-        dot.style.boxShadow = `0 0 12px ${color}`;
-        dot.style.animationDuration = (Math.random() * 0.6 + 0.8) + 's';
-        document.body.appendChild(dot);
-        setTimeout(function() { dot.remove(); }, 1600);
+        el = document.createElement('div');
+        el.className = 'trail-dot';
+        var sz = Math.random()*6+4;
+        el.style.width = sz+'px'; el.style.height = sz+'px';
+        el.style.left = x+'px'; el.style.top = y+'px';
+        var c = colors[Math.floor(Math.random()*colors.length)];
+        el.style.background = c;
+        el.style.boxShadow = '0 0 12px '+c;
+        el.style.animationDuration = (Math.random()*0.6+0.8)+'s';
+        document.body.appendChild(el);
+        setTimeout(function(){el.remove()},1600);
       }
     });
   })();
