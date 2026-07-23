@@ -1,3 +1,30 @@
-/* start custom scss snippet */
+/* 强制所有主要容器透明，让背景图透出来 */
+html,
+body,
+.root,
+.layout--page,
+.page__main,
+.page__main-inner,
+.page__content,
+.main,
+.col-main,
+.js-article-content {
+  background: transparent !important;
+  background-color: transparent !important;
+}
 
-/* end custom scss snippet */
+/* 内容区域背景半透明，保证文字可读 */
+.main {
+  background: rgba(255, 255, 255, 0.3) !important;
+  backdrop-filter: blur(4px);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 1200px;
+}
+
+/* 确保 header 和 footer 也透明 */
+.header,
+.footer {
+  background: transparent !important;
+}
