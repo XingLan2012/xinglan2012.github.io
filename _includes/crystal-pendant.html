@@ -1,0 +1,241 @@
+<!-- 冰晶吊坠 + 下拉面板 -->
+<style>
+  /* ========== 冰晶吊坠 ========== */
+  .crystal-pendant {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 9999;
+    width: 42px; height: 42px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.4s ease, opacity 0.3s ease;
+    user-select: none;
+    opacity: 0.7;
+  }
+  .crystal-pendant:hover {
+    transform: scale(1.15) rotate(-10deg);
+    opacity: 1;
+  }
+  .crystal-pendant.open {
+    transform: rotate(180deg) scale(0.9);
+    opacity: 0.5;
+  }
+
+  .crystal-pendant svg {
+    width: 36px; height: 36px;
+    filter: drop-shadow(0 0 12px rgba(100, 200, 255, 0.4));
+    animation: crystalGlow 3s ease-in-out infinite;
+  }
+  @keyframes crystalGlow {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(100, 200, 255, 0.3)); }
+    50% { filter: drop-shadow(0 0 20px rgba(100, 200, 255, 0.6)) drop-shadow(0 0 40px rgba(100, 200, 255, 0.2)); }
+  }
+
+  /* ========== 下拉面板 ========== */
+  .crystal-panel {
+    position: fixed;
+    top: 0; left: 0;
+    width: 280px;
+    height: 100vh;
+    z-index: 9998;
+    background: rgba(8, 12, 35, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-right: 1px solid rgba(100, 200, 255, 0.08);
+    box-shadow: 4px 0 40px rgba(0,0,0,0.4);
+    transform: translateX(-100%);
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .crystal-panel.open {
+    transform: translateX(0);
+  }
+
+  .crystal-panel::-webkit-scrollbar { width: 2px; }
+  .crystal-panel::-webkit-scrollbar-track { background: transparent; }
+  .crystal-panel::-webkit-scrollbar-thumb { background: rgba(100,200,255,0.15); border-radius: 2px; }
+
+  /* 面板头部 */
+  .crystal-panel-header {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid rgba(100, 200, 255, 0.06);
+  }
+  .crystal-panel-title {
+    font-size: 14px;
+    color: rgba(100, 200, 255, 0.7);
+    letter-spacing: 4px;
+    font-weight: 300;
+  }
+  .crystal-panel-subtitle {
+    font-size: 11px;
+    color: rgba(100, 200, 255, 0.25);
+    margin-top: 6px;
+    letter-spacing: 2px;
+  }
+
+  /* 导航链接 */
+  .crystal-nav {
+    flex: 1;
+    padding: 12px 0;
+  }
+  .crystal-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 20px;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 13px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    letter-spacing: 1px;
+    border-left: 2px solid transparent;
+  }
+  .crystal-nav-item:hover {
+    color: rgba(100, 200, 255, 0.85);
+    background: rgba(100, 200, 255, 0.04);
+    border-left-color: rgba(100, 200, 255, 0.3);
+  }
+  .crystal-nav-item .nav-icon {
+    font-size: 16px;
+    width: 24px;
+    text-align: center;
+    opacity: 0.6;
+  }
+
+  /* 面板底部 */
+  .crystal-panel-footer {
+    padding: 16px 20px;
+    border-top: 1px solid rgba(100, 200, 255, 0.06);
+    font-size: 11px;
+    color: rgba(100, 200, 255, 0.15);
+    letter-spacing: 1px;
+    text-align: center;
+  }
+
+  /* 遮罩层 */
+  .crystal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 9997;
+    background: rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+  .crystal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* 页面主体右移（可选，增加沉浸感） */
+  body.crystal-open .root {
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+</style>
+
+<!-- 遮罩 -->
+<div class="crystal-overlay" id="crystalOverlay"></div>
+
+<!-- 冰晶吊坠 SVG -->
+<div class="crystal-pendant" id="crystalPendant" title="冰晶之境">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="crystalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#88ddff;stop-opacity:0.9" />
+        <stop offset="50%" style="stop-color:#aaddff;stop-opacity:0.6" />
+        <stop offset="100%" style="stop-color:#66ccee;stop-opacity:0.8" />
+      </linearGradient>
+    </defs>
+    <!-- 冰晶主体：六角形变体 -->
+    <polygon points="50,8 68,25 75,48 68,72 50,88 32,72 25,48 32,25"
+             fill="url(#crystalGrad)" stroke="rgba(180,230,255,0.6)" stroke-width="1.5"
+             opacity="0.85"/>
+    <!-- 内部线条 -->
+    <line x1="50" y1="8" x2="50" y2="88" stroke="rgba(180,230,255,0.3)" stroke-width="0.8"/>
+    <line x1="25" y1="48" x2="75" y2="48" stroke="rgba(180,230,255,0.3)" stroke-width="0.8"/>
+    <line x1="32" y1="25" x2="68" y2="72" stroke="rgba(180,230,255,0.2)" stroke-width="0.5"/>
+    <line x1="68" y1="25" x2="32" y2="72" stroke="rgba(180,230,255,0.2)" stroke-width="0.5"/>
+    <!-- 中心亮点 -->
+    <circle cx="50" cy="48" r="3" fill="rgba(255,255,255,0.5)" filter="url(#glow)"/>
+    <defs>
+      <filter id="glow">
+        <feGaussianBlur stdDeviation="1.5" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+  </svg>
+</div>
+
+<!-- 下拉面板 -->
+<div class="crystal-panel" id="crystalPanel">
+  <div class="crystal-panel-header">
+    <div class="crystal-panel-title">❄ 冰晶之境</div>
+    <div class="crystal-panel-subtitle">✦ 星澜 · 致彼岸的乌托邦</div>
+  </div>
+  <nav class="crystal-nav">
+    <a class="crystal-nav-item" href="/">
+      <span class="nav-icon">✦</span> 首页
+    </a>
+    <a class="crystal-nav-item" href="/welcome.html">
+      <span class="nav-icon">❄</span> 欢迎
+    </a>
+    <a class="crystal-nav-item" href="/archive.html">
+      <span class="nav-icon">◇</span> 归档
+    </a>
+    <a class="crystal-nav-item" href="/pan.html">
+      <span class="nav-icon">◇</span> 云盘
+    </a>
+    <a class="crystal-nav-item" href="https://github.com/XingLan2012" target="_blank">
+      <span class="nav-icon">◇</span> GitHub
+    </a>
+  </nav>
+  <div class="crystal-panel-footer">
+    循此苦旅，终抵繁星
+  </div>
+</div>
+
+<script>
+(function() {
+  var pendant = document.getElementById('crystalPendant');
+  var panel = document.getElementById('crystalPanel');
+  var overlay = document.getElementById('crystalOverlay');
+
+  function openCrystal() {
+    panel.classList.add('open');
+    overlay.classList.add('open');
+    pendant.classList.add('open');
+    document.body.classList.add('crystal-open');
+  }
+
+  function closeCrystal() {
+    panel.classList.remove('open');
+    overlay.classList.remove('open');
+    pendant.classList.remove('open');
+    document.body.classList.remove('crystal-open');
+  }
+
+  pendant.addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (panel.classList.contains('open')) {
+      closeCrystal();
+    } else {
+      openCrystal();
+    }
+  });
+
+  overlay.addEventListener('click', closeCrystal);
+
+  // 按 Esc 关闭
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && panel.classList.contains('open')) {
+      closeCrystal();
+    }
+  });
+})();
+</script>
