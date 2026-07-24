@@ -186,6 +186,17 @@
     color: #ffd700;
     background: rgba(255, 215, 0, 0.08);
   }
+
+  /* 免责声明 */
+  .music-disclaimer {
+    padding: 8px 14px;
+    font-size: 9px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.12);
+    text-align: center;
+    letter-spacing: 1px;
+    border-top: 1px solid rgba(255, 215, 0, 0.04);
+  }
 </style>
 
 <!-- ========== 音乐按钮 ========== -->
@@ -212,6 +223,9 @@
     <button id="musicNextBtn">⏭</button>
   </div>
   <div class="music-list" id="musicList"></div>
+  <div class="music-disclaimer">
+    音乐版权归 C418 / Mojang Studios 所有<br>仅供个人欣赏，非商业用途
+  </div>
 </div>
 
 <audio id="musicAudio" preload="metadata"></audio>
