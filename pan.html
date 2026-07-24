@@ -4,217 +4,395 @@ title: 云盘
 ---
 
 <style>
-  .container {
+  .pan-wrap {
     max-width: 900px;
     margin: 0 auto;
     padding: 20px;
   }
-  table {
+  .pan-title {
+    font-size: 22px;
+    color: #ffd700;
+    letter-spacing: 6px;
+    font-weight: 300;
+    margin-bottom: 4px;
+  }
+  .pan-sub {
+    font-size: 12px;
+    color: rgba(255,215,0,0.3);
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+  }
+
+  /* 文件列表 */
+  .pan-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    margin-top: 12px;
   }
-  th, td {
-    border: 1px solid #ddd;
-    padding: 10px;
+  .pan-table th {
+    padding: 10px 14px;
     text-align: left;
+    font-size: 11px;
+    color: rgba(255,215,0,0.3);
+    letter-spacing: 2px;
+    font-weight: 400;
+    border-bottom: 1px solid rgba(255,215,0,0.06);
   }
-  th {
-    background: #f0f0f0;
+  .pan-table td {
+    padding: 10px 14px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.65);
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    transition: background 0.2s;
   }
-  .file-name {
-    font-weight: bold;
+  .pan-table tr:hover td {
+    background: rgba(255,215,0,0.02);
   }
-  .download-btn, .mirror-btn {
-    padding: 4px 12px;
-    border: none;
-    border-radius: 4px;
+  .pan-table .file-name {
+    color: rgba(255,255,255,0.75);
+    font-weight: 400;
+    letter-spacing: 1px;
+  }
+  .pan-table .file-size {
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+    font-family: monospace;
+  }
+
+  /* 按钮 */
+  .pan-actions { white-space: nowrap; }
+  .pan-btn {
+    padding: 4px 14px;
+    border-radius: 14px;
+    border: 1px solid;
+    font-size: 11px;
+    letter-spacing: 1px;
     cursor: pointer;
-    font-size: 13px;
-    margin-right: 5px;
+    transition: all 0.25s ease;
+    background: transparent;
+    font-family: inherit;
   }
-  .download-btn {
-    background: #4CAF50;
-    color: white;
+  .pan-btn.dl {
+    color: rgba(255,215,0,0.5);
+    border-color: rgba(255,215,0,0.15);
   }
-  .mirror-btn {
-    background: #2196F3;
-    color: white;
+  .pan-btn.dl:hover {
+    color: #ffd700;
+    border-color: rgba(255,215,0,0.35);
+    background: rgba(255,215,0,0.04);
   }
-  .mirror-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  .pan-btn.mirror {
+    color: rgba(100,200,255,0.45);
+    border-color: rgba(100,200,255,0.12);
+    margin-left: 6px;
   }
-  .mirror-list {
-    font-size: 13px;
-    margin-top: 5px;
+  .pan-btn.mirror:hover {
+    color: rgba(100,200,255,0.7);
+    border-color: rgba(100,200,255,0.25);
+    background: rgba(100,200,255,0.03);
+  }
+  .pan-btn.mirror.active {
+    color: rgba(100,200,255,0.7);
+    border-color: rgba(100,200,255,0.2);
+    background: rgba(100,200,255,0.04);
+  }
+
+  /* 测速面板 */
+  .mirror-panel {
+    margin-top: 8px;
+    padding: 10px 14px;
+    background: rgba(100,200,255,0.02);
+    border: 1px solid rgba(100,200,255,0.06);
+    border-radius: 8px;
+    display: none;
+  }
+  .mirror-panel.open { display: block; }
+  .mirror-panel-title {
+    font-size: 10px;
+    color: rgba(100,200,255,0.25);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
   }
   .mirror-item {
-    display: inline-block;
-    margin-right: 10px;
-    padding: 3px 8px;
-    border-radius: 3px;
-    background: #f9f9f9;
-    border: 1px solid #ddd;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 3px 6px 3px 0;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    background: rgba(100,200,255,0.03);
+    border: 1px solid rgba(100,200,255,0.06);
+    transition: all 0.2s;
   }
+  .mirror-item:hover {
+    background: rgba(100,200,255,0.06);
+    border-color: rgba(100,200,255,0.12);
+  }
+  .mirror-item a {
+    color: rgba(100,200,255,0.6);
+    text-decoration: none;
+  }
+  .mirror-item a:hover { color: rgba(100,200,255,0.85); }
   .mirror-item .latency {
-    font-weight: bold;
-    margin-left: 5px;
+    font-size: 10px;
+    font-family: monospace;
   }
-  .mirror-item .fast {
-    color: green;
+  .mirror-item .latency.fast { color: rgba(100,200,150,0.6); }
+  .mirror-item .latency.slow { color: rgba(200,100,100,0.5); }
+
+  .mirror-loading {
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
   }
-  .mirror-item .slow {
-    color: red;
+
+  /* 状态 */
+  .pan-status {
+    font-size: 12px;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
   }
-  .loading {
-    color: #888;
+  .pan-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: rgba(255,215,0,0.15);
+    letter-spacing: 3px;
+    font-size: 13px;
+  }
+  .pan-error {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(255,100,100,0.3);
+    letter-spacing: 2px;
+    font-size: 12px;
+  }
+
+  /* 刷新按钮 */
+  .pan-refresh {
+    display: inline-block;
+    padding: 6px 18px;
+    border: 1px solid rgba(255,215,0,0.1);
+    border-radius: 16px;
+    color: rgba(255,215,0,0.3);
+    font-size: 11px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    background: transparent;
+    transition: all 0.25s;
+    font-family: inherit;
+    margin-bottom: 12px;
+  }
+  .pan-refresh:hover {
+    border-color: rgba(255,215,0,0.2);
+    color: rgba(255,215,0,0.5);
+  }
+
+  @media (max-width: 600px) {
+    .pan-table th:nth-child(2),
+    .pan-table td:nth-child(2) { display: none; }
+    .pan-actions { white-space: normal; }
+    .pan-btn { margin-bottom: 4px; }
   }
 </style>
 
-<div class="container">
-  <h1>📦 云盘</h1>
-  <p>以下为 <code>/pan</code> 目录中的文件，点击下载或选择镜像节点。</p>
-  <div id="fileList">
-    <p class="loading">加载中...</p>
-  </div>
+<div class="pan-wrap">
+  <div class="pan-title">✦ 云盘</div>
+  <div class="pan-sub"><code>/pan</code> 目录中的文件</div>
+
+  <div id="panToolbar"></div>
+  <div id="panFileList"><p class="pan-status">✦ 加载中...</p></div>
 </div>
 
 <script>
-  // 配置区
-  const REPO_OWNER = 'XingLan2012';
-  const REPO_NAME = 'xinglan2012.github.io';
-  const PAN_PATH = 'pan';
+(function() {
+  var REPO = 'XingLan2012/xinglan2012.github.io';
+  var PAN = 'pan';
+  var CACHE_KEY = 'pan_filelist_cache';
+  var CACHE_TTL = 5 * 60 * 1000; // 5 分钟缓存
 
-  // 镜像节点列表（可自定义增删）
-  const MIRRORS = [
-    {
-      name: 'GitHub Raw',
-      getUrl: (file) => `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${PAN_PATH}/${file}`
-    },
-    {
-      name: 'jsDelivr CDN',
-      getUrl: (file) => `https://cdn.jsdelivr.net/gh/${REPO_OWNER}/${REPO_NAME}@main/${PAN_PATH}/${file}`
-    },
-    {
-      name: 'ghproxy.com',
-      getUrl: (file) => `https://ghproxy.com/https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${PAN_PATH}/${file}`
-    },
-    {
-      name: 'FastGit',
-      getUrl: (file) => `https://raw.fastgit.org/${REPO_OWNER}/${REPO_NAME}/main/${PAN_PATH}/${file}`
-    }
-    // 可继续添加更多镜像
+  var MIRRORS = [
+    { name: 'GitHub Raw', url: function(f) { return 'https://raw.githubusercontent.com/' + REPO + '/main/' + PAN + '/' + f; } },
+    { name: 'jsDelivr CDN', url: function(f) { return 'https://cdn.jsdelivr.net/gh/' + REPO + '@main/' + PAN + '/' + f; } },
+    { name: 'ghproxy', url: function(f) { return 'https://ghproxy.com/https://raw.githubusercontent.com/' + REPO + '/main/' + PAN + '/' + f; } },
+    { name: 'FastGit', url: function(f) { return 'https://raw.fastgit.org/' + REPO + '/main/' + PAN + '/' + f; } }
   ];
 
-  // ---- 以下为业务逻辑 ----
+  var listEl = document.getElementById('panFileList');
+  var toolbarEl = document.getElementById('panToolbar');
 
-  const fileList = document.getElementById('fileList');
+  function fmtSize(bytes) {
+    if (!bytes || bytes === 0) return '';
+    var u = ['B','KB','MB','GB'];
+    var i = 0;
+    var s = bytes;
+    while (s >= 1024 && i < 3) { s /= 1024; i++; }
+    return s.toFixed(i > 0 ? 1 : 0) + ' ' + u[i];
+  }
 
-  // 获取文件列表
-  async function fetchFileList() {
-    const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${PAN_PATH}`;
+  function getCached() {
     try {
-      const resp = await fetch(apiUrl);
-      if (!resp.ok) throw new Error('获取文件列表失败');
-      const data = await resp.json();
-      // 过滤出文件（type: file）
-      const files = data.filter(item => item.type === 'file').map(item => item.name);
-      return files;
-    } catch (err) {
-      console.error(err);
-      return [];
+      var raw = localStorage.getItem(CACHE_KEY);
+      if (!raw) return null;
+      var data = JSON.parse(raw);
+      if (Date.now() - data.time > CACHE_TTL) return null;
+      return data.files;
+    } catch(e) { return null; }
+  }
+
+  function setCache(files) {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ time: Date.now(), files: files }));
+    } catch(e) {}
+  }
+
+  async function fetchFiles(force) {
+    if (!force) {
+      var cached = getCached();
+      if (cached) return cached;
+    }
+    var url = 'https://api.github.com/repos/' + REPO + '/contents/' + PAN;
+    var resp = await fetch(url);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    var data = await resp.json();
+    var files = data.filter(function(i) { return i.type === 'file'; }).map(function(i) {
+      return { name: i.name, size: i.size, url: i.download_url };
+    });
+    setCache(files);
+    return files;
+  }
+
+  function fmtDate() {
+    var d = new Date();
+    return d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2)
+         + ' ' + ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2);
+  }
+
+  async function measure(url) {
+    var start = performance.now();
+    try {
+      await fetch(url, { method: 'HEAD', mode: 'no-cors' });
+      return performance.now() - start;
+    } catch(e) {
+      // 如果 HEAD 失败，尝试 GET 但只请求第一个字节
+      try {
+        var c = new AbortController();
+        setTimeout(function() { c.abort(); }, 3000);
+        start = performance.now();
+        await fetch(url, { method: 'GET', signal: c.signal });
+        return performance.now() - start;
+      } catch(e2) {
+        return Infinity;
+      }
     }
   }
 
-  // 测延迟（HEAD 请求）
-  async function measureLatency(url) {
-    const start = performance.now();
-    try {
-      const resp = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
-      // 由于 no-cors 限制，无法获取 status，但可以测时间
-      // 这里用 abort 控制超时
-      const end = performance.now();
-      return end - start;
-    } catch (err) {
-      return Infinity;
-    }
-  }
-
-  // 渲染文件列表
   async function render() {
-    const files = await fetchFileList();
-    if (files.length === 0) {
-      fileList.innerHTML = '<p>暂无文件，请将文件放入 <code>/pan</code> 目录。</p>';
+    listEl.innerHTML = '<p class="pan-status">✦ 加载中...</p>';
+    toolbarEl.innerHTML = '';
+
+    try {
+      var files = await fetchFiles(false);
+    } catch(e) {
+      // 尝试用缓存兜底
+      var cached = getCached();
+      if (cached) {
+        files = cached;
+        listEl.innerHTML = '<p class="pan-status">⚠ 加载远程失败，使用缓存数据</p>';
+      } else {
+        listEl.innerHTML = '<div class="pan-error">✕ 加载失败 (' + e.message + ')</div>';
+        return;
+      }
+    }
+
+    if (!files || files.length === 0) {
+      listEl.innerHTML = '<div class="pan-empty">✦ 暂无文件</div>';
       return;
     }
 
-    let html = `<table>
-      <tr>
-        <th>文件名</th>
-        <th>操作</th>
-      </tr>`;
-    for (const file of files) {
-      html += `<tr>
-        <td class="file-name">${file}</td>
-        <td>
-          <button class="download-btn" data-file="${file}">⬇ 下载</button>
-          <button class="mirror-btn" data-file="${file}">🌐 镜像节点</button>
-          <div class="mirror-list" id="mirror-${file}"></div>
-        </td>
-      </tr>`;
-    }
-    html += '</table>';
-    fileList.innerHTML = html;
+    // 按文件名排序
+    files.sort(function(a,b) { return a.name.localeCompare(b.name); });
 
-    // 绑定下载事件（默认使用 GitHub Raw）
-    document.querySelectorAll('.download-btn').forEach(btn => {
-      btn.addEventListener('click', function(e) {
-        const file = this.dataset.file;
-        // 默认使用第一个镜像（raw）
-        const url = MIRRORS[0].getUrl(file);
-        window.open(url, '_blank');
+    // 工具栏
+    toolbarEl.innerHTML = '<button class="pan-refresh" id="panRefreshBtn">⟳ 刷新</button>'
+      + '<span class="pan-status">✦ ' + files.length + ' 个文件 · ' + fmtDate() + '</span>';
+
+    document.getElementById('panRefreshBtn').addEventListener('click', function() {
+      localStorage.removeItem(CACHE_KEY);
+      render();
+    });
+
+    // 表格
+    var html = '<table class="pan-table"><tr><th>文件名</th><th>大小</th><th>操作</th></tr>';
+    files.forEach(function(f) {
+      var ext = f.name.split('.').pop().toLowerCase();
+      var icon = '◇';
+      if (['png','jpg','gif','webp','svg'].indexOf(ext) >= 0) icon = '🖼';
+      else if (['mp3','ogg','wav','flac'].indexOf(ext) >= 0) icon = '♪';
+      else if (['zip','rar','7z','tar','gz'].indexOf(ext) >= 0) icon = '📦';
+      else if (['pdf','doc','docx','xls','xlsx','ppt','pptx'].indexOf(ext) >= 0) icon = '📄';
+      else if (['py','js','ts','css','html','json','yml','yaml','md'].indexOf(ext) >= 0) icon = '⌨';
+
+      html += '<tr>'
+        + '<td class="file-name">' + icon + ' ' + f.name + '</td>'
+        + '<td class="file-size">' + fmtSize(f.size) + '</td>'
+        + '<td class="pan-actions">'
+        + '<button class="pan-btn dl" data-url="' + MIRRORS[0].url(f.name) + '">⬇ 下载</button>'
+        + '<button class="pan-btn mirror" data-file="' + f.name + '">🌐 镜像</button>'
+        + '<div class="mirror-panel" id="mp-' + encodeURIComponent(f.name) + '">'
+        + '<div class="mirror-panel-title">— 镜像节点 —</div>'
+        + '<div class="mirror-list-inner"></div></div>'
+        + '</td></tr>';
+    });
+    html += '</table>';
+    listEl.innerHTML = html;
+
+    // 绑定下载
+    document.querySelectorAll('.pan-btn.dl').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        window.open(this.dataset.url, '_blank');
       });
     });
 
-    // 绑定镜像按钮
-    document.querySelectorAll('.mirror-btn').forEach(btn => {
-      btn.addEventListener('click', function(e) {
-        const file = this.dataset.file;
-        const container = document.getElementById(`mirror-${file}`);
-        if (container.dataset.loaded) {
-          // 如果已经加载，则切换显示
-          container.style.display = container.style.display === 'none' ? 'block' : 'none';
-          return;
+    // 绑定镜像
+    document.querySelectorAll('.pan-btn.mirror').forEach(function(btn) {
+      var loaded = false;
+      btn.addEventListener('click', async function() {
+        var fname = this.dataset.file;
+        var panel = document.getElementById('mp-' + encodeURIComponent(fname));
+        if (!panel) return;
+
+        if (!loaded) {
+          loaded = true;
+          this.classList.add('active');
+          var inner = panel.querySelector('.mirror-list-inner');
+          inner.innerHTML = '<span class="mirror-loading">⟳ 测速中...</span>';
+          panel.classList.add('open');
+
+          var results = [];
+          for (var i = 0; i < MIRRORS.length; i++) {
+            var url = MIRRORS[i].url(fname);
+            var ms = await measure(url);
+            results.push({ name: MIRRORS[i].name, url: url, ms: ms });
+          }
+          results.sort(function(a,b) { return a.ms - b.ms; });
+
+          var h = '';
+          results.forEach(function(r) {
+            var cls = r.ms < 500 ? 'fast' : (r.ms >= 2000 ? 'slow' : '');
+            var txt = r.ms >= 9999 ? '超时' : r.ms.toFixed(0) + 'ms';
+            h += '<span class="mirror-item"><a href="' + r.url + '" target="_blank">' + r.name + '</a>'
+              + '<span class="latency ' + cls + '">' + txt + '</span></span>';
+          });
+          inner.innerHTML = h;
+        } else {
+          // 切换显示
+          panel.classList.toggle('open');
         }
-        container.dataset.loaded = 'true';
-        container.innerHTML = '<span class="loading">正在测速...</span>';
-        // 异步测速
-        (async () => {
-          const results = [];
-          for (const mirror of MIRRORS) {
-            const url = mirror.getUrl(file);
-            const latency = await measureLatency(url);
-            results.push({ name: mirror.name, url, latency });
-          }
-          // 按延迟排序
-          results.sort((a, b) => a.latency - b.latency);
-          let html = '<div><strong>镜像节点（延迟由低到高）：</strong><br>';
-          for (const r of results) {
-            const cls = r.latency < 300 ? 'fast' : (r.latency < 800 ? '' : 'slow');
-            const latencyText = r.latency === Infinity ? '超时' : `${r.latency.toFixed(0)}ms`;
-            html += `<span class="mirror-item">
-              <a href="${r.url}" target="_blank">${r.name}</a>
-              <span class="latency ${cls}">${latencyText}</span>
-            </span>`;
-          }
-          html += '</div>';
-          container.innerHTML = html;
-          container.style.display = 'block';
-        })();
       });
     });
   }
 
   render();
+})();
 </script>

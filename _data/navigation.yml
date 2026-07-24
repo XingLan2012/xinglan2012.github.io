@@ -32,22 +32,22 @@ header:
       en-US   : *EN
       en-CA   : *EN
       en-AU   : *EN
-      zh-Hans : &ZH_HANS  抽卡
+      zh-Hans : &ZH_HANS  时运
       zh      : *ZH_HANS
       zh-CN   : *ZH_HANS
       zh-SG   : *ZH_HANS
-      zh-Hant : &ZH_HANT  抽卡
+      zh-Hant : &ZH_HANT  時運
       zh-TW   : *ZH_HANT
       zh-HK   : *ZH_HANT
-      ko      : &KO       가챠
+      ko      : &KO       시운
       ko-KR   : *KO
-      fr      : &FR       Gacha
+      fr      : &FR       Fortune
       fr-BE   : *FR
       fr-CA   : *FR
       fr-CH   : *FR
       fr-FR   : *FR
       fr-LU   : *FR
-      tr      : &TR       Gacha
+      tr      : &TR       Şans
       # @end locale config
     url: /gacha.html
 
