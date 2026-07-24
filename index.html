@@ -7,6 +7,82 @@ layout: home
 <style>
   /* 全局背景由 bg-slideshow 接管 */
 
+  /* ========== 每日启动动画 ========== */
+  .splash-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 10000;
+    background: rgba(8, 10, 30, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    pointer-events: none;
+    animation: splashFade 2.8s ease forwards;
+  }
+  @keyframes splashFade {
+    0% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  .splash-content {
+    text-align: center;
+    animation: splashScale 2.8s ease forwards;
+  }
+  @keyframes splashScale {
+    0% { transform: scale(0.6); opacity: 0; }
+    20% { transform: scale(1.05); opacity: 1; }
+    35% { transform: scale(1); opacity: 1; }
+    80% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0.9); opacity: 0; }
+  }
+
+  .splash-title {
+    font-size: 32px;
+    font-weight: 300;
+    letter-spacing: 12px;
+    color: #ffd700;
+    text-shadow: 0 0 40px rgba(255, 215, 0, 0.3), 0 0 80px rgba(255, 215, 0, 0.1);
+    margin-bottom: 10px;
+  }
+  .splash-sub {
+    font-size: 13px;
+    letter-spacing: 6px;
+    color: rgba(255, 215, 0, 0.35);
+    font-weight: 300;
+  }
+  .splash-divider {
+    width: 40px; height: 1px;
+    background: rgba(255, 215, 0, 0.15);
+    margin: 14px auto;
+  }
+  .splash-quote {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.15);
+    letter-spacing: 3px;
+    font-style: italic;
+  }
+
+  /* 启动粒子（在 splash 上层） */
+  .splash-star {
+    position: fixed;
+    pointer-events: none;
+    z-index: 10001;
+    animation: splashStarAnim 2.5s ease-out forwards;
+  }
+  @keyframes splashStarAnim {
+    0% { opacity: 1; transform: translate(0, 0) scale(0.3) rotate(0deg); }
+    30% { opacity: 1; transform: translate(var(--sx), var(--sy)) scale(1.2) rotate(180deg); }
+    100% { opacity: 0; transform: translate(calc(var(--sx)*1.8), calc(var(--sy)*1.8)) scale(0.4) rotate(360deg); }
+  }
+  @keyframes splashRing {
+    0% { transform: scale(0.5); opacity: 0.8; }
+    40% { transform: scale(1.5); opacity: 0.6; }
+    100% { transform: scale(4); opacity: 0; }
+  }
+
   /* ========== 星空背景容器 ========== */
   .starfield {
     position: fixed;
@@ -287,6 +363,16 @@ layout: home
   }
 </style>
 
+<!-- ========== 每日启动动画 ========== -->
+<div class="splash-overlay" id="splashOverlay">
+  <div class="splash-content">
+    <div class="splash-title">星澜之境</div>
+    <div class="splash-divider"></div>
+    <div class="splash-sub">致彼岸的乌托邦</div>
+    <div class="splash-quote">循此苦旅，终抵繁星</div>
+  </div>
+</div>
+
 <!-- ========== 星空背景层 ========== -->
 <div class="starfield" id="starfield"></div>
 
@@ -317,6 +403,54 @@ layout: home
 </div>
 
 <script>
+  // ========== 启动动画粒子 ==========
+  (function() {
+    var symbols = ['✦','✧','⋆','✶','⁕'];
+    var colors = ['#ffd700','#ffec8b','#fff4c2','#ffaa33','#ffffff'];
+    var cx = window.innerWidth / 2;
+    var cy = window.innerHeight / 2 - 20;
+
+    for (var i = 0; i < 30; i++) {
+      (function() {
+        var el = document.createElement('div');
+        el.className = 'splash-star';
+        var angle = Math.random() * 2 * Math.PI;
+        var dist = Math.random() * 160 + 40;
+        var sx = Math.cos(angle) * dist;
+        var sy = Math.sin(angle) * dist - 20;
+        el.style.setProperty('--sx', sx + 'px');
+        el.style.setProperty('--sy', sy + 'px');
+        el.style.left = (cx - 8) + 'px';
+        el.style.top = (cy - 8) + 'px';
+        el.style.color = colors[Math.floor(Math.random() * colors.length)];
+        el.style.fontSize = (Math.random() * 14 + 12) + 'px';
+        el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+        el.style.animationDuration = (Math.random() * 0.6 + 2) + 's';
+        document.body.appendChild(el);
+        setTimeout(function() { el.remove(); }, 3000);
+      })();
+    }
+
+    // 光晕环
+    for (var j = 0; j < 2; j++) {
+      (function() {
+        var ring = document.createElement('div');
+        ring.style.cssText = 'position:fixed;pointer-events:none;z-index:10000;border-radius:50%;'
+          + 'border:1.5px solid rgba(255,215,0,0.3);box-shadow:0 0 30px rgba(255,215,0,0.1),inset 0 0 30px rgba(255,215,0,0.05);'
+          + 'left:' + (cx-15) + 'px;top:' + (cy-15) + 'px;width:30px;height:30px;opacity:0.6;'
+          + 'animation:splashRing 2.5s ease-out forwards;';
+        document.body.appendChild(ring);
+        setTimeout(function() { ring.remove(); }, 3000);
+      })();
+    }
+  })();
+
+  // splash 结束后移除 DOM
+  setTimeout(function() {
+    var el = document.getElementById('splashOverlay');
+    if (el) el.remove();
+  }, 3000);
+
   // ========== 生成星空 ==========
   (function() {
     const style = document.createElement('style');
