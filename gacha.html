@@ -129,6 +129,25 @@ key: page-gacha
     box-shadow: 0 0 40px;
     transform: rotateY(180deg);
     z-index: 1;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+  /* 卡面暗色渐变遮罩，保证文字可读 */
+  .card-front::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.3) 100%);
+    z-index: 0;
+  }
+  .card-front .card-rarity,
+  .card-front .card-name,
+  .card-front .card-sub,
+  .card-front .card-icon-big {
+    position: relative;
+    z-index: 1;
   }
   .card-front .card-rarity {
     position: absolute;
@@ -294,13 +313,37 @@ key: page-gacha
     position: relative;
   }
   .gacha-collection-card:hover {
-    transform: scale(1.1);
+    transform: scale(1.15);
+    z-index: 10;
   }
   .gacha-collection-card .mini-rarity {
     position: absolute;
     bottom: 2px;
     font-size: 7px;
     letter-spacing: 1px;
+  }
+  .gacha-collection-card .mini-quote {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 160px;
+    padding: 6px 10px;
+    background: rgba(10,14,39,0.92);
+    border: 1px solid rgba(255,215,0,0.12);
+    border-radius: 8px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 1px;
+    line-height: 1.5;
+    white-space: normal;
+    text-align: center;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .gacha-collection-card:hover .mini-quote {
+    display: block;
   }
   .coll-n { border-color: rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); color: rgba(255,255,255,0.3); }
   .coll-r { border-color: rgba(91,155,213,0.2); background: rgba(91,155,213,0.05); color: #5b9bd5; }
@@ -382,18 +425,86 @@ key: page-gacha
 (function() {
   // ========== 卡池配置 ==========
   var RARITIES = [
-    { key: 'n',  label: 'N',  chance: 0.40, icon: '◆', names: ['砾石','尘埃','露珠','微风','萤火','苔痕','涟漪','叶脉','星屑'] },
-    { key: 'r',  label: 'R',  chance: 0.30, icon: '◇', names: ['月光','溪流','篝火','浮云','松涛','晚钟','牧歌','纸鸢','潮汐'] },
-    { key: 'sr', label: 'SR', chance: 0.20, icon: '✧', names: ['星轨','极光','幻境','琥珀','银霜','流萤','珊瑚','海市','蜃楼'] },
-    { key: 'ssr',label: 'SSR',chance: 0.08, icon: '✦', names: ['彼岸','乌托邦','星澜','永恒','归途','惊鸿','夏花','星河','苍穹'] },
-    { key: 'ur', label: 'UR', chance: 0.02, icon: '★', names: ['奇迹','起源','终焉','神明','混沌','创世','无限','轮回','涅槃'] },
+    {
+      key: 'n', label: 'N', chance: 0.40, icon: '◆',
+      cards: [
+        { name: '砾石', quote: '最微小的石头，也承载着大地的记忆。', image: '/assets/images/bg/bg1.png' },
+        { name: '尘埃', quote: '漂浮在光中的粒子，是宇宙写给万物的信。', image: '/assets/images/bg/bg1.png' },
+        { name: '露珠', quote: '每一滴晨露里，都住着一个完整的黎明。', image: '/assets/images/bg/bg1.png' },
+        { name: '微风', quote: '看不见的旅人，却拂过了整个世界。', image: '/assets/images/bg/bg1.png' },
+        { name: '萤火', quote: '黑暗中的微光，从不问自己有多亮。', image: '/assets/images/bg/bg1.png' },
+        { name: '苔痕', quote: '时光在石阶上留下的，最温柔的笔迹。', image: '/assets/images/bg/bg1.png' },
+        { name: '涟漪', quote: '水面上的圈圈，是鱼写给天空的回信。', image: '/assets/images/bg/bg1.png' },
+        { name: '叶脉', quote: '每片叶子的脉络，都是一条通向秋天的路。', image: '/assets/images/bg/bg1.png' },
+        { name: '星屑', quote: '散落的星光碎片，等待被重新拾起。', image: '/assets/images/bg/bg2.png' },
+      ]
+    },
+    {
+      key: 'r', label: 'R', chance: 0.30, icon: '◇',
+      cards: [
+        { name: '月光', quote: '月亮是黑夜的灯，温柔地照亮归途。', image: '/assets/images/bg/bg2.png' },
+        { name: '溪流', quote: '水知道答案，它从不问该往哪流。', image: '/assets/images/bg/bg2.png' },
+        { name: '篝火', quote: '跳动的火焰，是夜行者最古老的语言。', image: '/assets/images/bg/bg2.png' },
+        { name: '浮云', quote: '云从不停留，所以它看见了整个世界。', image: '/assets/images/bg/bg2.png' },
+        { name: '松涛', quote: '风穿过松林时，带走了山的秘密。', image: '/assets/images/bg/bg2.png' },
+        { name: '晚钟', quote: '暮色里的钟声，把一天揉进了记忆。', image: '/assets/images/bg/bg3.png' },
+        { name: '牧歌', quote: '远方的笛声里，藏着回不去的故乡。', image: '/assets/images/bg/bg3.png' },
+        { name: '纸鸢', quote: '线的那一头，牵着整个童年的天空。', image: '/assets/images/bg/bg3.png' },
+        { name: '潮汐', quote: '海的呼吸，是月亮最遥远的思念。', image: '/assets/images/bg/bg3.png' },
+      ]
+    },
+    {
+      key: 'sr', label: 'SR', chance: 0.20, icon: '✧',
+      cards: [
+        { name: '星轨', quote: '星辰在夜空中刻下轨迹，那是时间流逝的形状。', image: '/assets/images/bg/bg1.png' },
+        { name: '极光', quote: '天空的裙摆，在极地之巅轻轻舞动。', image: '/assets/images/bg/bg1.png' },
+        { name: '幻境', quote: '现实与梦境的边界，比想象中更加模糊。', image: '/assets/images/bg/bg2.png' },
+        { name: '琥珀', quote: '封存在时光里的秘密，等待被光重新点亮。', image: '/assets/images/bg/bg2.png' },
+        { name: '银霜', quote: '冬天的第一场霜，是天空写给大地的诗。', image: '/assets/images/bg/bg3.png' },
+        { name: '流萤', quote: '夏天的夜晚，萤火虫提着灯笼寻找童话。', image: '/assets/images/bg/bg3.png' },
+        { name: '珊瑚', quote: '深海里的花园，比陆地上任何一个都更寂静。', image: '/assets/images/bg/bg1.png' },
+        { name: '海市', quote: '沙漠中的幻影，是旅人最美丽的谎言。', image: '/assets/images/bg/bg2.png' },
+        { name: '蜃楼', quote: '看得见却触不到的远方，叫梦想。', image: '/assets/images/bg/bg3.png' },
+      ]
+    },
+    {
+      key: 'ssr', label: 'SSR', chance: 0.08, icon: '✦',
+      cards: [
+        { name: '彼岸', quote: '彼岸花开的季节，是灵魂与灵魂相遇的日子。', image: '/assets/images/bg/bg1.png' },
+        { name: '乌托邦', quote: '每个人都有一座属于自己的乌托邦，不必完美，但足以安放疲惫的心。', image: '/assets/images/bg/bg2.png' },
+        { name: '星澜', quote: '星光下的波澜，是深夜湖面上最温柔的梦境。', image: '/assets/images/bg/bg3.png' },
+        { name: '永恒', quote: '一瞬间可以是永恒，如果你真心地活在那一瞬间里。', image: '/assets/images/bg/bg1.png' },
+        { name: '归途', quote: '所有的路，最终都指向同一个方向——家。', image: '/assets/images/bg/bg2.png' },
+        { name: '惊鸿', quote: '遇见你，刹那惊鸿，如夏花点燃生命的火。', image: '/assets/images/bg/bg3.png' },
+        { name: '夏花', quote: '生如夏花之绚烂，哪怕只是盛开一季。', image: '/assets/images/bg/bg1.png' },
+        { name: '星河', quote: '我们皆是星河中的一粒尘埃，但每一粒尘埃都很重要。', image: '/assets/images/bg/bg2.png' },
+        { name: '苍穹', quote: '仰望星空的时候，你会发现世界比你想象的更大。', image: '/assets/images/bg/bg3.png' },
+      ]
+    },
+    {
+      key: 'ur', label: 'UR', chance: 0.02, icon: '★',
+      cards: [
+        { name: '奇迹', quote: '每一次相遇，都是宇宙中微小概率的奇迹。', image: '/assets/images/bg/bg1.png' },
+        { name: '起源', quote: '一切的故事，都有一个最初的起点。', image: '/assets/images/bg/bg2.png' },
+        { name: '终焉', quote: '结束不是终点，而是另一个故事的开始。', image: '/assets/images/bg/bg3.png' },
+        { name: '神明', quote: '所谓神明，不过是人类心中最美好的那部分。', image: '/assets/images/bg/bg1.png' },
+        { name: '混沌', quote: '在混沌的深处，藏着一切可能性。', image: '/assets/images/bg/bg2.png' },
+        { name: '创世', quote: '从无到有，是最古老也最伟大的魔法。', image: '/assets/images/bg/bg3.png' },
+        { name: '无限', quote: '宇宙的尽头，或许就是另一个宇宙的起点。', image: '/assets/images/bg/bg1.png' },
+        { name: '轮回', quote: '花开花落，生死往复，万物皆在轮回之中。', image: '/assets/images/bg/bg2.png' },
+        { name: '涅槃', quote: '浴火重生之后，才能看见真正的自己。', image: '/assets/images/bg/bg3.png' },
+      ]
+    }
   ];
 
-  // 为每个稀有度生成所有卡片池
+  // 生成卡池
   var CARD_POOL = [];
   RARITIES.forEach(function(r) {
-    r.names.forEach(function(n) {
-      CARD_POOL.push({ rarity: r.key, label: r.label, name: n, icon: r.icon });
+    r.cards.forEach(function(c) {
+      c.rarity = r.key;
+      c.label = r.label;
+      c.icon = r.icon;
+      CARD_POOL.push(c);
     });
   });
 
@@ -440,7 +551,10 @@ key: page-gacha
       var el = document.createElement('div');
       el.className = 'gacha-collection-card coll-' + c.rarity;
       el.innerHTML = c.icon + '<span class="mini-rarity">' + c.label + '</span>';
-      el.title = c.name + ' (' + c.label + ')';
+      if (c.quote) {
+        el.innerHTML += '<span class="mini-quote">' + c.quote + '</span>';
+      }
+      el.title = c.name + ' (' + c.label + ') — ' + (c.quote || '');
       collGrid.appendChild(el);
     });
   }
@@ -465,16 +579,19 @@ key: page-gacha
     var card = pool[Math.floor(Math.random() * pool.length)];
 
     // 添加到收藏
-    collection.push({ rarity: card.rarity, label: card.label, name: card.name, icon: card.icon });
+    collection.push({ rarity: card.rarity, label: card.label, name: card.name, icon: card.icon, quote: card.quote });
     rarityCount[card.rarity] = (rarityCount[card.rarity] || 0) + 1;
     localStorage.setItem('gachaCollection', JSON.stringify(collection));
     updateStats();
 
-    // 更新卡片正面
+    // 更新卡片正面 — 带背景图 + 名句
     cardFront.className = 'card-face card-front card-rarity-' + card.rarity;
+    cardFront.style.backgroundImage = 'url(' + card.image + ')';
+    cardFront.style.backgroundSize = 'cover';
+    cardFront.style.backgroundPosition = 'center';
     cardIcon.textContent = card.icon;
     cardName.textContent = card.name;
-    cardSub.textContent = SUBS[card.rarity];
+    cardSub.textContent = '『' + card.quote + '』';
     cardRarityBadge.textContent = card.label;
 
     // 结果文字
