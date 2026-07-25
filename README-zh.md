@@ -1,106 +1,94 @@
-# [TeXt Theme](https://github.com/kitian616/jekyll-TeXt-theme)
+# ✦ 星澜之境 — 致彼岸的乌托邦
 
-[![license](https://img.shields.io/github/license/kitian616/jekyll-TeXt-theme.svg)](https://github.com/kitian616/jekyll-TeXt-theme/blob/master/LICENSE)
-[![Gem Version](https://img.shields.io/gem/v/jekyll-text-theme.svg)](https://github.com/kitian616/jekyll-TeXt-theme/releases)
-[![Travis](https://img.shields.io/travis/kitian616/jekyll-TeXt-theme.svg)](https://travis-ci.org/kitian616/jekyll-TeXt-theme)
-[![Tip Me via PayPal](https://img.shields.io/badge/PayPal-tip%20me-1462ab.svg?logo=paypal)](https://www.paypal.me/kitian616)
-[![Tip Me via Bitcoin](https://img.shields.io/badge/Bitcoin-tip%20me-f7931a.svg?logo=bitcoin)](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/docs/assets/images/3Fkufxcw2xd8HnaRJBNK4ccdtkUDyyNu4V.jpg)
+[![GitHub Pages](https://img.shields.io/badge/blog-星澜之境-ffd700?style=flat-square)](https://xinglan2012.github.io)
+[![license](https://img.shields.io/github/license/XingLan2012/xinglan2012.github.io?style=flat-square)](LICENSE)
 
-![TeXt Theme](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/TeXt-home.jpg)
+**星澜之境**，一个属于星澜的小世界。在这里有代码、算法、Minecraft 的故事，也有深夜写下的诗和远方。
 
-![TeXt Theme Details](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/TeXt-layouts.png)
+> 遇见你，刹那惊鸿，如夏花点燃生命的火。  
+> 别离后，静美归途，似秋叶铺满来时的路。
 
-TeXt 是针对个人或团队网站、博客、项目、文档等的一款高度可定制的 Jekyll 主题。它参考了 iOS 11 的风格，有大而突出的标题和圆润的按钮及卡片。
+---
 
-**[English](https://github.com/kitian616/jekyll-TeXt-theme/blob/master/README.md)**
+## ✦ 站点功能
 
-## 特性
+| 功能 | 说明 |
+|------|------|
+| 📝 **博客** | OI 算法笔记、生活随笔、Minecraft 故事 |
+| ⌨ **OIer 专项** | 算法学习笔记归档 `/ioer/` |
+| 🎴 **时运签** | 每日一签，大吉到大凶，配签诗解读 |
+| 🎵 **音乐盒** | 65 首 C418 风格 ogg，右下角全局播放 |
+| 🤖 **AI 小助手** | 接入 AgnesAPI，智能对话 |
+| ☁ **云盘** | `/pan/` 目录文件分享，多镜像节点 |
+| ❄ **碎星之列** | 左侧导航面板，快捷跳转 |
 
-- 响应式
-- HTML 语意化
-- 皮肤
-- 代码高亮主题
-- 国际化
-- 搜索
-- 目录
-- 作者（支持多个）
-- 附加样式（提示，标签，图片，图标，按钮，栅格等）
-- 扩展（音频，视频，幻灯片，在线示例）
-- Markdown 增强（[MathJax](https://www.mathjax.org/)，[mermaid](https://mermaidjs.github.io/)，[chartjs](http://www.chartjs.org/)）
-- 分享（[AddToAny](https://www.addtoany.com/)，[AddThis](https://www.addthis.com/)）
-- 评论（[Disqus](https://disqus.com/)，[Gitalk](https://gitalk.github.io/)，[Valine](https://valine.js.org/en/)）
-- 阅读量统计（[LeanCloud](https://leancloud.cn/)）
-- 站点统计（[Google Analytics](https://analytics.google.com/analytics/web/)）
-- RSS（[jekyll-feed](https://github.com/jekyll/jekyll-feed)）
+### 特色交互
 
-## 皮肤
+- **星空粒子** — 首页动态星空 + 流星划过
+- **冰晶吊坠** — 左上角「碎星之列」导航
+- **点击特效** — ✦✧⋆ 点击溅射 + 鼠标轨迹
+- **启动动画** — 每日首次加载星澜之境标题动画
+- **动态背景** — bg1~bg3 轮播背景
 
-TeXt 内置有 6 套皮肤，你也可以定制自己的皮肤。
+---
 
-| `default` | `dark` | `forest` |
-| --- |  --- | --- |
-| ![Default](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/skins_default.jpg) | ![Dark](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/skins_dark.jpg) | ![Forest](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/skins_forest.jpg) |
+## ✦ 技术栈
 
-| `ocean` | `chocolate` | `orange` |
-| --- |  --- | --- |
-| ![Ocean](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/skins_ocean.jpg) | ![Chocolate](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/skins_chocolate.jpg) | ![Orange](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/skins_orange.jpg) |
+| 技术 | 用途 |
+|------|------|
+| [Jekyll](https://jekyllrb.com/) + [TeXt Theme](https://github.com/kitian616/jekyll-TeXt-theme) | 静态博客框架 |
+| GitHub Pages | 托管部署 |
+| [Agnes API](https://apihub.agnes-ai.com) | AI 对话 |
+| HTML / CSS / JavaScript | 前端交互特效 |
+| LocalStorage | 时运签每日记录、音乐偏好、文件缓存 |
 
-### 代码高亮主题
+---
 
-TeXt 使用 [Tomorrow](https://github.com/chriskempson/tomorrow-theme) 作为它的代码高亮主题。
+## ✦ 目录结构
 
-| `tomorrow` | `tomorrow-night` | `tomorrow-night-eighties` | `tomorrow-night-blue` | `tomorrow-night-bright` |
-| --- |  --- | --- | --- |  --- |
-| ![Tomorrow](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/highlight_tomorrow.png) | ![Tomorrow Night](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/highlight_tomorrow-night.png) | ![Tomorrow Night Eighties](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/highlight_tomorrow-night-eighties.png) | ![Tomorrow Night Blue](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/highlight_tomorrow-night-blue.png) | ![Tomorrow Night Bright](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/screenshots/highlight_tomorrow-night-bright.png) |
+```
+├── _includes/          # 全局组件（bg轮播、音乐盒、碎星导航等）
+├── _layouts/           # 页面布局
+├── _data/              # 导航配置
+├── _posts/             # 博客文章
+├── assets/             # 静态资源（图片、CSS）
+├── music/              # 65 首 ogg 音乐
+├── pan/                # 云盘文件
+├── ioer/               # OIer 算法笔记
+├── index.html          # 首页（星空 + AI 聊天）
+├── welcome.html        # 欢迎页
+├── gacha.html          # 时运签
+├── ioer.html           # OIer 专项
+├── pan.html            # 云盘
+└── archive.html        # 归档
+```
 
-## 文档
+---
 
-### 开始
+## ✦ 本地运行
 
-- [快速开始](https://kitian616.github.io/jekyll-TeXt-theme/docs/zh/quick-start)
-- [从 1.x 升级到 2.x](https://kitian616.github.io/jekyll-TeXt-theme/docs/zh/update-from-1-to-2)
+```bash
+# 安装依赖
+gem install jekyll bundler
+bundle install
 
-### 定制
+# 启动本地服务器
+bundle exec jekyll serve
 
-- [配置](https://kitian616.github.io/jekyll-TeXt-theme/docs/zh/configuration)
-- [导航栏](https://kitian616.github.io/jekyll-TeXt-theme/docs/zh/navigation)
-- [布局](https://kitian616.github.io/jekyll-TeXt-theme/docs/zh/layouts)
-- [Logo 和 Favicon](https://kitian616.github.io/jekyll-TeXt-theme/docs/zh/logo-and-favicon)
-- [作者](https://kitian616.github.io/jekyll-TeXt-theme/docs/zh/authors)
-- [国际化](https://kitian616.github.io/jekyll-TeXt-theme/docs/zh/i18n)
+# 访问 http://localhost:4000
+```
 
-### 内容
+---
 
-- [撰写博客](https://kitian616.github.io/jekyll-TeXt-theme/docs/zh/writing-posts)
-- [附加样式](https://kitian616.github.io/jekyll-TeXt-theme/docs/zh/additional-styles)
-- [扩展](https://kitian616.github.io/jekyll-TeXt-theme/docs/zh/extensions)
-- [Markdown 增强](https://kitian616.github.io/jekyll-TeXt-theme/docs/zh/markdown-enhancements)
+## ✦ 协议
 
-## 示例
+本博客内容采用 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) 协议。  
+音乐版权归 C418 / Mojang Studios 所有，仅供个人欣赏，非商业用途。
 
-| Name | Description |
-| --- | --- |
-| [Home](https://kitian616.github.io/jekyll-TeXt-theme/test/) | 列表页 |
-| [Archive](https://kitian616.github.io/jekyll-TeXt-theme/archive.html) | 归档页 |
-| [Layout Examples](https://kitian616.github.io/jekyll-TeXt-theme/samples.html) | 各种布局示例 |
+---
 
-## 支持我
+<div align="center">
+  
+✦ 循此苦旅，终抵繁星 ✦
 
-你的支持是我的动力。你可以通过以下方式支持我：
-
-- 给该项目点赞 🌟
-- 赞同[这个知乎回答](https://www.zhihu.com/question/20223939/answer/122596506)
-- 关注我的 GitHub
-- 打赏
-
-| 微信支付 | 支付宝 |
-| --- | --- |
-| ![微信支付二维码](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/docs/assets/images/tip_wechat.jpg) | ![支付宝二维码](https://raw.githubusercontent.com/kitian616/jekyll-TeXt-theme/master/docs/assets/images/tip_alipay.jpg) |
-
-## 其他资源
-
-在 *_includes/icon/social* 目录下有很多的社交产品图标，例如 Behance、Flickr、QQ、微信等，方便修改和使用。
-
-## 协议
-
-TeXt Theme 遵循 [MIT 协议](https://github.com/kitian616/jekyll-TeXt-theme/blob/master/LICENSE)。
+</div>
