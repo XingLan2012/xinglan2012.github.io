@@ -12,7 +12,7 @@ key: page-ioer
   .ioer-title { font-size: 22px; color: #ffd700; letter-spacing: 6px; font-weight: 300; margin-bottom: 20px; }
 
   /* 文件列表 */
-  .ioer-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 24px; }
+  .ioer-list { display: flex; flex-direction: column; gap: 4px; }
   .ioer-item {
     display: flex; align-items: center; gap: 12px;
     padding: 10px 14px;
@@ -20,44 +20,60 @@ key: page-ioer
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
-    text-decoration: none;
     color: rgba(255,255,255,0.5);
     font-size: 13px;
+    text-decoration: none;
   }
   .ioer-item:hover {
     border-color: rgba(255,215,0,0.12);
     background: rgba(255,215,0,0.02);
     color: #ffd700;
   }
-  .ioer-item.active {
-    border-color: rgba(255,215,0,0.2);
-    background: rgba(255,215,0,0.04);
-    color: #ffd700;
-  }
   .ioer-item .icon { font-size: 14px; opacity: 0.4; flex-shrink: 0; }
   .ioer-item .date { font-size: 10px; color: rgba(255,255,255,0.15); margin-left: auto; flex-shrink: 0; }
   .ioer-empty { text-align: center; padding: 60px 0; color: rgba(255,215,0,0.12); letter-spacing: 3px; font-size: 13px; }
+  .ioer-loading { text-align: center; padding: 40px 0; color: rgba(255,255,255,0.15); letter-spacing: 2px; font-size: 12px; }
+  .ioer-error { text-align: center; padding: 40px 0; color: rgba(255,100,100,0.3); letter-spacing: 2px; font-size: 12px; }
 
-  /* Markdown 渲染区 */
-  .ioer-content {
-    display: none;
-    padding: 20px 0;
-    border-top: 1px solid rgba(255,215,0,0.06);
-  }
-  .ioer-content.open { display: block; }
-  .ioer-content-loading {
-    text-align: center;
-    padding: 40px 0;
-    color: rgba(255,255,255,0.15);
-    letter-spacing: 2px;
+  /* 单页渲染区 */
+  .ioer-page { display: none; }
+  .ioer-page.open { display: block; }
+
+  .ioer-back {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 16px;
+    border: 1px solid rgba(255,215,0,0.1);
+    border-radius: 16px;
+    color: rgba(255,215,0,0.4);
     font-size: 12px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    background: transparent;
+    font-family: inherit;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+  }
+  .ioer-back:hover {
+    border-color: rgba(255,215,0,0.2);
+    color: #ffd700;
   }
 
-  /* Markdown 渲染样式 */
+  .ioer-page-title {
+    font-size: 16px;
+    color: #ffd700;
+    letter-spacing: 3px;
+    font-weight: 300;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,215,0,0.08);
+  }
+
+  /* Markdown 渲染 */
   .ioer-render {
     font-size: 14px;
     line-height: 1.9;
     color: rgba(255,255,255,0.75);
+    padding-bottom: 20px;
   }
   .ioer-render h1 {
     color: #ffd700; font-size: 20px; font-weight: 400;
@@ -69,81 +85,41 @@ key: page-ioer
     letter-spacing: 2px; border-bottom: 1px solid rgba(255,215,0,0.08);
     padding-bottom: 6px; margin: 20px 0 10px;
   }
-  .ioer-render h3 {
-    color: #ffec8b; font-size: 15px; font-weight: 400;
-    margin: 16px 0 8px;
-  }
+  .ioer-render h3 { color: #ffec8b; font-size: 15px; font-weight: 400; margin: 16px 0 8px; }
   .ioer-render p { margin: 8px 0; }
   .ioer-render ul, .ioer-render ol { padding-left: 20px; margin: 8px 0; }
   .ioer-render li { margin: 3px 0; }
   .ioer-render code {
     background: rgba(255,215,0,0.06);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 13px;
-    color: #ffd700;
-    font-family: 'Consolas', 'Courier New', monospace;
+    padding: 2px 6px; border-radius: 4px;
+    font-size: 13px; color: #ffd700;
+    font-family: 'Consolas','Courier New',monospace;
   }
   .ioer-render pre {
     background: rgba(0,0,0,0.3);
     border: 1px solid rgba(255,215,0,0.06);
     border-radius: 8px;
     padding: 14px 16px;
-    overflow-x: auto;
-    margin: 12px 0;
+    overflow-x: auto; margin: 12px 0;
     line-height: 1.5;
   }
-  .ioer-render pre code {
-    background: none;
-    padding: 0;
-    color: rgba(255,255,255,0.7);
-    font-size: 13px;
-  }
+  .ioer-render pre code { background: none; padding: 0; color: rgba(255,255,255,0.7); font-size: 13px; }
   .ioer-render strong { color: rgba(255,255,255,0.85); }
   .ioer-render blockquote {
     border-left: 3px solid rgba(255,215,0,0.2);
-    padding: 6px 14px;
-    margin: 12px 0;
+    padding: 6px 14px; margin: 12px 0;
     color: rgba(255,255,255,0.45);
     font-style: italic;
     background: rgba(255,215,0,0.02);
     border-radius: 0 6px 6px 0;
   }
-  .ioer-render hr {
-    border: none;
-    height: 1px;
-    background: rgba(255,215,0,0.06);
-    margin: 20px 0;
-  }
-  .ioer-render table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 12px 0;
-    font-size: 13px;
-  }
-  .ioer-render th, .ioer-render td {
-    padding: 6px 10px;
-    border: 1px solid rgba(255,215,0,0.06);
-    text-align: left;
-  }
-  .ioer-render th {
-    color: #ffd700;
-    font-weight: 400;
-    background: rgba(255,215,0,0.03);
-  }
+  .ioer-render hr { border: none; height: 1px; background: rgba(255,215,0,0.06); margin: 20px 0; }
+  .ioer-render table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  .ioer-render th, .ioer-render td { padding: 6px 10px; border: 1px solid rgba(255,215,0,0.06); text-align: left; }
+  .ioer-render th { color: #ffd700; font-weight: 400; background: rgba(255,215,0,0.03); }
   .ioer-render a { color: #ffd700; text-decoration: none; border-bottom: 1px dotted rgba(255,215,0,0.2); }
   .ioer-render a:hover { border-bottom-color: #ffd700; }
   .ioer-render img { max-width: 100%; border-radius: 6px; margin: 8px 0; }
-
-  /* 加载/错误 */
-  .ioer-loading {
-    text-align: center; padding: 40px 0;
-    color: rgba(255,255,255,0.15); letter-spacing: 2px; font-size: 12px;
-  }
-  .ioer-error {
-    text-align: center; padding: 40px 0;
-    color: rgba(255,100,100,0.3); letter-spacing: 2px; font-size: 12px;
-  }
 
   /* 免责声明 */
   .ioer-disclaimer {
@@ -161,30 +137,87 @@ key: page-ioer
 
 <div class="ioer-wrap">
   <div class="ioer-title">⌨ OIer 专项</div>
-  <div class="ioer-list" id="ioerList"></div>
-  <div class="ioer-content" id="ioerContent">
-    <div class="ioer-render" id="ioerRender"></div>
+
+  <!-- 文件列表视图 -->
+  <div id="ioerListView">
+    <div class="ioer-list" id="ioerList"></div>
+    <div class="ioer-disclaimer">
+      本页内容仅供个人学习参考，笔记中的代码和思路为作者原创或基于公开资料整理，<br>
+      不可用于商业用途，转载需注明出处。
+    </div>
   </div>
-  <div class="ioer-disclaimer">
-    本页内容仅供个人学习参考，笔记中的代码和思路为作者原创或基于公开资料整理，<br>
-    不可用于商业用途，转载需注明出处。
+
+  <!-- 单页笔记视图 -->
+  <div class="ioer-page" id="ioerPageView">
+    <div class="ioer-back" id="ioerBackBtn">← 返回列表</div>
+    <div class="ioer-page-title" id="ioerPageTitle"></div>
+    <div class="ioer-render" id="ioerRender"></div>
+    <div class="ioer-disclaimer">
+      本页内容仅供个人学习参考，不可用于商业用途，转载需注明出处。
+    </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
 (function() {
+  var listView = document.getElementById('ioerListView');
+  var pageView = document.getElementById('ioerPageView');
   var listEl = document.getElementById('ioerList');
-  var contentEl = document.getElementById('ioerContent');
   var renderEl = document.getElementById('ioerRender');
+  var pageTitle = document.getElementById('ioerPageTitle');
+  var backBtn = document.getElementById('ioerBackBtn');
   var REPO = 'XingLan2012/xinglan2012.github.io';
 
-  // marked 配置
-  marked.setOptions({
-    breaks: true,
-    gfm: true
-  });
+  var FILE_MAP = {}; // displayName -> download_url
 
+  marked.setOptions({ breaks: true, gfm: true });
+
+  // 解析 URL 参数 ?file=xxx
+  function getUrlParam(name) {
+    var m = location.search.match(new RegExp('[?&]' + name + '=([^&]+)'));
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+
+  // 切换视图
+  function showList() {
+    listView.style.display = 'block';
+    pageView.classList.remove('open');
+    // 清除 URL 参数
+    history.replaceState(null, '', location.pathname);
+  }
+
+  function showPage(fileName) {
+    listView.style.display = 'none';
+    pageView.classList.add('open');
+    pageTitle.textContent = fileName.replace(/_/g, ' ');
+    // 更新 URL
+    history.replaceState(null, '', '?file=' + encodeURIComponent(fileName));
+    loadNote(fileName);
+  }
+
+  backBtn.addEventListener('click', showList);
+
+  // 加载笔记内容
+  async function loadNote(fileName) {
+    renderEl.innerHTML = '<div class="ioer-loading">✦ 加载中...</div>';
+    var url = FILE_MAP[fileName];
+    if (!url) {
+      renderEl.innerHTML = '<div class="ioer-error">⚠ 未找到该笔记</div>';
+      return;
+    }
+    try {
+      var resp = await fetch(url);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      var md = await resp.text();
+      renderEl.innerHTML = marked.parse(md);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch(e) {
+      renderEl.innerHTML = '<div class="ioer-error">⚠ 加载失败 (' + e.message + ')</div>';
+    }
+  }
+
+  // 加载文件列表
   async function loadFileList() {
     listEl.innerHTML = '<div class="ioer-loading">✦ 加载中...</div>';
 
@@ -200,10 +233,9 @@ key: page-ioer
       }
 
       files.sort(function(a,b) { return b.name.localeCompare(a.name); });
-      var count = files.length;
 
       var html = '';
-      files.forEach(function(f, idx) {
+      files.forEach(function(f) {
         var name = f.name.replace(/\.md$/, '');
         var dateMatch = name.match(/^(\d{8})/);
         var dateStr = '';
@@ -213,59 +245,32 @@ key: page-ioer
         }
         var displayName = name.replace(/^\d{8}/, '').replace(/^[\s\+]+/, '') || name;
 
-        html += '<div class="ioer-item" data-idx="' + idx + '" data-url="' + f.download_url + '">'
+        FILE_MAP[displayName] = f.download_url;
+
+        html += '<a class="ioer-item" data-name="' + displayName + '">'
           + '<span class="icon">⌨</span>'
           + '<span>' + displayName + '</span>'
           + (dateStr ? '<span class="date">' + dateStr + '</span>' : '')
-          + '</div>';
+          + '</a>';
       });
 
-      // 显示文件数量
       listEl.innerHTML = html;
 
-      // 绑定点击事件 - 行内渲染
-      var items = listEl.querySelectorAll('.ioer-item');
-      items.forEach(function(item) {
+      // 绑定点击：跳转到单页
+      listEl.querySelectorAll('.ioer-item').forEach(function(item) {
         item.addEventListener('click', function() {
-          var url = this.dataset.url;
-          // 高亮当前
-          items.forEach(function(el) { el.classList.remove('active'); });
-          this.classList.add('active');
-          // 加载渲染
-          loadAndRender(url);
+          showPage(this.dataset.name);
         });
       });
 
-      // 自动选中第一个
-      if (items.length > 0) {
-        items[0].click();
+      // 检查 URL 参数，直接打开指定笔记
+      var targetFile = getUrlParam('file');
+      if (targetFile && FILE_MAP[targetFile]) {
+        showPage(targetFile);
       }
 
     } catch(e) {
       listEl.innerHTML = '<div class="ioer-error">⚠ 加载失败 (' + e.message + ')</div>';
-    }
-  }
-
-  async function loadAndRender(url) {
-    contentEl.classList.add('open');
-    renderEl.innerHTML = '<div class="ioer-content-loading">✦ 加载中...</div>';
-
-    try {
-      var resp = await fetch(url);
-      if (!resp.ok) throw new Error('HTTP ' + resp.status);
-      var md = await resp.text();
-
-      // 使用 marked 渲染
-      var html = marked.parse(md);
-
-      // 如果没有标题，添加文件名
-      renderEl.innerHTML = html;
-
-      // 处理代码块内的行首减号被误解析为列表的问题
-      // marked 已经处理了，不需要额外操作
-
-    } catch(e) {
-      renderEl.innerHTML = '<div class="ioer-error">⚠ 渲染失败 (' + e.message + ')</div>';
     }
   }
 
