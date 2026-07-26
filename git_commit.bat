@@ -1,8 +1,7 @@
 @echo off
 chcp 65001 >nul
-cd /d "C:\Users\何梓熠\Documents\code\xinglan2012.github.io"
 git add -A
-git commit -m "refactor: ioer页面行内marked渲染md→html，删副标题，加学习免责声明"
+git commit -m "fix: 心念-抽取满10张+修复拖拽闭包bug+网格坐标IIFE修复"
 git push
-echo ✅ 完成
+echo ✅
 pause

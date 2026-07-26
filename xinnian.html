@@ -91,23 +91,28 @@ key: page-xinnian
     gap: 1px;
     cursor: grab; position: relative;
     transition: transform 0.2s;
-  }
-  .xn-block:hover { transform: scale(1.1); z-index: 10; }
-  .xn-block-cell {
-    width: 14px; height: 14px;
-    border: 1px solid rgba(255,215,0,0.3);
+    padding: 3px;
     background: rgba(255,215,0,0.02);
+    border: 1px solid rgba(255,215,0,0.08);
+    border-radius: 4px;
+  }
+  .xn-block:hover { transform: scale(1.15); z-index: 10; background: rgba(255,215,0,0.04); border-color: rgba(255,215,0,0.2); }
+  .xn-block-cell {
+    width: 18px; height: 18px;
+    border: 1px solid rgba(255,215,0,0.08);
+    background: transparent;
     position: relative;
   }
   .xn-block-cell.filled {
-    border-color: rgba(255,215,0,0.5);
-    background: linear-gradient(135deg, rgba(255,215,0,0.08), rgba(255,215,0,0.02));
+    border: 2px solid rgba(255,215,0,0.45);
+    background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,215,0,0.03));
+    box-shadow: inset 0 0 6px rgba(255,215,0,0.06);
   }
   .xn-block-cell.filled::before {
     content: '';
     position: absolute;
     top: 2px; left: 2px; right: 2px; bottom: 2px;
-    border: 1px solid rgba(255,215,0,0.12);
+    border: 1px solid rgba(255,215,0,0.15);
   }
   .xn-block-cell.filled::after {
     content: '';
@@ -115,10 +120,9 @@ key: page-xinnian
     top: 4px; left: 4px; right: 4px; bottom: 4px;
     background: repeating-linear-gradient(
       45deg,
-      transparent,
-      transparent 1px,
-      rgba(255,215,0,0.04) 1px,
-      rgba(255,215,0,0.04) 2px
+      transparent, transparent 1px,
+      rgba(255,215,0,0.06) 1px,
+      rgba(255,215,0,0.06) 2px
     );
   }
   .xn-block .xn-tooltip {
@@ -146,50 +150,52 @@ key: page-xinnian
   .xn-grid-wrap {
     position: relative;
     margin-bottom: 14px;
+    display: flex;
+    justify-content: center;
   }
   .xn-grid {
     display: grid;
-    grid-template-columns: repeat(10, 32px);
-    grid-template-rows: repeat(10, 32px);
-    gap: 2px;
-    padding: 8px;
-    background: rgba(255,215,0,0.02);
-    border: 1px solid rgba(255,215,0,0.06);
-    border-radius: 10px;
-    width: fit-content;
-    margin: 0 auto;
+    grid-template-columns: repeat(10, 30px);
+    grid-template-rows: repeat(10, 30px);
+    gap: 1px;
+    padding: 6px;
+    background: rgba(10,14,39,0.5);
+    border: 1px solid rgba(255,215,0,0.08);
+    border-radius: 8px;
   }
   .xn-cell {
-    width: 32px; height: 32px;
-    background: rgba(255,215,0,0.02);
-    border: 1px solid rgba(255,215,0,0.04);
-    border-radius: 2px;
-    transition: background 0.2s;
+    width: 30px; height: 30px;
+    background: rgba(255,215,0,0.01);
+    border: 1px solid rgba(255,215,0,0.03);
+    border-radius: 1px;
+    transition: all 0.2s;
     position: relative;
   }
   .xn-cell.has-block {
-    border-color: rgba(255,215,0,0.2);
-    background: rgba(255,215,0,0.04);
+    border: 2px solid rgba(255,215,0,0.5);
+    background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,180,50,0.05));
+    box-shadow: inset 0 0 12px rgba(255,215,0,0.08), 0 0 4px rgba(255,215,0,0.08);
   }
   .xn-cell.has-block::before {
     content: '';
     position: absolute;
-    top: 3px; left: 3px; right: 3px; bottom: 3px;
-    border: 1px solid rgba(255,215,0,0.1);
+    top: 4px; left: 4px; right: 4px; bottom: 4px;
+    border: 1px solid rgba(255,215,0,0.15);
   }
   .xn-cell.has-block::after {
     content: '';
     position: absolute;
-    top: 5px; left: 5px; right: 5px; bottom: 5px;
+    top: 6px; left: 6px; right: 6px; bottom: 6px;
     background: repeating-linear-gradient(
       45deg,
       transparent, transparent 1px,
-      rgba(255,215,0,0.03) 1px, rgba(255,215,0,0.03) 2px
+      rgba(255,215,0,0.06) 1px, rgba(255,215,0,0.06) 2px
     );
   }
   .xn-cell.drag-over {
-    background: rgba(255,215,0,0.08);
-    border-color: rgba(255,215,0,0.3);
+    background: rgba(255,215,0,0.15);
+    border-color: rgba(255,215,0,0.5);
+    box-shadow: 0 0 12px rgba(255,215,0,0.15);
   }
 
   /* ===== 等级列表 ===== */
@@ -467,33 +473,27 @@ key: page-xinnian
 
   function renderGrid() {
     gridEl.innerHTML = '';
+    var cells = [];
     for (var y = 0; y < GRID_SIZE; y++) {
       for (var x = 0; x < GRID_SIZE; x++) {
-        var cell = document.createElement('div');
-        cell.className = 'xn-cell' + (state.grid[y][x] ? ' has-block' : '');
-        cell.dataset.x = x;
-        cell.dataset.y = y;
-        // 拖放事件
-        cell.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('drag-over'); });
-        cell.addEventListener('dragleave', function() { this.classList.remove('drag-over'); });
-        cell.addEventListener('drop', function(e) {
-          e.preventDefault(); this.classList.remove('drag-over');
-          var data = JSON.parse(e.dataTransfer.getData('text/plain'));
-          placeCard(data.cardId, parseInt(this.dataset.x), parseInt(this.dataset.y));
-        });
-        gridEl.appendChild(cell);
+        (function(cx, cy) {
+          var cell = document.createElement('div');
+          cell.className = 'xn-cell' + (state.grid[cy][cx] ? ' has-block' : '');
+          cell.dataset.x = cx;
+          cell.dataset.y = cy;
+          cell.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('drag-over'); });
+          cell.addEventListener('dragleave', function() { this.classList.remove('drag-over'); });
+          cell.addEventListener('drop', function(e) {
+            e.preventDefault(); this.classList.remove('drag-over');
+            var data = JSON.parse(e.dataTransfer.getData('text/plain'));
+            placeCard(data.cardId, data.idx, parseInt(this.dataset.x), parseInt(this.dataset.y));
+          });
+          cells.push(cell);
+        })(x, y);
       }
     }
-    // 已有的方块
-    for (var y = 0; y < GRID_SIZE; y++) {
-      for (var x = 0; x < GRID_SIZE; x++) {
-        if (state.grid[y][x]) {
-          var idx = y * GRID_SIZE + x;
-          var cell = gridEl.children[idx];
-          if (cell) cell.classList.add('has-block');
-        }
-      }
-    }
+    // 按顺序添加
+    cells.forEach(function(c) { gridEl.appendChild(c); });
   }
 
   function renderInventory() {
@@ -508,8 +508,8 @@ key: page-xinnian
       var el = document.createElement('div');
       el.className = 'xn-block';
       el.draggable = true;
-      el.style.gridTemplateColumns = 'repeat(' + card.w + ',14px)';
-      el.style.gridTemplateRows = 'repeat(' + card.h + ',14px)';
+      el.style.gridTemplateColumns = 'repeat(' + card.w + ',18px)';
+      el.style.gridTemplateRows = 'repeat(' + card.h + ',18px)';
 
       // 渲染形状
       for (var y = 0; y < card.h; y++) {
@@ -523,13 +523,15 @@ key: page-xinnian
       // tooltip
       var tip = document.createElement('div');
       tip.className = 'xn-tooltip';
-      tip.innerHTML = '<b>' + card.fullName + '</b><br>' + card.desc;
+      tip.innerHTML = '<b>' + card.fullName + '</b><br>' + card.desc + '<br><span style="color:rgba(255,215,0,0.3);font-size:9px;">拖到心域放置</span>';
       el.appendChild(tip);
 
-      // 拖放
+      // 拖放 - 用 dataset 保存 index 避免闭包问题
       el.dataset.cardId = cardId;
+      el.dataset.idx = idx;
       el.addEventListener('dragstart', function(e) {
-        e.dataTransfer.setData('text/plain', JSON.stringify({ cardId: parseInt(this.dataset.cardId), idx: idx }));
+        var i = parseInt(this.dataset.idx);
+        e.dataTransfer.setData('text/plain', JSON.stringify({ cardId: parseInt(this.dataset.cardId), idx: i }));
       });
 
       invEl.appendChild(el);
@@ -537,7 +539,7 @@ key: page-xinnian
   }
 
   // ===== 操作 =====
-  function placeCard(cardId, gx, gy) {
+  function placeCard(cardId, invIdx, gx, gy) {
     var card = CARD_DB[cardId];
     if (!card) return;
     // 检查能否放置
@@ -560,9 +562,14 @@ key: page-xinnian
     }
     // 应用效果
     applyCardEffect(card);
-    // 从背包移除
-    var idx = state.inventory.indexOf(cardId);
-    if (idx >= 0) state.inventory.splice(idx, 1);
+    // 从背包移除（用指定的索引）
+    if (invIdx >= 0 && invIdx < state.inventory.length) {
+      state.inventory.splice(invIdx, 1);
+    } else {
+      // fallback
+      var idx = state.inventory.indexOf(cardId);
+      if (idx >= 0) state.inventory.splice(idx, 1);
+    }
     saveState();
     renderAll();
   }
@@ -574,10 +581,10 @@ key: page-xinnian
     // 其他效果在后续扩展中实现（per_article 在阅读时触发等）
   }
 
-  // 抽取心向
+  // 抽取心向（一次抽10张，或补满今日剩余次数）
   function drawCards() {
     if (state.drawsToday >= MAX_DRAWS) return;
-    var count = Math.min(MAX_DRAWS - state.drawsToday, 1);
+    var count = Math.min(MAX_DRAWS - state.drawsToday, MAX_DRAWS);
     for (var i = 0; i < count; i++) {
       var card = CARD_DB[Math.floor(Math.random() * CARD_DB.length)];
       state.inventory.push(card.id);
