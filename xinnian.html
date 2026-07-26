@@ -1,0 +1,607 @@
+---
+layout: article
+title: "心念"
+titles:
+  zh-Hans : &ZH_HANS  心念
+  zh      : *ZH_HANS
+key: page-xinnian
+---
+
+<style>
+  .xn-wrap { max-width: 820px; margin: 0 auto; padding: 16px 0; }
+
+  /* ===== 顶部栏 ===== */
+  .xn-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
+  }
+  .xn-level {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 16px 6px 12px;
+    border: 1px solid rgba(255,215,0,0.15);
+    border-radius: 20px;
+    background: rgba(255,215,0,0.03);
+  }
+  .xn-level-icon { font-size: 16px; }
+  .xn-level-num {
+    font-size: 18px; color: #ffd700; font-weight: 300; letter-spacing: 2px;
+  }
+  .xn-level-bar {
+    width: 80px; height: 3px;
+    background: rgba(255,215,0,0.1);
+    border-radius: 2px; overflow: hidden;
+  }
+  .xn-level-bar-inner {
+    height: 100%;
+    background: linear-gradient(90deg, #ffd700, #ffec8b);
+    border-radius: 2px; transition: width 0.5s;
+  }
+  .xn-level-text { font-size: 10px; color: rgba(255,255,255,0.25); }
+
+  .xn-stats {
+    display: flex; gap: 12px; align-items: center;
+  }
+  .xn-stat {
+    text-align: center; padding: 4px 12px;
+    background: rgba(255,215,0,0.02);
+    border: 1px solid rgba(255,215,0,0.05);
+    border-radius: 10px;
+  }
+  .xn-stat-val { font-size: 14px; color: #ffd700; font-weight: 300; }
+  .xn-stat-lbl { font-size: 9px; color: rgba(255,255,255,0.2); letter-spacing: 1px; margin-top: 1px; }
+
+  /* ===== 操作栏 ===== */
+  .xn-actions {
+    display: flex; gap: 8px; align-items: center;
+    margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .xn-btn {
+    padding: 7px 20px;
+    border: 1px solid rgba(255,215,0,0.15);
+    border-radius: 16px;
+    color: #ffd700; font-size: 11px; letter-spacing: 2px;
+    cursor: pointer; background: rgba(255,215,0,0.02);
+    font-family: inherit; transition: all 0.25s;
+  }
+  .xn-btn:hover { border-color: rgba(255,215,0,0.3); background: rgba(255,215,0,0.05); }
+  .xn-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* ===== 卡片背包 ===== */
+  .xn-inventory-title {
+    font-size: 11px; color: rgba(255,215,0,0.2); letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  .xn-inventory {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    min-height: 54px;
+    padding: 8px 10px;
+    border: 1px solid rgba(255,215,0,0.04);
+    border-radius: 10px;
+    background: rgba(255,215,0,0.01);
+    margin-bottom: 14px;
+  }
+  .xn-inv-empty {
+    width:100%; text-align:center; padding:14px 0;
+    color: rgba(255,255,255,0.08); font-size:11px; letter-spacing:2px;
+  }
+
+  /* ===== 方块卡片 ===== */
+  .xn-block {
+    display: inline-grid;
+    gap: 1px;
+    cursor: grab; position: relative;
+    transition: transform 0.2s;
+  }
+  .xn-block:hover { transform: scale(1.1); z-index: 10; }
+  .xn-block-cell {
+    width: 14px; height: 14px;
+    border: 1px solid rgba(255,215,0,0.3);
+    background: rgba(255,215,0,0.02);
+    position: relative;
+  }
+  .xn-block-cell.filled {
+    border-color: rgba(255,215,0,0.5);
+    background: linear-gradient(135deg, rgba(255,215,0,0.08), rgba(255,215,0,0.02));
+  }
+  .xn-block-cell.filled::before {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px; right: 2px; bottom: 2px;
+    border: 1px solid rgba(255,215,0,0.12);
+  }
+  .xn-block-cell.filled::after {
+    content: '';
+    position: absolute;
+    top: 4px; left: 4px; right: 4px; bottom: 4px;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 1px,
+      rgba(255,215,0,0.04) 1px,
+      rgba(255,215,0,0.04) 2px
+    );
+  }
+  .xn-block .xn-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%; transform: translateX(-50%);
+    width: 140px;
+    padding: 6px 10px;
+    background: rgba(10,14,39,0.95);
+    border: 1px solid rgba(255,215,0,0.12);
+    border-radius: 8px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.7);
+    text-align: center;
+    letter-spacing: 1px;
+    line-height: 1.5;
+    pointer-events: none;
+    z-index: 100;
+    white-space: normal;
+  }
+  .xn-block:hover .xn-tooltip { display: block; }
+
+  /* ===== 10×10 网格 ===== */
+  .xn-grid-wrap {
+    position: relative;
+    margin-bottom: 14px;
+  }
+  .xn-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 32px);
+    grid-template-rows: repeat(10, 32px);
+    gap: 2px;
+    padding: 8px;
+    background: rgba(255,215,0,0.02);
+    border: 1px solid rgba(255,215,0,0.06);
+    border-radius: 10px;
+    width: fit-content;
+    margin: 0 auto;
+  }
+  .xn-cell {
+    width: 32px; height: 32px;
+    background: rgba(255,215,0,0.02);
+    border: 1px solid rgba(255,215,0,0.04);
+    border-radius: 2px;
+    transition: background 0.2s;
+    position: relative;
+  }
+  .xn-cell.has-block {
+    border-color: rgba(255,215,0,0.2);
+    background: rgba(255,215,0,0.04);
+  }
+  .xn-cell.has-block::before {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px; right: 3px; bottom: 3px;
+    border: 1px solid rgba(255,215,0,0.1);
+  }
+  .xn-cell.has-block::after {
+    content: '';
+    position: absolute;
+    top: 5px; left: 5px; right: 5px; bottom: 5px;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent, transparent 1px,
+      rgba(255,215,0,0.03) 1px, rgba(255,215,0,0.03) 2px
+    );
+  }
+  .xn-cell.drag-over {
+    background: rgba(255,215,0,0.08);
+    border-color: rgba(255,215,0,0.3);
+  }
+
+  /* ===== 等级列表 ===== */
+  .xn-ranks {
+    max-width: 360px;
+    margin: 0 auto;
+    padding: 12px 14px;
+    background: rgba(255,215,0,0.01);
+    border: 1px solid rgba(255,215,0,0.04);
+    border-radius: 10px;
+    font-size: 10px;
+    line-height: 1.8;
+    color: rgba(255,255,255,0.15);
+  }
+  .xn-ranks span.highlight { color: #ffd700; }
+</style>
+
+<div class="xn-wrap">
+  <!-- 顶部栏 -->
+  <div class="xn-header">
+    <div class="xn-level">
+      <span class="xn-level-icon">✦</span>
+      <span class="xn-level-num" id="xnLevelNum">Lv.1</span>
+      <div class="xn-level-bar"><div class="xn-level-bar-inner" id="xnExpBar" style="width:0%"></div></div>
+      <span class="xn-level-text" id="xnExpText">0/100</span>
+    </div>
+    <div class="xn-stats">
+      <div class="xn-stat"><div class="xn-stat-val" id="xnDrawsLeft">10</div><div class="xn-stat-lbl">今日可抽</div></div>
+      <div class="xn-stat"><div class="xn-stat-val" id="xnTotalExp">0</div><div class="xn-stat-lbl">总 EXP</div></div>
+    </div>
+  </div>
+
+  <!-- 操作 -->
+  <div class="xn-actions">
+    <button class="xn-btn" id="xnDrawBtn">✦ 抽取心向</button>
+    <button class="xn-btn" id="xnClearBtn">✕ 清除所有</button>
+  </div>
+
+  <!-- 背包 -->
+  <div class="xn-inventory-title">— 今日心向背包 —</div>
+  <div class="xn-inventory" id="xnInventory"></div>
+
+  <!-- 10×10 网格 -->
+  <div class="xn-grid-wrap">
+    <div class="xn-grid" id="xnGrid"></div>
+  </div>
+
+  <!-- 等级表 -->
+  <div class="xn-ranks" id="xnRanks"></div>
+</div>
+
+<script>
+(function(){
+  // ===== 配置 =====
+  var SHAPES = [
+    // I
+    [[1,1,1,1]],
+    // O
+    [[1,1],[1,1]],
+    // T
+    [[0,1,0],[1,1,1]],
+    // L
+    [[1,0],[1,0],[1,1]],
+    // J
+    [[0,1],[0,1],[1,1]],
+    // S
+    [[0,1,1],[1,1,0]],
+    // Z
+    [[1,1,0],[0,1,1]],
+    // small I
+    [[1,1,1]],
+    // small L
+    [[1,0],[1,1]],
+    // dot
+    [[1]],
+    // big T
+    [[1,1,1],[0,1,0]],
+    // line 2
+    [[1,1]],
+  ];
+
+  // 生成 100+ 种心向卡片
+  var EFFECTS_POOL = [];
+
+  // 类型: per_article, direct_exp, multiplier, extra_draw, combo, passive
+  var PREFIXES = ['空明','澄澈','流光','星辉','霜华','云影','风吟','月华','霞光','雾隐'];
+  var SUFFIXES = ['之心','之眼','之意','之息','之韵','之魄','之灵','之域','之印','之契'];
+  var ELEMENTS = ['火','水','风','地','光','暗','雷','冰','木','金'];
+  var ACTIONS = [
+    { type:'per_article', base:5, name:'阅读', desc:function(v){return '每阅读一篇文章 +'+v+' EXP';} },
+    { type:'per_article', base:10, name:'深读', desc:function(v){return '每阅读一篇文章 +'+v+' EXP';} },
+    { type:'per_article', base:15, name:'精读', desc:function(v){return '每阅读一篇文章 +'+v+' EXP';} },
+    { type:'direct_exp', base:30, name:'灵光', desc:function(v){return '直接获得 '+v+' EXP';} },
+    { type:'direct_exp', base:50, name:'启迪', desc:function(v){return '直接获得 '+v+' EXP';} },
+    { type:'direct_exp', base:100, name:'顿悟', desc:function(v){return '直接获得 '+v+' EXP';} },
+    { type:'direct_exp', base:200, name:'明悟', desc:function(v){return '直接获得 '+v+' EXP';} },
+    { type:'direct_exp', base:500, name:'觉醒', desc:function(v){return '直接获得 '+v+' EXP';} },
+    { type:'multiplier', base:0.2, name:'专注', desc:function(v){return 'EXP获取 ×'+(1+v).toFixed(1);} },
+    { type:'multiplier', base:0.5, name:'心流', desc:function(v){return 'EXP获取 ×'+(1+v).toFixed(1);} },
+    { type:'multiplier', base:1, name:'超然', desc:function(v){return 'EXP获取 ×'+(1+v).toFixed(1);} },
+    { type:'extra_draw', base:1, name:'幸运', desc:function(v){return '每日额外 +'+v+' 次抽取';} },
+    { type:'extra_draw', base:2, name:'天命', desc:function(v){return '每日额外 +'+v+' 次抽取';} },
+    { type:'combo', base:3, name:'共鸣', desc:function(v){return '相邻同系卡 +'+v+'% 效果';} },
+    { type:'combo', base:5, name:'星链', desc:function(v){return '相邻同系卡 +'+v+'% 效果';} },
+    { type:'passive', base:5, name:'滋养', desc:function(v){return '每小时自动 +'+v+' EXP';} },
+    { type:'passive', base:10, name:'冥想', desc:function(v){return '每小时自动 +'+v+' EXP';} },
+    { type:'per_article', base:20, name:'博闻', desc:function(v){return '每阅读一篇文章 +'+v+' EXP';} },
+    { type:'per_article', base:25, name:'通达', desc:function(v){return '每阅读一篇文章 +'+v+' EXP';} },
+    { type:'direct_exp', base:80, name:'闪现', desc:function(v){return '直接获得 '+v+' EXP';} },
+    { type:'direct_exp', base:150, name:'涌现', desc:function(v){return '直接获得 '+v+' EXP';} },
+    { type:'direct_exp', base:300, name:'爆发', desc:function(v){return '直接获得 '+v+' EXP';} },
+    { type:'multiplier', base:2, name:'神启', desc:function(v){return 'EXP获取 ×'+(1+v).toFixed(1);} },
+    { type:'extra_draw', base:3, name:'眷顾', desc:function(v){return '每日额外 +'+v+' 次抽取';} },
+    { type:'combo', base:8, name:'万象', desc:function(v){return '相邻同系卡 +'+v+'% 效果';} },
+    { type:'passive', base:20, name:'禅定', desc:function(v){return '每小时自动 +'+v+' EXP';} },
+    { type:'per_article', base:30, name:'渊博', desc:function(v){return '每阅读一篇文章 +'+v+' EXP';} },
+    { type:'direct_exp', base:1000, name:'超脱', desc:function(v){return '直接获得 '+v+' EXP';} },
+    { type:'combo', base:10, name:'星河', desc:function(v){return '满行奖励 +'+v+'% EXP';} },
+    { type:'combo', base:15, name:'苍穹', desc:function(v){return '满列奖励 +'+v+'% EXP';} },
+  ];
+
+  // 为每种行动生成多个变体
+  var CARD_DB = [];
+  var ID = 0;
+  ACTIONS.forEach(function(action) {
+    for (var e = 0; e < ELEMENTS.length; e++) {
+      var prefix = PREFIXES[Math.floor(Math.random() * PREFIXES.length)];
+      var suffix = SUFFIXES[Math.floor(Math.random() * SUFFIXES.length)];
+      var shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+      var val = action.base + Math.floor(Math.random() * action.base * 0.5);
+      if (action.type === 'multiplier') {
+        val = action.base + Math.random() * action.base * 0.3;
+        val = Math.round(val * 10) / 10;
+      }
+      CARD_DB.push({
+        id: ID++,
+        name: ELEMENTS[e] + '·' + action.name,
+        fullName: ELEMENTS[e] + '·' + action.name + '之' + suffix,
+        element: ELEMENTS[e],
+        type: action.type,
+        val: val,
+        desc: action.desc(val),
+        shape: shape,
+        w: shape[0] ? shape[0].length : 1,
+        h: shape.length,
+        occupied: (function(){
+          var c=0; shape.forEach(function(r){r.forEach(function(v){if(v)c++;});}); return c;
+        })(),
+      });
+      if (CARD_DB.length >= 120) break;
+    }
+    if (CARD_DB.length >= 120) return;
+  });
+
+  // 补足到 100+，用已有卡片随机变体
+  while (CARD_DB.length < 100) {
+    var src = CARD_DB[Math.floor(Math.random() * CARD_DB.length)];
+    var shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+    CARD_DB.push({
+      id: ID++,
+      name: src.name, fullName: src.fullName,
+      element: ELEMENTS[Math.floor(Math.random()*ELEMENTS.length)],
+      type: src.type, val: src.val, desc: src.desc(src.val),
+      shape: shape,
+      w: shape[0] ? shape[0].length : 1,
+      h: shape.length,
+      occupied: (function(){var c=0;shape.forEach(function(r){r.forEach(function(v){if(v)c++;});});return c;})(),
+    });
+  }
+
+  // ===== 等级表 =====
+  var RANK_THRESHOLDS = [];
+  for (var r = 1; r <= 50; r++) {
+    RANK_THRESHOLDS.push({ level: r, exp: Math.floor(100 * r * (1 + r * 0.05)) });
+  }
+
+  // ===== 状态 =====
+  var GRID_SIZE = 10;
+  var MAX_DRAWS = 10;
+  var STORAGE_KEY = 'xn_data';
+
+  var state = {
+    level: 1,
+    exp: 0,
+    totalExp: 0,
+    grid: [], // 10x10
+    inventory: [], // 今日抽到的卡片
+    drawsToday: 0,
+    date: ''
+  };
+
+  function getDate() {
+    var d = new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        var s = JSON.parse(raw);
+        if (s.date === getDate()) {
+          state = s;
+        } else {
+          state.date = getDate();
+          state.drawsToday = 0;
+          state.inventory = [];
+        }
+      }
+    } catch(e) {}
+    // 初始化网格
+    if (state.grid.length === 0) {
+      for (var i = 0; i < GRID_SIZE; i++) {
+        state.grid[i] = [];
+        for (var j = 0; j < GRID_SIZE; j++) state.grid[i][j] = null;
+      }
+    }
+    // 计算等级
+    recalcLevel();
+  }
+
+  function saveState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  }
+
+  function recalcLevel() {
+    for (var i = RANK_THRESHOLDS.length - 1; i >= 0; i--) {
+      if (state.totalExp >= RANK_THRESHOLDS[i].exp) {
+        state.level = RANK_THRESHOLDS[i].level;
+        state.exp = state.totalExp - RANK_THRESHOLDS[i].exp;
+        break;
+      }
+    }
+    var nextExp = RANK_THRESHOLDS[state.level] ? RANK_THRESHOLDS[state.level].exp : RANK_THRESHOLDS[RANK_THRESHOLDS.length-1].exp;
+    var prevExp = state.level > 1 ? RANK_THRESHOLDS[state.level-1].exp : 0;
+    var pct = nextExp > prevExp ? ((state.totalExp - prevExp) / (nextExp - prevExp) * 100) : 0;
+    return { pct: Math.min(pct, 100), next: nextExp };
+  }
+
+  // ===== 渲染 =====
+  var gridEl = document.getElementById('xnGrid');
+  var invEl = document.getElementById('xnInventory');
+  var levelNum = document.getElementById('xnLevelNum');
+  var expBar = document.getElementById('xnExpBar');
+  var expText = document.getElementById('xnExpText');
+  var drawsLeft = document.getElementById('xnDrawsLeft');
+  var totalExpEl = document.getElementById('xnTotalExp');
+  var ranksEl = document.getElementById('xnRanks');
+
+  function renderAll() {
+    renderGrid();
+    renderInventory();
+    renderHeader();
+    renderRanks();
+  }
+
+  function renderHeader() {
+    var info = recalcLevel();
+    levelNum.textContent = 'Lv.' + state.level;
+    expBar.style.width = info.pct + '%';
+    expText.textContent = state.exp + '/' + (info.next - (state.level > 1 ? RANK_THRESHOLDS[state.level-1].exp : 0));
+    totalExpEl.textContent = state.totalExp;
+    drawsLeft.textContent = Math.max(0, MAX_DRAWS - state.drawsToday);
+  }
+
+  function renderRanks() {
+    var h = '等级 | 所需 EXP<br>';
+    for (var i = 0; i < Math.min(10, RANK_THRESHOLDS.length); i++) {
+      var c = RANK_THRESHOLDS[i].level === state.level ? 'highlight' : '';
+      h += '<span class="' + c + '">Lv.' + RANK_THRESHOLDS[i].level + '</span> <span style="color:rgba(255,255,255,0.1)">→</span> '
+        + '<span class="' + c + '">' + RANK_THRESHOLDS[i].exp + ' EXP</span>';
+      if (i < 9 && i < RANK_THRESHOLDS.length - 1) h += ' &nbsp;|&nbsp; ';
+    }
+    ranksEl.innerHTML = h;
+  }
+
+  function renderGrid() {
+    gridEl.innerHTML = '';
+    for (var y = 0; y < GRID_SIZE; y++) {
+      for (var x = 0; x < GRID_SIZE; x++) {
+        var cell = document.createElement('div');
+        cell.className = 'xn-cell' + (state.grid[y][x] ? ' has-block' : '');
+        cell.dataset.x = x;
+        cell.dataset.y = y;
+        // 拖放事件
+        cell.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('drag-over'); });
+        cell.addEventListener('dragleave', function() { this.classList.remove('drag-over'); });
+        cell.addEventListener('drop', function(e) {
+          e.preventDefault(); this.classList.remove('drag-over');
+          var data = JSON.parse(e.dataTransfer.getData('text/plain'));
+          placeCard(data.cardId, parseInt(this.dataset.x), parseInt(this.dataset.y));
+        });
+        gridEl.appendChild(cell);
+      }
+    }
+    // 已有的方块
+    for (var y = 0; y < GRID_SIZE; y++) {
+      for (var x = 0; x < GRID_SIZE; x++) {
+        if (state.grid[y][x]) {
+          var idx = y * GRID_SIZE + x;
+          var cell = gridEl.children[idx];
+          if (cell) cell.classList.add('has-block');
+        }
+      }
+    }
+  }
+
+  function renderInventory() {
+    invEl.innerHTML = '';
+    if (state.inventory.length === 0) {
+      invEl.innerHTML = '<div class="xn-inv-empty">✦ 抽取心向，放入心域</div>';
+      return;
+    }
+    state.inventory.forEach(function(cardId, idx) {
+      var card = CARD_DB[cardId];
+      if (!card) return;
+      var el = document.createElement('div');
+      el.className = 'xn-block';
+      el.draggable = true;
+      el.style.gridTemplateColumns = 'repeat(' + card.w + ',14px)';
+      el.style.gridTemplateRows = 'repeat(' + card.h + ',14px)';
+
+      // 渲染形状
+      for (var y = 0; y < card.h; y++) {
+        for (var x = 0; x < card.w; x++) {
+          var cell = document.createElement('div');
+          cell.className = 'xn-block-cell' + (card.shape[y] && card.shape[y][x] ? ' filled' : '');
+          el.appendChild(cell);
+        }
+      }
+
+      // tooltip
+      var tip = document.createElement('div');
+      tip.className = 'xn-tooltip';
+      tip.innerHTML = '<b>' + card.fullName + '</b><br>' + card.desc;
+      el.appendChild(tip);
+
+      // 拖放
+      el.dataset.cardId = cardId;
+      el.addEventListener('dragstart', function(e) {
+        e.dataTransfer.setData('text/plain', JSON.stringify({ cardId: parseInt(this.dataset.cardId), idx: idx }));
+      });
+
+      invEl.appendChild(el);
+    });
+  }
+
+  // ===== 操作 =====
+  function placeCard(cardId, gx, gy) {
+    var card = CARD_DB[cardId];
+    if (!card) return;
+    // 检查能否放置
+    for (var y = 0; y < card.h; y++) {
+      for (var x = 0; x < card.w; x++) {
+        if (card.shape[y] && card.shape[y][x]) {
+          var px = gx + x, py = gy + y;
+          if (px >= GRID_SIZE || py >= GRID_SIZE) return;
+          if (state.grid[py][px] !== null) return;
+        }
+      }
+    }
+    // 放置
+    for (var y = 0; y < card.h; y++) {
+      for (var x = 0; x < card.w; x++) {
+        if (card.shape[y] && card.shape[y][x]) {
+          state.grid[gy + y][gx + x] = cardId;
+        }
+      }
+    }
+    // 应用效果
+    applyCardEffect(card);
+    // 从背包移除
+    var idx = state.inventory.indexOf(cardId);
+    if (idx >= 0) state.inventory.splice(idx, 1);
+    saveState();
+    renderAll();
+  }
+
+  function applyCardEffect(card) {
+    if (card.type === 'direct_exp') {
+      state.totalExp += Math.floor(card.val);
+    }
+    // 其他效果在后续扩展中实现（per_article 在阅读时触发等）
+  }
+
+  // 抽取心向
+  function drawCards() {
+    if (state.drawsToday >= MAX_DRAWS) return;
+    var count = Math.min(MAX_DRAWS - state.drawsToday, 1);
+    for (var i = 0; i < count; i++) {
+      var card = CARD_DB[Math.floor(Math.random() * CARD_DB.length)];
+      state.inventory.push(card.id);
+      state.drawsToday++;
+    }
+    saveState();
+    renderAll();
+  }
+
+  // 清除所有
+  function clearAll() {
+    if (!confirm('确定清除心域中的所有心向？')) return;
+    for (var y = 0; y < GRID_SIZE; y++)
+      for (var x = 0; x < GRID_SIZE; x++)
+        state.grid[y][x] = null;
+    saveState();
+    renderAll();
+  }
+
+  // ===== 初始化 =====
+  loadState();
+  renderAll();
+
+  document.getElementById('xnDrawBtn').addEventListener('click', drawCards);
+  document.getElementById('xnClearBtn').addEventListener('click', clearAll);
+})();
+</script>
