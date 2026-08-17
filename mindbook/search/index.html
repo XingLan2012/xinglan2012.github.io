@@ -39,14 +39,7 @@ layout: none
   <div id="out"><p class="empty">输入关键词开始搜索…</p></div>
 </main>
 <script>
-var FILES = [
-{%- assign _files = site.static_files | where_exp: "f", "f.path contains '/mindbook/'" | sort: "name" -%}
-{%- for _f in _files -%}
-{%- assign _rel = _f.path | remove_first: '/mindbook/' -%}
-{%- if _rel contains '/' or _rel == 'manifest.json' -%}{%- continue -%}{%- endif -%}
-"{{ _rel }}",
-{%- endfor -%}
-];
+var FILES = ["README.md", "Minecraft-Java26.2版本指令说明.md"];
 (function(){
   var kw=(new URLSearchParams(location.search).get('q')||'').trim();
   var input=document.getElementById('q'), out=document.getElementById('out');

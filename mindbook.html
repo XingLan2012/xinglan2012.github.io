@@ -28,18 +28,9 @@ layout: none
   <h1>Mindbook · 外接知识库</h1>
   <p class="notice">此页面为 AI 设计的外接 web 内容，供读取 /mindbook 目录使用；不参与站点导航，非人工浏览入口。</p>
   <ul>
-    {%- assign _files = site.static_files | where_exp: "f", "f.path contains '/mindbook/'" | sort: "name" -%}
-    {%- for _f in _files -%}
-      {%- assign _rel = _f.path | remove_first: '/mindbook/' -%}
-      {%- if _rel == 'README.md' -%}
-    <li><a href="{{ _f.path | relative_url }}">README.md</a><span class="tag">[首次必读]</span></li>
-      {%- endif -%}
-    {%- endfor -%}
-    {%- for _f in _files -%}
-      {%- assign _rel = _f.path | remove_first: '/mindbook/' -%}
-      {%- if _rel contains '/' or _rel == 'manifest.json' or _rel == 'README.md' -%}{%- continue -%}{%- endif -%}
-    <li><a href="{{ _f.path | relative_url }}">{{ _rel }}</a></li>
-    {%- endfor -%}
+    <!-- 目录：新增文件请在下方手动加一行 <li><a href="/mindbook/文件名">文件名</a></li> -->
+    <li><a href="/mindbook/README.md">README.md</a><span class="tag">[首次必读]</span></li>
+    <li><a href="/mindbook/Minecraft-Java26.2版本指令说明.md">Minecraft-Java26.2版本指令说明.md</a></li>
   </ul>
 </main>
 </body>
