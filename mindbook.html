@@ -21,57 +21,26 @@ layout: none
   a{display:block;padding:8px 4px;color:var(--link);text-decoration:none;font-size:14px;word-break:break-all}
   a:hover{background:rgba(0,0,0,.03)}
   .tag{color:var(--muted);font-size:11px;margin-left:6px}
-  .empty{padding:12px 4px;color:var(--muted);font-size:13px}
 </style>
 </head>
 <body>
 <main>
   <h1>Mindbook · 外接知识库</h1>
-  <p class="notice">此页面为 AI 设计的外接 web 内容，供自动读取 /mindbook 目录使用；不参与站点导航，非人工浏览入口。</p>
-  <ul id="list"><li class="empty">正在读取 /mindbook…</li></ul>
+  <p class="notice">此页面为 AI 设计的外接 web 内容，供读取 /mindbook 目录使用；不参与站点导航，非人工浏览入口。</p>
+  <ul>
+    {%- assign _files = site.static_files | where_exp: "f", "f.path contains '/mindbook/'" | sort: "name" -%}
+    {%- for _f in _files -%}
+      {%- assign _rel = _f.path | remove_first: '/mindbook/' -%}
+      {%- if _rel == 'README.md' -%}
+    <li><a href="{{ _f.path | relative_url }}">README.md</a><span class="tag">[首次必读]</span></li>
+      {%- endif -%}
+    {%- endfor -%}
+    {%- for _f in _files -%}
+      {%- assign _rel = _f.path | remove_first: '/mindbook/' -%}
+      {%- if _rel contains '/' or _rel == 'manifest.json' or _rel == 'README.md' -%}{%- continue -%}{%- endif -%}
+    <li><a href="{{ _f.path | relative_url }}">{{ _rel }}</a></li>
+    {%- endfor -%}
+  </ul>
 </main>
-<script>
-(function(){
-  var REPO='XingLan2012/xinglan2012.github.io', BRANCH='main', DIR='mindbook';
-  var list=document.getElementById('list');
-
-  function render(items){
-    items=items.filter(function(it){ return it.name!=='manifest.json' && it.name!=='search'; });
-    list.innerHTML='';
-    if(!items.length){ list.innerHTML='<li class="empty">（目录为空）</li>'; return; }
-    items.sort(function(a,b){
-      var aF=(a.name==='README.md')?1:0, bF=(b.name==='README.md')?1:0;
-      if(aF!==bF) return bF-aF;
-      if(a.type!==b.type) return a.type==='dir'?-1:1;
-      return a.name.localeCompare(b.name,undefined,{numeric:true,sensitivity:'base'});
-    });
-    items.forEach(function(it){
-      var a=document.createElement('a');
-      if(it.type==='dir'){
-        a.href='https://github.com/'+REPO+'/tree/'+BRANCH+'/'+DIR+'/'+it.name;
-        a.textContent=it.name;
-      }else{
-        a.href=DIR+'/'+it.name;
-        a.textContent=it.name;
-        if(it.name==='README.md'){
-          var t=document.createElement('span'); t.className='tag'; t.textContent='[首次必读]';
-          a.appendChild(t);
-        }
-      }
-      var li=document.createElement('li'); li.appendChild(a); list.appendChild(li);
-    });
-  }
-
-  fetch('https://api.github.com/repos/'+REPO+'/contents/'+DIR)
-    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
-    .then(render)
-    .catch(function(){
-      fetch(DIR+'/manifest.json',{cache:'no-store'})
-        .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
-        .then(function(files){ render(files.map(function(name){ return {name:name,type:'file',size:0}; })); })
-        .catch(function(){ list.innerHTML='<li class="empty">无法读取 /mindbook（请确认仓库公开，或稍后重试）</li>'; });
-    });
-})();
-</script>
 </body>
 </html>

@@ -35,22 +35,39 @@ layout: none
     <input type="search" name="q" id="q" placeholder="输入关键词" autofocus>
     <button type="submit">搜索</button>
   </form>
-  <p class="hint">用法：/mindbook/search?q=关键词</p>
+  <p class="hint">精确搜索，非必要不使用，建议直接阅览目录原文。用法：/mindbook/search?q=关键词</p>
   <div id="out"><p class="empty">输入关键词开始搜索…</p></div>
 </main>
 <script>
+var FILES = [
+{%- assign _files = site.static_files | where_exp: "f", "f.path contains '/mindbook/'" | sort: "name" -%}
+{%- for _f in _files -%}
+{%- assign _rel = _f.path | remove_first: '/mindbook/' -%}
+{%- if _rel contains '/' or _rel == 'manifest.json' -%}{%- continue -%}{%- endif -%}
+"{{ _rel }}",
+{%- endfor -%}
+];
 (function(){
-  var REPO='XingLan2012/xinglan2012.github.io', BRANCH='main', DIR='mindbook';
-  var RAW='https://raw.githubusercontent.com/'+REPO+'/'+BRANCH+'/'+DIR+'/';
-  var HIDDEN=['manifest.json'];
   var kw=(new URLSearchParams(location.search).get('q')||'').trim();
   var input=document.getElementById('q'), out=document.getElementById('out');
   if(kw) input.value=kw;
   if(!kw){ out.innerHTML='<p class="empty">输入关键词开始搜索…</p>'; return; }
-
+  if(!FILES.length){ out.innerHTML='<p class="empty">（无文件可搜索）</p>'; return; }
   var k=kw.toLowerCase();
   out.innerHTML='<p class="empty">正在搜索「'+kw+'」…</p>';
-
+  var results=[], done=0;
+  FILES.forEach(function(name){
+    fetch('/mindbook/'+name).then(function(r){ if(!r.ok) throw 0; return r.text(); })
+      .then(function(t){
+        var i=t.toLowerCase().indexOf(k);
+        if(i>=0){
+          var st=Math.max(0,i-30), en=Math.min(t.length,i+k.length+40);
+          results.push({name:name,snippet:t.slice(st,en).replace(/\s+/g,' ')});
+        }
+      })
+      .catch(function(){})
+      .then(function(){ if(++done===FILES.length) show(results); });
+  });
   function show(results){
     out.innerHTML='';
     if(!results.length){ out.innerHTML='<p class="empty">未找到与「'+kw+'」相关的内容</p>'; return; }
@@ -59,40 +76,11 @@ layout: none
     out.appendChild(c);
     results.forEach(function(r){
       var d=document.createElement('div'); d.className='hit';
-      var a=document.createElement('a'); a.href=r.url; a.textContent=r.name;
+      var a=document.createElement('a'); a.href='/mindbook/'+r.name; a.textContent=r.name;
       var s=document.createElement('div'); s.className='snip'; s.textContent=r.snippet;
       d.appendChild(a); d.appendChild(s); out.appendChild(d);
     });
   }
-
-  function search(files){
-    if(!files.length){ out.innerHTML='<p class="empty">（无文件可搜索）</p>'; return; }
-    var results=[], done=0;
-    files.forEach(function(f){
-      fetch(RAW+f.name).then(function(r){ if(!r.ok) throw 0; return r.text(); })
-        .then(function(t){
-          var i=t.toLowerCase().indexOf(k);
-          if(i>=0){
-            var st=Math.max(0,i-30), en=Math.min(t.length,i+k.length+40);
-            results.push({name:f.name,url:RAW+f.name,snippet:t.slice(st,en).replace(/\s+/g,' ')});
-          }
-        })
-        .catch(function(){})
-        .then(function(){ if(++done===files.length) show(results); });
-    });
-  }
-
-  fetch('https://api.github.com/repos/'+REPO+'/contents/'+DIR)
-    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
-    .then(function(items){
-      search(items.filter(function(it){ return it.type==='file' && HIDDEN.indexOf(it.name)<0; }));
-    })
-    .catch(function(){
-      fetch('/mindbook/manifest.json',{cache:'no-store'})
-        .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
-        .then(function(files){ search(files.map(function(name){ return {name:name}; })); })
-        .catch(function(){ out.innerHTML='<p class="empty">无法读取 /mindbook（请确认仓库公开，或稍后重试）</p>'; });
-    });
 })();
 </script>
 </body>
