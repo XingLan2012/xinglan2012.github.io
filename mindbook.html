@@ -36,7 +36,7 @@ layout: none
   var list=document.getElementById('list');
 
   function render(items){
-    items=items.filter(function(it){ return it.name!=='manifest.json'; });
+    items=items.filter(function(it){ return it.name!=='manifest.json' && it.name!=='search'; });
     list.innerHTML='';
     if(!items.length){ list.innerHTML='<li class="empty">（目录为空）</li>'; return; }
     items.sort(function(a,b){
