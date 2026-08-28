@@ -1,0 +1,445 @@
+---
+layout: default
+title: 云相册
+---
+
+<style>
+  .alb-wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  .alb-title {
+    font-size: 22px;
+    color: #ffd700;
+    letter-spacing: 6px;
+    font-weight: 300;
+    margin-bottom: 4px;
+  }
+  .alb-sub {
+    font-size: 12px;
+    color: rgba(255,215,0,0.3);
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+  }
+
+  /* 工具栏 */
+  .alb-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    min-height: 28px;
+    flex-wrap: wrap;
+  }
+  .alb-btn {
+    display: inline-block;
+    padding: 5px 14px;
+    border: 1px solid rgba(255,215,0,0.1);
+    border-radius: 14px;
+    color: rgba(255,215,0,0.4);
+    font-size: 11px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    background: transparent;
+    font-family: inherit;
+    transition: all 0.25s;
+  }
+  .alb-btn:hover {
+    border-color: rgba(255,215,0,0.25);
+    color: #ffd700;
+  }
+  .alb-path {
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 1px;
+  }
+  .alb-status {
+    font-size: 12px;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  /* 网格 */
+  .alb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+
+  /* 照片卡片 */
+  .alb-card {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,215,0,0.06);
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .alb-card:hover {
+    border-color: rgba(255,215,0,0.25);
+    transform: translateY(-2px);
+  }
+  .alb-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+  }
+  .alb-card:hover img { transform: scale(1.05); }
+  .alb-card .alb-name {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 18px 8px 6px;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.75);
+    background: linear-gradient(transparent, rgba(0,0,0,0.55));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* 相册文件夹卡片 */
+  .alb-folder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    aspect-ratio: 1 / 1;
+    border: 1px dashed rgba(255,215,0,0.15);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(255,215,0,0.02);
+  }
+  .alb-folder:hover {
+    border-color: rgba(255,215,0,0.4);
+    background: rgba(255,215,0,0.05);
+  }
+  .alb-folder .alb-folder-icon { font-size: 26px; opacity: 0.6; }
+  .alb-folder .alb-folder-name {
+    font-size: 11px;
+    color: rgba(255,215,0,0.6);
+    letter-spacing: 1px;
+    max-width: 90%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .alb-folder .alb-folder-count {
+    font-size: 10px;
+    color: rgba(255,255,255,0.25);
+    font-family: monospace;
+  }
+
+  .alb-empty, .alb-error {
+    text-align: center;
+    padding: 60px 20px;
+    letter-spacing: 3px;
+    font-size: 13px;
+  }
+  .alb-empty { color: rgba(255,215,0,0.15); }
+  .alb-error { color: rgba(255,100,100,0.3); }
+
+  /* 灯箱 */
+  .lb-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    background: rgba(0,0,0,0.88);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .lb-overlay.open { display: flex; }
+  .lb-img {
+    max-width: 92vw;
+    max-height: 86vh;
+    border-radius: 6px;
+    box-shadow: 0 8px 60px rgba(0,0,0,0.6);
+  }
+  .lb-cap {
+    margin-top: 10px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 1px;
+  }
+  .lb-close {
+    position: absolute;
+    top: 14px; right: 22px;
+    font-size: 26px;
+    color: rgba(255,255,255,0.5);
+    cursor: pointer;
+    transition: color 0.2s;
+    z-index: 1;
+  }
+  .lb-close:hover { color: #ffd700; }
+  .lb-prev, .lb-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 42px;
+    color: rgba(255,255,255,0.4);
+    cursor: pointer;
+    padding: 10px 14px;
+    user-select: none;
+    transition: color 0.2s;
+  }
+  .lb-prev { left: 12px; }
+  .lb-next { right: 12px; }
+  .lb-prev:hover, .lb-next:hover { color: #ffd700; }
+
+  @media (max-width: 600px) {
+    .alb-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px; }
+    .lb-prev { left: 4px; }
+    .lb-next { right: 4px; }
+  }
+</style>
+
+<div class="alb-wrap">
+  <div class="alb-title">✦ 云相册</div>
+  <div class="alb-sub"><code>/album</code> 目录 · 子文件夹即相册</div>
+
+  <div class="alb-bar">
+    <button class="alb-btn" id="albBackBtn" style="display:none">← 返回</button>
+    <button class="alb-btn" id="albRefreshBtn">⟳ 刷新</button>
+    <span class="alb-path" id="albPath"></span>
+  </div>
+
+  <div class="alb-status" id="albStatus">✦ 加载中...</div>
+  <div class="alb-grid" id="albGrid"></div>
+</div>
+
+<!-- 灯箱 -->
+<div class="lb-overlay" id="lbOverlay">
+  <span class="lb-close" id="lbClose">✕</span>
+  <span class="lb-prev" id="lbPrev">‹</span>
+  <span class="lb-next" id="lbNext">›</span>
+  <img class="lb-img" id="lbImg" alt="">
+  <div class="lb-cap" id="lbCap"></div>
+</div>
+
+<script>
+(function() {
+  var REPO = 'XingLan2012/xinglan2012.github.io';
+  var ALBUM = 'album';
+  var CACHE_KEY = 'album_cache';
+  var CACHE_TTL = 5 * 60 * 1000;
+
+  var IMG_EXT = ['jpg','jpeg','png','gif','webp','svg','bmp','avif','jfif'];
+
+  var gridEl = document.getElementById('albGrid');
+  var statusEl = document.getElementById('albStatus');
+  var pathEl = document.getElementById('albPath');
+  var backBtn = document.getElementById('albBackBtn');
+  var refreshBtn = document.getElementById('albRefreshBtn');
+  var overlay = document.getElementById('lbOverlay');
+  var lbImg = document.getElementById('lbImg');
+  var lbCap = document.getElementById('lbCap');
+
+  var currentPath = '';    // 当前相册路径（'' = 根目录）
+  var currentImgs = [];    // 当前视图中的图片（灯箱翻页用）
+  var currentIndex = -1;
+
+  function isImg(name) {
+    var ext = name.split('.').pop().toLowerCase();
+    return IMG_EXT.indexOf(ext) >= 0;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function enc(p) {
+    return p.split('/').map(encodeURIComponent).join('/');
+  }
+
+  function rawUrl(path) {
+    return 'https://raw.githubusercontent.com/' + REPO + '/main/' + ALBUM + '/' + enc(path);
+  }
+
+  function apiUrl(path) {
+    return 'https://api.github.com/repos/' + REPO + '/contents/' + ALBUM + (path ? '/' + enc(path) : '');
+  }
+
+  // ---- 缓存 ----
+  function cacheKey(path) {
+    return CACHE_KEY + ':' + (path || '__root__');
+  }
+  function getCache(path) {
+    try {
+      var raw = localStorage.getItem(cacheKey(path));
+      if (!raw) return null;
+      var data = JSON.parse(raw);
+      if (Date.now() - data.time > CACHE_TTL) return null;
+      return data.items;
+    } catch(e) { return null; }
+  }
+  function setCache(path, items) {
+    try {
+      localStorage.setItem(cacheKey(path), JSON.stringify({ time: Date.now(), items: items }));
+    } catch(e) {}
+  }
+
+  // ---- 数据 ----
+  async function fetchList(path, force) {
+    if (!force) {
+      var c = getCache(path);
+      if (c) return c;
+    }
+    var resp = await fetch(apiUrl(path));
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    var data = await resp.json();
+    var dirs = [], imgs = [];
+    data.forEach(function(i) {
+      if (i.type === 'dir') dirs.push(i.name);
+      else if (i.type === 'file' && isImg(i.name)) imgs.push(i.name);
+    });
+    dirs.sort(function(a,b) { return a.localeCompare(b); });
+    imgs.sort(function(a,b) { return a.localeCompare(b); });
+    var items = { dirs: dirs, imgs: imgs };
+    setCache(path, items);
+    return items;
+  }
+
+  // ---- 渲染 ----
+  function render(path, items) {
+    currentPath = path;
+
+    if (path) {
+      pathEl.textContent = '当前位置：' + path;
+      backBtn.style.display = '';
+    } else {
+      pathEl.textContent = '';
+      backBtn.style.display = 'none';
+    }
+
+    var folderNames = items.dirs;
+    var html = '';
+
+    // 相册文件夹
+    folderNames.forEach(function(d, i) {
+      html += '<div class="alb-folder" data-idx="' + i + '">'
+        + '<span class="alb-folder-icon">📁</span>'
+        + '<span class="alb-folder-name">' + escapeHtml(d) + '</span>'
+        + '<span class="alb-folder-count" id="albCount' + i + '">—</span>'
+        + '</div>';
+    });
+
+    // 图片
+    currentImgs = items.imgs;
+    items.imgs.forEach(function(name) {
+      html += '<div class="alb-card" data-img="' + escapeHtml(name) + '">'
+        + '<img src="' + rawUrl(path ? path + '/' + name : name) + '" loading="lazy" alt="' + escapeHtml(name) + '">'
+        + '<div class="alb-name">' + escapeHtml(name) + '</div>'
+        + '</div>';
+    });
+
+    if (!items.dirs.length && !items.imgs.length) {
+      html = '<div class="alb-empty">✦ 暂无照片</div>';
+    }
+    gridEl.innerHTML = html;
+
+    // 绑定：打开相册
+    gridEl.querySelectorAll('.alb-folder').forEach(function(el) {
+      el.addEventListener('click', function() {
+        openDir(folderNames[parseInt(this.dataset.idx, 10)]);
+      });
+    });
+
+    // 绑定：灯箱
+    gridEl.querySelectorAll('.alb-card').forEach(function(el) {
+      el.addEventListener('click', function() {
+        openLightbox(currentImgs.indexOf(el.dataset.img));
+      });
+    });
+
+    // 懒加载各相册照片数
+    folderNames.forEach(function(d, i) {
+      (function(idx) {
+        fetchList(path ? path + '/' + d : d).then(function(sub) {
+          var el = document.getElementById('albCount' + idx);
+          if (el) el.textContent = sub.imgs.length + ' 张';
+        }).catch(function() {});
+      })(i);
+    });
+  }
+
+  function loadList(path, force) {
+    statusEl.textContent = '✦ 加载中...';
+    fetchList(path, force).then(function(items) {
+      statusEl.textContent = '✦ ' + (items.dirs.length + items.imgs.length) + ' 项';
+      render(path, items);
+    }).catch(function(e) {
+      var c = getCache(path);
+      if (c) {
+        statusEl.textContent = '⚠ 加载远程失败，使用缓存数据';
+        render(path, c);
+      } else {
+        statusEl.textContent = '';
+        gridEl.innerHTML = '<div class="alb-error">✕ 加载失败 (' + e.message + ')</div>';
+      }
+    });
+  }
+
+  function openDir(dir) {
+    loadList(currentPath ? currentPath + '/' + dir : dir);
+  }
+
+  backBtn.addEventListener('click', function() {
+    var parent = currentPath.indexOf('/') >= 0
+      ? currentPath.slice(0, currentPath.lastIndexOf('/'))
+      : '';
+    loadList(parent, true);
+  });
+
+  refreshBtn.addEventListener('click', function() {
+    loadList(currentPath, true);
+  });
+
+  // ---- 灯箱 ----
+  function openLightbox(i) {
+    if (i < 0 || i >= currentImgs.length) return;
+    currentIndex = i;
+    var name = currentImgs[i];
+    lbImg.src = rawUrl(currentPath ? currentPath + '/' + name : name);
+    lbCap.textContent = (i + 1) + ' / ' + currentImgs.length + ' · ' + name;
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function stepLightbox(delta) {
+    if (!currentImgs.length) return;
+    var next = (currentIndex + delta + currentImgs.length) % currentImgs.length;
+    openLightbox(next);
+  }
+
+  document.getElementById('lbClose').addEventListener('click', closeLightbox);
+  document.getElementById('lbPrev').addEventListener('click', function() { stepLightbox(-1); });
+  document.getElementById('lbNext').addEventListener('click', function() { stepLightbox(1); });
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closeLightbox();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (!overlay.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    else if (e.key === 'ArrowLeft') stepLightbox(-1);
+    else if (e.key === 'ArrowRight') stepLightbox(1);
+  });
+
+  // 启动
+  loadList('');
+})();
+</script>
