@@ -81,70 +81,6 @@ title: 云盘
     border-color: rgba(255,215,0,0.35);
     background: rgba(255,215,0,0.04);
   }
-  .pan-btn.mirror {
-    color: rgba(100,200,255,0.45);
-    border-color: rgba(100,200,255,0.12);
-    margin-left: 6px;
-  }
-  .pan-btn.mirror:hover {
-    color: rgba(100,200,255,0.7);
-    border-color: rgba(100,200,255,0.25);
-    background: rgba(100,200,255,0.03);
-  }
-  .pan-btn.mirror.active {
-    color: rgba(100,200,255,0.7);
-    border-color: rgba(100,200,255,0.2);
-    background: rgba(100,200,255,0.04);
-  }
-
-  /* 测速面板 */
-  .mirror-panel {
-    margin-top: 8px;
-    padding: 10px 14px;
-    background: rgba(100,200,255,0.02);
-    border: 1px solid rgba(100,200,255,0.06);
-    border-radius: 8px;
-    display: none;
-  }
-  .mirror-panel.open { display: block; }
-  .mirror-panel-title {
-    font-size: 10px;
-    color: rgba(100,200,255,0.25);
-    letter-spacing: 2px;
-    margin-bottom: 6px;
-  }
-  .mirror-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin: 3px 6px 3px 0;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    background: rgba(100,200,255,0.03);
-    border: 1px solid rgba(100,200,255,0.06);
-    transition: all 0.2s;
-  }
-  .mirror-item:hover {
-    background: rgba(100,200,255,0.06);
-    border-color: rgba(100,200,255,0.12);
-  }
-  .mirror-item a {
-    color: rgba(100,200,255,0.6);
-    text-decoration: none;
-  }
-  .mirror-item a:hover { color: rgba(100,200,255,0.85); }
-  .mirror-item .latency {
-    font-size: 10px;
-    font-family: monospace;
-  }
-  .mirror-item .latency.fast { color: rgba(100,200,150,0.6); }
-  .mirror-item .latency.slow { color: rgba(200,100,100,0.5); }
-
-  .mirror-loading {
-    font-size: 11px;
-    color: rgba(255,255,255,0.25);
-  }
 
   /* 状态 */
   .pan-status {
@@ -211,13 +147,6 @@ title: 云盘
   var CACHE_KEY = 'pan_filelist_cache';
   var CACHE_TTL = 5 * 60 * 1000; // 5 分钟缓存
 
-  var MIRRORS = [
-    { name: 'GitHub Raw', url: function(f) { return 'https://raw.githubusercontent.com/' + REPO + '/main/' + PAN + '/' + f; } },
-    { name: 'jsDelivr CDN', url: function(f) { return 'https://cdn.jsdelivr.net/gh/' + REPO + '@main/' + PAN + '/' + f; } },
-    { name: 'ghproxy', url: function(f) { return 'https://ghproxy.com/https://raw.githubusercontent.com/' + REPO + '/main/' + PAN + '/' + f; } },
-    { name: 'FastGit', url: function(f) { return 'https://raw.fastgit.org/' + REPO + '/main/' + PAN + '/' + f; } }
-  ];
-
   var listEl = document.getElementById('panFileList');
   var toolbarEl = document.getElementById('panToolbar');
 
@@ -256,10 +185,15 @@ title: 云盘
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     var data = await resp.json();
     var files = data.filter(function(i) { return i.type === 'file'; }).map(function(i) {
-      return { name: i.name, size: i.size, url: i.download_url };
+      return { name: i.name, size: i.size };
     });
     setCache(files);
     return files;
+  }
+
+  // GitHub 直链下载地址
+  function dlUrl(name) {
+    return 'https://raw.githubusercontent.com/' + REPO + '/main/' + PAN + '/' + encodeURIComponent(name);
   }
 
   function fmtDate() {
@@ -268,33 +202,14 @@ title: 云盘
          + ' ' + ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2);
   }
 
-  async function measure(url) {
-    var start = performance.now();
-    try {
-      await fetch(url, { method: 'HEAD', mode: 'no-cors' });
-      return performance.now() - start;
-    } catch(e) {
-      // 如果 HEAD 失败，尝试 GET 但只请求第一个字节
-      try {
-        var c = new AbortController();
-        setTimeout(function() { c.abort(); }, 3000);
-        start = performance.now();
-        await fetch(url, { method: 'GET', signal: c.signal });
-        return performance.now() - start;
-      } catch(e2) {
-        return Infinity;
-      }
-    }
-  }
-
   async function render() {
     listEl.innerHTML = '<p class="pan-status">✦ 加载中...</p>';
     toolbarEl.innerHTML = '';
 
+    var files;
     try {
-      var files = await fetchFiles(false);
+      files = await fetchFiles(false);
     } catch(e) {
-      // 尝试用缓存兜底
       var cached = getCached();
       if (cached) {
         files = cached;
@@ -337,58 +252,16 @@ title: 云盘
         + '<td class="file-name">' + icon + ' ' + f.name + '</td>'
         + '<td class="file-size">' + fmtSize(f.size) + '</td>'
         + '<td class="pan-actions">'
-        + '<button class="pan-btn dl" data-url="' + MIRRORS[0].url(f.name) + '">⬇ 下载</button>'
-        + '<button class="pan-btn mirror" data-file="' + f.name + '">🌐 镜像</button>'
-        + '<div class="mirror-panel" id="mp-' + encodeURIComponent(f.name) + '">'
-        + '<div class="mirror-panel-title">— 镜像节点 —</div>'
-        + '<div class="mirror-list-inner"></div></div>'
+        + '<button class="pan-btn dl" data-url="' + dlUrl(f.name) + '">⬇ 下载</button>'
         + '</td></tr>';
     });
     html += '</table>';
     listEl.innerHTML = html;
 
-    // 绑定下载
+    // 绑定下载（GitHub 直链）
     document.querySelectorAll('.pan-btn.dl').forEach(function(btn) {
       btn.addEventListener('click', function() {
         window.open(this.dataset.url, '_blank');
-      });
-    });
-
-    // 绑定镜像
-    document.querySelectorAll('.pan-btn.mirror').forEach(function(btn) {
-      var loaded = false;
-      btn.addEventListener('click', async function() {
-        var fname = this.dataset.file;
-        var panel = document.getElementById('mp-' + encodeURIComponent(fname));
-        if (!panel) return;
-
-        if (!loaded) {
-          loaded = true;
-          this.classList.add('active');
-          var inner = panel.querySelector('.mirror-list-inner');
-          inner.innerHTML = '<span class="mirror-loading">⟳ 测速中...</span>';
-          panel.classList.add('open');
-
-          var results = [];
-          for (var i = 0; i < MIRRORS.length; i++) {
-            var url = MIRRORS[i].url(fname);
-            var ms = await measure(url);
-            results.push({ name: MIRRORS[i].name, url: url, ms: ms });
-          }
-          results.sort(function(a,b) { return a.ms - b.ms; });
-
-          var h = '';
-          results.forEach(function(r) {
-            var cls = r.ms < 500 ? 'fast' : (r.ms >= 2000 ? 'slow' : '');
-            var txt = r.ms >= 9999 ? '超时' : r.ms.toFixed(0) + 'ms';
-            h += '<span class="mirror-item"><a href="' + r.url + '" target="_blank">' + r.name + '</a>'
-              + '<span class="latency ' + cls + '">' + txt + '</span></span>';
-          });
-          inner.innerHTML = h;
-        } else {
-          // 切换显示
-          panel.classList.toggle('open');
-        }
       });
     });
   }
