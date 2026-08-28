@@ -3,3 +3,4 @@ _*.py
 run_*.bat
 cleanup_temp.py
 converted_files/
+__pycache__/

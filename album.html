@@ -201,6 +201,68 @@ title: 云相册
     .lb-prev { left: 4px; }
     .lb-next { right: 4px; }
   }
+
+  /* Token 设置弹窗 */
+  .tok-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10002;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .tok-overlay.open { display: flex; }
+  .tok-box {
+    width: 100%;
+    max-width: 440px;
+    background: rgba(10, 14, 40, 0.96);
+    border: 1px solid rgba(255,215,0,0.12);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 12px 60px rgba(0,0,0,0.5);
+  }
+  .tok-title {
+    font-size: 15px;
+    color: #ffd700;
+    letter-spacing: 3px;
+    font-weight: 300;
+    margin-bottom: 10px;
+  }
+  .tok-tip {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    line-height: 1.7;
+    margin: 0 0 14px;
+  }
+  .tok-input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,215,0,0.15);
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.8);
+    font-size: 12px;
+    font-family: monospace;
+    box-sizing: border-box;
+    outline: none;
+    margin-bottom: 14px;
+  }
+  .tok-input:focus { border-color: rgba(255,215,0,0.4); }
+  .tok-btns { display: flex; gap: 8px; margin-bottom: 14px; }
+  .tok-hint {
+    font-size: 11px;
+    color: rgba(100,200,255,0.5);
+    line-height: 1.7;
+    margin: 0 0 8px;
+  }
+  .tok-warn {
+    font-size: 11px;
+    color: rgba(255,180,100,0.5);
+    line-height: 1.7;
+    margin: 0;
+  }
 </style>
 
 <div class="alb-wrap">
@@ -209,9 +271,12 @@ title: 云相册
 
   <div class="alb-bar">
     <button class="alb-btn" id="albBackBtn" style="display:none">← 返回</button>
+    <button class="alb-btn" id="albUploadBtn">⬆ 上传</button>
+    <button class="alb-btn" id="albTokenBtn" title="设置上传 Token">🔑</button>
     <button class="alb-btn" id="albRefreshBtn">⟳ 刷新</button>
     <span class="alb-path" id="albPath"></span>
   </div>
+  <input type="file" id="albFileInput" accept="image/*" multiple style="display:none">
 
   <div class="alb-status" id="albStatus">✦ 加载中...</div>
   <div class="alb-grid" id="albGrid"></div>
@@ -224,6 +289,21 @@ title: 云相册
   <span class="lb-next" id="lbNext">›</span>
   <img class="lb-img" id="lbImg" alt="">
   <div class="lb-cap" id="lbCap"></div>
+</div>
+
+<!-- Token 设置弹窗 -->
+<div class="tok-overlay" id="tokOverlay">
+  <div class="tok-box">
+    <div class="tok-title">⚙ 上传设置</div>
+    <p class="tok-tip">相册页直传需 GitHub Token，仅保存在本机 cookie 中，不上传到服务器。</p>
+    <input type="password" class="tok-input" id="tokInput" placeholder="粘贴 GitHub Token（留空保存 = 清除）" autocomplete="off">
+    <div class="tok-btns">
+      <button class="alb-btn" id="tokSaveBtn">保存</button>
+      <button class="alb-btn" id="tokCancelBtn">取消</button>
+    </div>
+    <p class="tok-hint">创建：GitHub → Settings → Developer settings → Fine-grained personal access tokens，仓库权限选 Contents: Read and write。</p>
+    <p class="tok-warn">⚠ Token 存于浏览器 cookie，任何访问此页面的人都能通过开发者工具读取，请仅使用本仓库最小权限的 Token。</p>
+  </div>
 </div>
 
 <script>
@@ -262,7 +342,7 @@ title: 云相册
   }
 
   function rawUrl(path) {
-    return 'https://raw.githubusercontent.com/' + REPO + '/main/' + ALBUM + '/' + enc(path);
+    return 'https://raw.githubusercontent.com/' + REPO + '/master/' + ALBUM + '/' + enc(path);
   }
 
   function apiUrl(path) {
@@ -437,6 +517,131 @@ title: 云相册
     if (e.key === 'Escape') closeLightbox();
     else if (e.key === 'ArrowLeft') stepLightbox(-1);
     else if (e.key === 'ArrowRight') stepLightbox(1);
+  });
+
+  // ---- 上传（GitHub Contents API，Token 存 cookie）----
+  var TOKEN_COOKIE = 'gh_album_token';
+
+  var fileInput = document.getElementById('albFileInput');
+  var tokOverlay = document.getElementById('tokOverlay');
+  var tokInput = document.getElementById('tokInput');
+  var pendingUpload = null; // 等待输入 Token 后继续上传的文件列表
+
+  function getToken() {
+    var m = document.cookie.match(new RegExp('(?:^|; )' + TOKEN_COOKIE + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+  function setToken(t) {
+    var s = TOKEN_COOKIE + '=' + encodeURIComponent(t) + '; path=/; SameSite=Lax';
+    if (location.protocol === 'https:') s += '; Secure';
+    document.cookie = s;
+  }
+  function clearToken() {
+    document.cookie = TOKEN_COOKIE + '=; path=/; SameSite=Lax; Max-Age=0';
+  }
+
+  function openTokenDialog() {
+    tokInput.value = getToken() || '';
+    tokOverlay.classList.add('open');
+    tokInput.focus();
+  }
+  function closeTokenDialog() {
+    tokOverlay.classList.remove('open');
+  }
+
+  function fileToBase64(file) {
+    return new Promise(function(resolve, reject) {
+      var r = new FileReader();
+      r.onload = function() {
+        var s = String(r.result);
+        resolve(s.indexOf(',') >= 0 ? s.split(',')[1] : s);
+      };
+      r.onerror = function() { reject(new Error('读取文件失败')); };
+      r.readAsDataURL(file);
+    });
+  }
+
+  async function uploadFiles(files) {
+    var token = getToken();
+    if (!token) {
+      pendingUpload = files;
+      openTokenDialog();
+      return;
+    }
+    var ok = 0, fail = 0;
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i];
+      statusEl.textContent = '⬆ 正在上传 ' + (i + 1) + '/' + files.length + '：' + f.name;
+      try {
+        var b64 = await fileToBase64(f);
+        var path = (currentPath ? currentPath + '/' : '') + f.name;
+        var resp = await fetch('https://api.github.com/repos/' + REPO + '/contents/' + ALBUM + '/' + enc(path), {
+          method: 'PUT',
+          headers: {
+            'Authorization': 'Bearer ' + token,
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ message: 'upload ' + f.name, content: b64, branch: 'master' })
+        });
+        if (!resp.ok) {
+          var j = {};
+          try { j = await resp.json(); } catch(e2) {}
+          if (resp.status === 401 || resp.status === 403) {
+            clearToken();
+            statusEl.textContent = '✕ Token 无效或无权限，请重新设置';
+            openTokenDialog();
+            return;
+          }
+          throw new Error('HTTP ' + resp.status + (j.message ? ' ' + j.message : ''));
+        }
+        ok++;
+      } catch(e) {
+        fail++;
+        statusEl.textContent = '✕ 上传失败：' + f.name + ' (' + e.message + ')';
+      }
+    }
+    statusEl.textContent = '✦ 上传完成：成功 ' + ok + ' 张' + (fail ? '，失败 ' + fail + ' 张' : '');
+    localStorage.removeItem(cacheKey(currentPath));
+    loadList(currentPath, true);
+  }
+
+  document.getElementById('albUploadBtn').addEventListener('click', function() {
+    fileInput.click();
+  });
+  document.getElementById('albTokenBtn').addEventListener('click', function() {
+    pendingUpload = null;
+    openTokenDialog();
+  });
+  fileInput.addEventListener('change', function() {
+    var files = Array.prototype.slice.call(this.files);
+    this.value = '';
+    if (!files.length) return;
+    var imgs = files.filter(function(f) { return isImg(f.name); });
+    if (!imgs.length) {
+      statusEl.textContent = '⚠ 未选择支持的图片格式';
+      return;
+    }
+    if (getToken()) {
+      uploadFiles(imgs);
+    } else {
+      pendingUpload = imgs;
+      openTokenDialog();
+    }
+  });
+  document.getElementById('tokSaveBtn').addEventListener('click', function() {
+    var v = tokInput.value.trim();
+    if (v) setToken(v); else clearToken();
+    closeTokenDialog();
+    if (pendingUpload) {
+      var files = pendingUpload;
+      pendingUpload = null;
+      uploadFiles(files);
+    }
+  });
+  document.getElementById('tokCancelBtn').addEventListener('click', function() {
+    pendingUpload = null;
+    closeTokenDialog();
   });
 
   // 启动
