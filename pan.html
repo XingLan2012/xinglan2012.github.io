@@ -130,6 +130,48 @@ title: 云盘
     .pan-actions { white-space: normal; }
     .pan-btn { margin-bottom: 4px; }
   }
+
+  /* 外部链接区 */
+  .pan-external {
+    margin-top: 30px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,215,0,0.06);
+  }
+  .pan-ext-title {
+    font-size: 11px;
+    color: rgba(255,215,0,0.3);
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+  }
+  .pan-ext-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1px solid rgba(255,215,0,0.08);
+    border-radius: 10px;
+    background: rgba(255,215,0,0.02);
+    transition: all 0.2s;
+    flex-wrap: wrap;
+  }
+  .pan-ext-item:hover {
+    border-color: rgba(255,215,0,0.22);
+    background: rgba(255,215,0,0.04);
+  }
+  .pan-ext-item .pan-ext-icon { font-size: 15px; opacity: 0.6; }
+  .pan-ext-item a {
+    color: rgba(255,215,0,0.75);
+    text-decoration: none;
+    font-size: 13px;
+    letter-spacing: 1px;
+    transition: color 0.2s;
+  }
+  .pan-ext-item a:hover { color: #ffd700; }
+  .pan-ext-item .pan-ext-desc {
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 1px;
+  }
 </style>
 
 <div class="pan-wrap">
@@ -138,6 +180,16 @@ title: 云盘
 
   <div id="panToolbar"></div>
   <div id="panFileList"><p class="pan-status">✦ 加载中...</p></div>
+
+  <!-- 外部链接区 -->
+  <div class="pan-external">
+    <div class="pan-ext-title">✦ 外部链接</div>
+    <div class="pan-ext-item">
+      <span class="pan-ext-icon">📦</span>
+      <a href="https://github.com/RinLit-233-shiroko/Class-Widgets-2/releases/download/2.0.1.0/ClassWidgets-2-Windows.zip" target="_blank" rel="noopener">ClassWidgets-2-Windows.zip</a>
+      <span class="pan-ext-desc">Class Widgets 2 · Windows 桌面小组件（约 101 MB，跳转 GitHub Release 下载）</span>
+    </div>
+  </div>
 </div>
 
 <script>
