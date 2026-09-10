@@ -1,0 +1,18 @@
+﻿RHINE LAB · INTERNAL DATABASE
+FILE X-036 / Tarjan 与强联通分量
+TARJAN SCC
+
+科室：算法科
+编目范围：2026-07-24
+相关人物：星澜 / Xinglan
+访问范围：PUBLIC AREA
+
+以 DFS 时间戳与栈完成的线性图论算法族。基于 dfn 与 low 两个数组处理强联通分量、割点割边与双联通分量，并延伸到缩点与基环树。
+
+研究记录
+1. 强联通分量缩点后图变为 DAG，可在其上做拓扑 DP。
+2. 基环树视为环上挂树的结构，拆环后按树处理。
+3. 第 3 天训练主题即为图论 tarjan，与并查集、MST 同批整理。
+
+来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/ioer/20260724%E5%9B%BE%E8%AE%BA%E7%9B%B8%E5%85%B3.md
+本档案编目自星澜之境站点内容。

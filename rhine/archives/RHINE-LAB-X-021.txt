@@ -1,0 +1,18 @@
+﻿RHINE LAB · INTERNAL DATABASE
+FILE X-021 / 并查集与删除操作
+DSU DELETION
+
+科室：算法科
+编目范围：2026-07-24
+相关人物：星澜 / Xinglan
+访问范围：PUBLIC AREA
+
+从「不断删边并询问连通块数量」的问题出发，讨论并查集为何无法直接支持删除：并查集中存储的信息不准确，只支持合并方向的操作。
+
+研究记录
+1. 删边连通块问题需要离线倒序处理，把删除转成加边。
+2. 并查集的信息不可逆，因此不能原地撤销合并。
+3. 该结论引出后续图论系列的离线思维主线。
+
+来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/ioer/20260724%E5%9B%BE%E8%AE%BA%E7%9B%B8%E5%85%B3.md
+本档案编目自星澜之境站点内容。

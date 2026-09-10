@@ -1,0 +1,18 @@
+﻿RHINE LAB · INTERNAL DATABASE
+FILE X-030 / 张黎作品（作 人 思）
+ZHANGLI WORKS B
+
+科室：档案科
+编目范围：2026-08-28
+相关人物：张黎
+访问范围：PUBLIC AREA
+
+云盘收录的作品压缩包之二，约 13.4 MB，为同名系列的另一份归档，由云盘页统一编目。
+
+研究记录
+1. 归档于 /pan 目录，与前者构成同系列两份档案。
+2. 文件体积接近仓库单文件建议上限，故以 zip 原样存放。
+3. 下载直链指向 master 分支的 raw 地址。
+
+来源：https://xinglan2012.github.io/pan.html
+本档案编目自星澜之境站点内容。

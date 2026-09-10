@@ -1,0 +1,18 @@
+﻿RHINE LAB · INTERNAL DATABASE
+FILE X-039 / Gamma-Utils 模组
+GAMMA UTILS MOD
+
+科室：指令科
+编目范围：2026-08
+相关人物：星澜 / Xinglan
+访问范围：PUBLIC AREA
+
+站点云盘分发的 Minecraft 模组构件，版本标记 2.5.10 对应 mc1.21.11，以 jar 形式提供下载。
+
+研究记录
+1. 文件位于 /pan 目录，由云盘页自动编目。
+2. 文件名中的加号在下载链接中编码为 %2B 以保证直链可用。
+3. 属于站点长期维护的分发构件之一。
+
+来源：https://xinglan2012.github.io/pan.html
+本档案编目自星澜之境站点内容。

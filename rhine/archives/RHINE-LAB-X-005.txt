@@ -1,0 +1,18 @@
+﻿RHINE LAB · INTERNAL DATABASE
+FILE X-005 / 工具调用规范
+TOOLCALL SPEC
+
+科室：档案科
+编目范围：2026-08-27
+相关人物：星澜 / Xinglan
+访问范围：REFERENCE AREA
+
+面向 AI 的工具调用规范文档，收录于 Mindbook 知识库，供读取 /mindbook 目录时作为行为约束依据。
+
+研究记录
+1. 文档以纯文本形式存放在 /mindbook 目录。
+2. 与 MC 数学文档、指令说明并列，构成外接知识库的三大件。
+3. 知识库页面标注 noindex，不参与站点导航。
+
+来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/toolcall.txt
+本档案编目自星澜之境站点内容。

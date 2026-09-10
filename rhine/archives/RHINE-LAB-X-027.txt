@@ -1,0 +1,18 @@
+﻿RHINE LAB · INTERNAL DATABASE
+FILE X-027 / 爆炸
+EXPLOSIONS
+
+科室：数理学科
+编目范围：2026-03
+相关人物：MCS&E
+访问范围：REFERENCE AREA
+
+第四章开篇。研究爆炸对实体产生的推力，是矢量炮与珍珠炮等装置的理论核心之一。
+
+研究记录
+1. 分析爆炸中心的推力分布与衰减。
+2. 讨论实体受爆炸影响后的速度变化。
+3. 为流体推动与活塞变速等章节提供力学铺垫。
+
+来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/MC%E6%95%B0%E5%AD%A6%E6%96%87%E6%A1%A3.md
+本档案编目自星澜之境站点内容。

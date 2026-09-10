@@ -1,0 +1,18 @@
+﻿RHINE LAB · INTERNAL DATABASE
+FILE X-037 / 矿车运动规律
+MINECART DYNAMICS
+
+科室：数理学科
+编目范围：2026-03
+相关人物：MCS&E
+访问范围：REFERENCE AREA
+
+第五章主题。系统整理矿车的基本运动规律，并把多个矿车的运动规律组合起来，构成自动化铁路设计的理论基础。
+
+研究记录
+1. 包含单个矿车的加速与摩擦规律。
+2. 给出多个矿车耦合运动的组合方法。
+3. 理论来源标注为 nenn《Minecraft 自动化铁路系统的设计准备》。
+
+来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/MC%E6%95%B0%E5%AD%A6%E6%96%87%E6%A1%A3.md
+本档案编目自星澜之境站点内容。

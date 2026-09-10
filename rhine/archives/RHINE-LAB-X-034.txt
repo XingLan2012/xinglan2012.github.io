@@ -1,0 +1,18 @@
+﻿RHINE LAB · INTERNAL DATABASE
+FILE X-034 / 实体 NBT
+ENTITY NBT
+
+科室：指令科
+编目范围：2026-08
+相关人物：星澜之境编目
+访问范围：REFERENCE AREA
+
+用于 /summon 的实体 NBT 数据整理。通过标签精确控制生成实体的属性、装备、AI 与运动状态。
+
+研究记录
+1. 标签嵌套结构与实体类型相关，需按类型查表。
+2. 常用标签涵盖 NoAI、Silent、Tags 与 Motion 等。
+3. 与实体 ID 章节配合可完成完整的实体生成指令。
+
+来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/Minecraft-Java26.2%E7%89%88%E6%9C%AC%E6%8C%87%E4%BB%A4%E8%AF%B4%E6%98%8E.md
+本档案编目自星澜之境站点内容。
