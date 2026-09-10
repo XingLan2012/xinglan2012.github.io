@@ -1,0 +1,18 @@
+﻿XINGLAN OS · INTERNAL DATABASE
+FILE X-013 / 碎星之列
+CRYSTAL PENDANT
+
+科室：站点科
+编目范围：2026-08
+相关人物：星澜 / Xinglan
+访问范围：PUBLIC AREA
+
+左上角全局导航组件。金色碎星 SVG 图标展开侧栏面板，收录首页、欢迎、OIer、归档、时运、云盘、相册与 GitHub 入口，支持遮罩点击与 Esc 关闭。
+
+研究记录
+1. 面板标语「散落的星辰，终将汇成星河」，页脚为「循此苦旅，终抵繁星」。
+2. 图标由主星、四颗碎星与四向星芒射线构成，带呼吸式辉光动画。
+3. 移动端面板宽度收窄，遮罩层点击即收起。
+
+来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/_includes/crystal-pendant.html
+本档案编目自星澜之境站点内容。

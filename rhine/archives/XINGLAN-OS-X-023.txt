@@ -1,0 +1,18 @@
+﻿XINGLAN OS · INTERNAL DATABASE
+FILE X-023 / 云相册
+CLOUD ALBUM
+
+科室：站点科
+编目范围：2026-08-28
+相关人物：星澜 / Xinglan
+访问范围：PUBLIC AREA
+
+站点图册页。/album 目录下的每个子文件夹即一本相册，页面通过 GitHub API 自动编目，支持灯箱预览、键盘翻页与页面内直传。
+
+研究记录
+1. 灯箱支持 ‹ › 翻页、Esc 关闭与方向键切换，图片走 raw 直链。
+2. 页面内上传使用 GitHub Contents API，Token 仅存于本机 cookie，不写入服务器。
+3. 另有本地脚本批量上传通道，使用本机 git 凭证，不暴露 Token。
+
+来源：https://xinglan2012.github.io/album.html
+本档案编目自星澜之境站点内容。

@@ -1,0 +1,18 @@
+﻿XINGLAN OS · INTERNAL DATABASE
+FILE X-014 / 实体命名空间 ID
+ENTITY IDS
+
+科室：指令科
+编目范围：2026-08
+相关人物：星澜之境编目
+访问范围：REFERENCE AREA
+
+全部实体的命名空间 ID 清单，供 /summon、/execute 与选择器 type= 参数直接引用。
+
+研究记录
+1. 按命名空间分组，含原版实体完整 ID。
+2. ID 为 26.2 版本校验后的准确写法。
+3. 与实体 NBT 章节配合使用可完成完整生成。
+
+来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/Minecraft-Java26.2%E7%89%88%E6%9C%AC%E6%8C%87%E4%BB%A4%E8%AF%B4%E6%98%8E.md
+本档案编目自星澜之境站点内容。

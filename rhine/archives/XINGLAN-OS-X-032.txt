@@ -1,0 +1,18 @@
+﻿XINGLAN OS · INTERNAL DATABASE
+FILE X-032 / 流体推动与活塞变速
+FLUID AND PISTON
+
+科室：数理学科
+编目范围：2026-03
+相关人物：MCS&E
+访问范围：REFERENCE AREA
+
+第四章后半部分。整理流体对实体的推动作用、活塞的变速作用，以及实体在蜂蜜块侧面的移动规律。
+
+研究记录
+1. 水流推力与实体阻力的平衡关系。
+2. 活塞推动造成的速度突变与可叠加性。
+3. 蜂蜜块侧面移动的特殊摩擦与减速表现。
+
+来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/MC%E6%95%B0%E5%AD%A6%E6%96%87%E6%A1%A3.md
+本档案编目自星澜之境站点内容。

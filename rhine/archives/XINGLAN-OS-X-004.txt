@@ -1,0 +1,18 @@
+﻿XINGLAN OS · INTERNAL DATABASE
+FILE X-004 / Java 版 26.2 新增内容
+SNAPSHOT 26.2 CHANGES
+
+科室：指令科
+编目范围：2026-08
+相关人物：星澜之境编目
+访问范围：REFERENCE AREA
+
+Minecraft Java 版 26.2 的完整参考文档开篇，汇总该版本相对前版的新增与变更内容，作为后续指令、实体与规则清单的版本基线。
+
+研究记录
+1. 文档定位为单版本完整参考，覆盖指令、实体、规则、选择器、组件与 NBT。
+2. 全部条目按版本 26.2 校验，避免跨版本混用。
+3. 编目范围为单版本速查，与 MC 数学文档同属 Minecraft 知识体系。
+
+来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/Minecraft-Java26.2%E7%89%88%E6%9C%AC%E6%8C%87%E4%BB%A4%E8%AF%B4%E6%98%8E.md
+本档案编目自星澜之境站点内容。

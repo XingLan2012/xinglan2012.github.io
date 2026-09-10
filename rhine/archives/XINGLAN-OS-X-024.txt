@@ -1,0 +1,18 @@
+﻿XINGLAN OS · INTERNAL DATABASE
+FILE X-024 / 目标选择器
+TARGET SELECTORS
+
+科室：指令科
+编目范围：2026-08
+相关人物：星澜之境编目
+访问范围：REFERENCE AREA
+
+目标选择器语法整理。以 @a、@e、@p、@r、@s 为基础，配合 type、distance、scores、nbt 等筛选参数精确圈定作用对象。
+
+研究记录
+1. 选择器参数可叠加，多个条件之间为与关系。
+2. 排序参数 sort 与数量限制 limit 决定最终命中集合。
+3. 配合 execute 可将作用目标与执行位置分离。
+
+来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/Minecraft-Java26.2%E7%89%88%E6%9C%AC%E6%8C%87%E4%BB%A4%E8%AF%B4%E6%98%8E.md
+本档案编目自星澜之境站点内容。

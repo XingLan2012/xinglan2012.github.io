@@ -1,0 +1,18 @@
+﻿XINGLAN OS · INTERNAL DATABASE
+FILE X-026 / 最小生成树
+MINIMUM SPANNING TREE
+
+科室：算法科
+编目范围：2026-07-24
+相关人物：星澜 / Xinglan
+访问范围：PUBLIC AREA
+
+在连通带权无向图中选取边集，使所有点连通且总权值最小。整理了 Kruskal 与 Prim 两种主流做法的适用条件与实现要点。
+
+研究记录
+1. Kruskal 按边权排序，用并查集维护连通性，适合稀疏图。
+2. Prim 从点集扩展，配合堆优化适合稠密图。
+3. 与并查集删除同篇，构成图论系列的开篇。
+
+来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/ioer/20260724%E5%9B%BE%E8%AE%BA%E7%9B%B8%E5%85%B3.md
+本档案编目自星澜之境站点内容。

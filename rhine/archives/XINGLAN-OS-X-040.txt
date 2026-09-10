@@ -1,0 +1,18 @@
+﻿XINGLAN OS · INTERNAL DATABASE
+FILE X-040 / 云盘目录索引
+CLOUD INDEX
+
+科室：档案科
+编目范围：2026-08-28
+相关人物：星澜 / Xinglan
+访问范围：PUBLIC AREA
+
+云盘当前收录内容的汇总档案：一个 Minecraft 模组构件、一个单文件小游戏与两份作品压缩包，另设外部链接区分发超限资源。
+
+研究记录
+1. 站内文件由 /pan 目录承载，页面通过 GitHub API 自动编目。
+2. 超出仓库单文件上限的资源以外部链接方式列于页面底部。
+3. 目录支持 5 分钟本地缓存与手动刷新。
+
+来源：https://xinglan2012.github.io/pan.html
+本档案编目自星澜之境站点内容。

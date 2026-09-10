@@ -1,0 +1,18 @@
+﻿XINGLAN OS · INTERNAL DATABASE
+FILE X-002 / Minecraft 坐标系
+COORDINATE SYSTEM
+
+科室：数理学科
+编目范围：2026-03
+相关人物：MCS&E
+访问范围：REFERENCE AREA
+
+《Minecraft 哲学的数学原理》第一章开篇。建立方块世界的坐标描述方式，作为后续全部运动学推导的几何基础。
+
+研究记录
+1. 明确方块坐标与实体连续坐标的差异。
+2. 给出坐标轴的取向与单位约定。
+3. 为时间计量与坐标系转换两节提供前置定义。
+
+来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/MC%E6%95%B0%E5%AD%A6%E6%96%87%E6%A1%A3.md
+本档案编目自星澜之境站点内容。

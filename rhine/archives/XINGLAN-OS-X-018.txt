@@ -1,0 +1,18 @@
+﻿XINGLAN OS · INTERNAL DATABASE
+FILE X-018 / 云盘
+CLOUD DRIVE
+
+科室：站点科
+编目范围：2026-08-27
+相关人物：星澜 / Xinglan
+访问范围：PUBLIC AREA
+
+站点文件分发页。通过 GitHub API 动态列出 /pan 目录，按文件名排序并显示体积，支持本地缓存与一键刷新，下载走 raw 直链。
+
+研究记录
+1. 已下线全部失效镜像节点（FastGit 已关站、ghproxy 不稳定），仅保留 GitHub 直链。
+2. 文件列表带 5 分钟本地缓存，远程失败时回退到缓存并提示。
+3. 页面默认纯黑背景，并设有外部链接区用于分发超过仓库体积上限的第三方资源。
+
+来源：https://xinglan2012.github.io/pan.html
+本档案编目自星澜之境站点内容。

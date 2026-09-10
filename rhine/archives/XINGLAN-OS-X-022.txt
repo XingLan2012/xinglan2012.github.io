@@ -1,0 +1,18 @@
+﻿XINGLAN OS · INTERNAL DATABASE
+FILE X-022 / 活体的参数与自由运动
+MOB PARAMETERS
+
+科室：数理学科
+编目范围：2026-03
+相关人物：MCS&E
+访问范围：REFERENCE AREA
+
+第三章主题。整理活体的运动参数，并讨论其在无外部干预下的自由运动规律。
+
+研究记录
+1. 列出各类活体的运动参数取值。
+2. 推导自由运动的速度与位移关系。
+3. 结论可用于预测生物移动路径与时间。
+
+来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/MC%E6%95%B0%E5%AD%A6%E6%96%87%E6%A1%A3.md
+本档案编目自星澜之境站点内容。

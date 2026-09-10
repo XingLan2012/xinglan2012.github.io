@@ -1,0 +1,18 @@
+﻿XINGLAN OS · INTERNAL DATABASE
+FILE X-028 / OIer 专项
+OIER SPEC
+
+科室：站点科
+编目范围：2026-07-24
+相关人物：星澜 / Xinglan
+访问范围：PUBLIC AREA
+
+竞赛笔记页。运行时拉取 /ioer 目录的 Markdown，按日期倒序编目，用 marked 解析后单页渲染，支持 ?file= 深链直达。
+
+研究记录
+1. 笔记按文件名前缀的八位日期编号，列表自动格式化为日期标签。
+2. 列表与单页为双视图切换，返回时清除 URL 查询参数。
+3. 页面声明内容仅供个人学习参考，不可用于商业用途。
+
+来源：https://xinglan2012.github.io/ioer.html
+本档案编目自星澜之境站点内容。

@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "Rhine Lab · Analysis OS",
-  "short_name": "Rhine Lab",
-  "description": "莱茵生命交互式三维研究档案终端",
+  "name": "XinglanOS · Analysis OS",
+  "short_name": "XinglanOS",
+  "description": "星澜之境交互式三维研究档案终端",
   "lang": "zh-CN",
   "start_url": "./?source=pwa",
   "scope": "./",

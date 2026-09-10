@@ -1,0 +1,18 @@
+﻿XINGLAN OS · INTERNAL DATABASE
+FILE X-020 / 连词小游戏
+CONJUNCTION GAME
+
+科室：档案科
+编目范围：2026-08-26
+相关人物：星澜 / Xinglan
+访问范围：PUBLIC AREA
+
+站点云盘分发的单文件互动小游戏。以单个 HTML 承载全部逻辑与素材，打开即玩，无需构建与后端。
+
+研究记录
+1. 文件体积约 4 MB，资源全部内联。
+2. 由云盘页自动编目并提供直链下载。
+3. 属于站点自制的娱乐类分发构件。
+
+来源：https://xinglan2012.github.io/pan.html
+本档案编目自星澜之境站点内容。
