@@ -1,2 +1,18 @@
 <link rel="icon" type="image/svg+xml" href="{{ '/favicon.svg' | relative_url }}">
 <link rel="alternate icon" href="{{ '/favicon.ico' | relative_url }}">
+
+<!-- 第二 UI（Rhine Lab）：所有规则以 html.ui-rhine 限定，未启用时零影响 -->
+<link rel="stylesheet" href="{{ '/assets/css/rhine-ui.css' | relative_url }}">
+<script>
+  // 渲染前应用已保存的界面偏好，避免切换闪烁
+  (function () {
+    try {
+      if (localStorage.getItem('rhine_ui_pref') === 'rhine') {
+        document.documentElement.classList.add('ui-rhine');
+        document.documentElement.setAttribute('data-ui', 'rhine');
+      } else {
+        document.documentElement.setAttribute('data-ui', 'default');
+      }
+    } catch (e) {}
+  })();
+</script>

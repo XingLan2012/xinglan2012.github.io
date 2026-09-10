@@ -4,3 +4,6 @@ run_*.bat
 cleanup_temp.py
 converted_files/
 __pycache__/
+
+# 参考项目（213M，含 node_modules）：仅作设计参考，不纳入博客仓库
+RhineLabUI-main/

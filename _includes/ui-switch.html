@@ -1,0 +1,150 @@
+<!-- 左上角：界面设置（切换默认 UI / Rhine Lab 第二 UI） -->
+<style>
+  /* 基础样式对应「默认 UI」（暗金星澜）；Rhine Lab 模式下由 rhine-ui.css 覆盖 */
+  .ui-switch-btn {
+    position: fixed;
+    top: 16px;
+    left: 68px;
+    z-index: 9999;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    color: rgba(255, 215, 0, 0.55);
+    background: rgba(8, 12, 35, 0.72);
+    border: 1px solid rgba(255, 215, 0, 0.14);
+    border-radius: 50%;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: transform 0.3s ease, color 0.25s ease, border-color 0.25s ease;
+    user-select: none;
+  }
+  .ui-switch-btn:hover {
+    color: #ffd700;
+    border-color: rgba(255, 215, 0, 0.4);
+    transform: rotate(45deg);
+  }
+  .ui-switch-btn.open {
+    color: #ffd700;
+    border-color: rgba(255, 215, 0, 0.4);
+    transform: rotate(90deg);
+  }
+
+  .ui-switch-panel {
+    position: fixed;
+    top: 66px;
+    left: 16px;
+    z-index: 9998;
+    width: 286px;
+    padding: 16px 18px;
+    background: rgba(8, 12, 35, 0.94);
+    border: 1px solid rgba(255, 215, 0, 0.12);
+    border-radius: 12px;
+    box-shadow: 0 12px 50px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  .ui-switch-panel.open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .ui-switch-title {
+    font-size: 12px;
+    color: rgba(255, 215, 0, 0.65);
+    letter-spacing: 3px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.08);
+  }
+  .ui-switch-row { margin-bottom: 13px; }
+  .ui-switch-label {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.3);
+    letter-spacing: 2px;
+    margin-bottom: 7px;
+  }
+  .ui-switch-opts { display: flex; gap: 6px; }
+  .ui-switch-opt {
+    flex: 1;
+    padding: 7px 6px;
+    font-size: 11px;
+    font-family: inherit;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.45);
+    background: transparent;
+    border: 1px solid rgba(255, 215, 0, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.22s ease;
+  }
+  .ui-switch-opt:hover {
+    color: rgba(255, 215, 0, 0.85);
+    border-color: rgba(255, 215, 0, 0.3);
+  }
+  .ui-switch-opt.active {
+    color: #ffd700;
+    background: rgba(255, 215, 0, 0.08);
+    border-color: rgba(255, 215, 0, 0.35);
+  }
+  .ui-switch-opt:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .ui-switch-note {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.28);
+    letter-spacing: 1px;
+    line-height: 1.6;
+    margin-top: 4px;
+  }
+  .ui-switch-note.warn { color: rgba(255, 170, 90, 0.6); }
+  .ui-switch-hint {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.18);
+    letter-spacing: 1px;
+    line-height: 1.6;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 215, 0, 0.06);
+  }
+
+  @media (max-width: 600px) {
+    .ui-switch-panel { width: calc(100vw - 32px); max-width: 300px; }
+  }
+</style>
+
+<button class="ui-switch-btn" id="uiSwitchBtn" title="界面设置" aria-label="界面设置" aria-expanded="false">⚙</button>
+
+<div class="ui-switch-panel" id="uiSwitchPanel" role="dialog" aria-label="界面设置">
+  <div class="ui-switch-title">✦ 界面设置</div>
+
+  <div class="ui-switch-row">
+    <div class="ui-switch-label">界面风格</div>
+    <div class="ui-switch-opts" id="uiStyleOpts">
+      <button class="ui-switch-opt active" data-ui-opt="default">星澜（默认）</button>
+      <button class="ui-switch-opt" data-ui-opt="rhine">Rhine Lab</button>
+    </div>
+  </div>
+
+  <div class="ui-switch-row">
+    <div class="ui-switch-label">背景动效</div>
+    <div class="ui-switch-opts" id="uiFxOpts">
+      <button class="ui-switch-opt active" data-fx-opt="on">开启</button>
+      <button class="ui-switch-opt" data-fx-opt="off">关闭</button>
+    </div>
+  </div>
+
+  <div class="ui-switch-note" id="uiSwitchNote">正在检测环境…</div>
+  <div class="ui-switch-hint">Rhine Lab 皮肤基于 RhineLabUI 设计语言（MIT · LBEILC）；默认界面不依赖 WebGL，兼容性最好。</div>
+</div>
+
+<script src="/assets/js/rhine-ui.js"></script>
