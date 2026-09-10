@@ -16,6 +16,99 @@
     />
     <title>RHINE LAB · ANALYSIS OS</title>
     <link rel="icon" type="image/svg+xml" href="/rhine/favicon.svg" />
+    <!--
+      WebGL 兜底：本终端依赖 WebGL 渲染三维档案阵列。若浏览器/显卡驱动不支持，
+      原先会因 WebGLRenderer 抛错而停在黑屏。此处只增加一个提示层与返回入口，
+      不触碰启动动画、加载序列与渲染逻辑。
+    -->
+    <script>
+      (function () {
+        function webglAvailable() {
+          try {
+            var canvas = document.createElement("canvas");
+            var gl =
+              canvas.getContext("webgl2") ||
+              canvas.getContext("webgl") ||
+              canvas.getContext("experimental-webgl");
+            if (!gl) return false;
+            var lose = gl.getExtension("WEBGL_lose_context");
+            if (lose) lose.loseContext();
+            return true;
+          } catch (error) {
+            return false;
+          }
+        }
+        function showFallback(detail) {
+          if (document.getElementById("webgl-fallback")) return;
+          var layer = document.createElement("div");
+          layer.id = "webgl-fallback";
+          layer.setAttribute("role", "alertdialog");
+          layer.innerHTML =
+            '<div class="webgl-fallback-box">' +
+            '<p class="webgl-fallback-kicker">RHINE LAB · ANALYSIS OS</p>' +
+            '<h1>无法启动三维终端</h1>' +
+            '<p>当前浏览器或显卡驱动未能创建 WebGL 上下文，三维档案阵列无法渲染。' +
+            "请改用支持 WebGL 的浏览器（新版 Chrome / Edge / Safari / Firefox），" +
+            "或在浏览器设置中开启硬件加速后重试。</p>" +
+            '<p class="webgl-fallback-detail"></p>' +
+            '<p><a class="webgl-fallback-back" href="/">← 返回星澜之境博客</a></p>' +
+            "</div>";
+          layer.querySelector(".webgl-fallback-detail").textContent = detail
+            ? "错误信息：" + detail
+            : "";
+          document.body.appendChild(layer);
+        }
+        if (!webglAvailable()) {
+          window.__RHINE_NO_WEBGL__ = true;
+          document.addEventListener("DOMContentLoaded", function () {
+            showFallback("");
+          });
+        } else {
+          // 探测通过但真实渲染仍可能失败（显存不足等），此时同样给出提示而非黑屏
+          window.addEventListener("error", function (event) {
+            var message = (event && event.message) || "";
+            if (/WebGL|webgl/i.test(message)) showFallback(message);
+          });
+        }
+        window.__RHINE_SHOW_FALLBACK__ = showFallback;
+      })();
+    </script>
+    <style>
+      #webgl-fallback {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: #e8e5e1;
+        color: #080a08;
+        font-family: "MiSans", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      }
+      #webgl-fallback .webgl-fallback-box { max-width: 520px; line-height: 1.9; }
+      #webgl-fallback .webgl-fallback-kicker {
+        font-size: 11px;
+        letter-spacing: 1.7px;
+        color: #888074;
+        margin: 0 0 18px;
+      }
+      #webgl-fallback h1 {
+        font-size: 24px;
+        font-weight: 600;
+        letter-spacing: 1.4px;
+        margin: 0 0 16px;
+      }
+      #webgl-fallback p { font-size: 13px; margin: 0 0 14px; color: #24221f; }
+      #webgl-fallback .webgl-fallback-detail { font-size: 11px; color: #888074; }
+      #webgl-fallback .webgl-fallback-back {
+        color: #946b3c;
+        font-size: 13px;
+        text-decoration: none;
+        border-bottom: 1px solid #cbb397;
+      }
+      #webgl-fallback .webgl-fallback-back:hover { border-bottom-color: #a67d48; }
+    </style>
     <script type="module" crossorigin src="/rhine/assets/index-CTFu-qx2.js"></script>
     <link rel="stylesheet" crossorigin href="/rhine/assets/index-CK1DSOjW.css">
   </head>
