@@ -109,10 +109,237 @@
       }
       #webgl-fallback .webgl-fallback-back:hover { border-bottom-color: #a67d48; }
     </style>
+    <!--
+      加载进度层：首屏即显示，按「启动资源清单」(load-manifest.json) 与实际加载量
+      计算百分比，资源就绪后淡出交给启动动画。只做展示，不干预加载顺序与动画。
+    -->
+    <style>
+      #load-progress {
+        position: fixed;
+        inset: 0;
+        z-index: 99998;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: #e8e5e1;
+        color: #080a08;
+        font-family: "MiSans", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+        transition: opacity 0.5s ease;
+      }
+      #load-progress.done { opacity: 0; pointer-events: none; }
+      #load-progress .lp-box { width: 100%; max-width: 420px; }
+      #load-progress .lp-kicker {
+        font-size: 11px;
+        letter-spacing: 1.7px;
+        color: #888074;
+        margin: 0 0 16px;
+      }
+      #load-progress .lp-title {
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: 1.4px;
+        margin: 0 0 22px;
+      }
+      #load-progress .lp-track {
+        height: 2px;
+        background: #d6d0c4;
+        overflow: hidden;
+      }
+      #load-progress .lp-fill {
+        display: block;
+        height: 100%;
+        width: 0%;
+        background: #a67d48;
+        transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      #load-progress .lp-meta {
+        display: flex;
+        justify-content: space-between;
+        margin: 12px 0 0;
+        font-size: 11px;
+        letter-spacing: 1px;
+        color: #6f675b;
+      }
+      #load-progress .lp-indeterminate .lp-fill {
+        width: 35% !important;
+        animation: lpSlide 1.1s ease-in-out infinite alternate;
+      }
+      @keyframes lpSlide {
+        from { margin-left: 0; }
+        to { margin-left: 65%; }
+      }
+    </style>
+    <script>
+      (function () {
+        var layer = null;
+        var fill = null;
+        var percentEl = null;
+        var bytesEl = null;
+        var tracked = null;
+        var credited = {};
+        var loaded = 0;
+        var total = 0;
+        var finished = false;
+        var buffered = [];
+
+        function fmtMB(bytes) {
+          return (bytes / 1048576).toFixed(1);
+        }
+
+        function render() {
+          if (!fill) return;
+          var ratio = total > 0 ? Math.min(1, loaded / total) : 0;
+          fill.style.width = (ratio * 100).toFixed(1) + "%";
+          percentEl.textContent = Math.round(ratio * 100) + "%";
+          bytesEl.textContent = fmtMB(loaded) + " / " + fmtMB(total) + " MB";
+        }
+
+        function finish() {
+          if (finished) return;
+          finished = true;
+          if (layer) {
+            if (fill) fill.style.width = "100%";
+            layer.classList.add("done");
+            setTimeout(function () {
+              if (layer && layer.parentNode) layer.parentNode.removeChild(layer);
+            }, 600);
+          }
+        }
+
+        function basePrefix() {
+          return location.pathname.replace(/[^/]*$/, "");
+        }
+
+        /** 记录一条资源请求；命中启动清单才计入进度 */
+        function track(name, size) {
+          if (finished) return;
+          if (!tracked) {
+            buffered.push([name, size]);
+            return;
+          }
+          var pathname;
+          try {
+            pathname = new URL(name, location.href).pathname;
+          } catch (error) {
+            return;
+          }
+          var base = basePrefix();
+          if (pathname.indexOf(base) !== 0) return;
+          var rel = pathname.slice(base.length);
+          var file = tracked[rel];
+          if (!file || credited[rel]) return;
+          credited[rel] = true;
+          loaded += file;
+          render();
+          if (loaded >= total) setTimeout(finish, 400);
+        }
+
+        // 尽早注册，buffered:true 可补捞注册前已完成的请求
+        try {
+          new PerformanceObserver(function (list) {
+            list.getEntries().forEach(function (entry) {
+              track(entry.name, entry.decodedBodySize || 0);
+            });
+          }).observe({ type: "resource", buffered: true });
+        } catch (error) {
+          /* 不支持则退化为不确定进度 */
+        }
+
+        // 应用就绪（#loading.loaded）或出错时交出画面
+        try {
+          new MutationObserver(function () {
+            var loading = document.getElementById("loading");
+            if (!loading) return;
+            if (loading.classList.contains("loaded")) finish();
+            else if (loading.querySelector(".error-state")) finish();
+          }).observe(document.documentElement, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ["class"],
+          });
+        } catch (error) {}
+
+        document.addEventListener("DOMContentLoaded", function () {
+          layer = document.getElementById("load-progress");
+          if (layer) {
+            fill = layer.querySelector(".lp-fill");
+            percentEl = layer.querySelector(".lp-percent");
+            bytesEl = layer.querySelector(".lp-bytes");
+          }
+          // WebGL 兜底层已接管时不再显示进度
+          if (document.getElementById("webgl-fallback")) {
+            if (layer && layer.parentNode) layer.parentNode.removeChild(layer);
+            finished = true;
+            return;
+          }
+
+          var useManifest = function (files) {
+            tracked = {};
+            total = 0;
+            files.forEach(function (file) {
+              tracked[file.path] = file.bytes;
+              total += file.bytes;
+            });
+            if (!total) throw new Error("empty manifest");
+            buffered.forEach(function (item) {
+              track(item[0], item[1]);
+            });
+            buffered = [];
+            render();
+          };
+
+          // 优先使用构建时内联的启动清单（无额外请求，弱网也能立即给出总量）
+          var inline = window.__RHINE_STARTUP__;
+          if (inline && inline.files && inline.files.length) {
+            try {
+              useManifest(
+                inline.files.map(function (item) {
+                  return { path: item[0], bytes: item[1] };
+                }),
+              );
+            } catch (error) {
+              /* 落到下方兜底 */
+            }
+          }
+          if (!tracked) {
+            fetch("load-manifest.json", { cache: "no-cache" })
+              .then(function (response) {
+                if (!response.ok) throw new Error("HTTP " + response.status);
+                return response.json();
+              })
+              .then(function (manifest) {
+                useManifest(manifest.files || []);
+              })
+              .catch(function () {
+                // 清单不可用：退化为不确定进度，仍会在应用就绪时淡出
+                if (layer) layer.classList.add("lp-indeterminate");
+                if (percentEl) percentEl.textContent = "…";
+                if (bytesEl) bytesEl.textContent = "正在载入";
+              });
+          }
+
+          // 兜底：无论进度如何，最长 40 秒后交出画面
+          setTimeout(finish, 40000);
+        });
+      })();
+    </script>
     <script type="module" crossorigin src="/rhine/assets/index-CTFu-qx2.js"></script>
     <link rel="stylesheet" crossorigin href="/rhine/assets/index-CK1DSOjW.css">
   </head>
   <body>
+    <div id="load-progress" role="status" aria-live="polite">
+      <div class="lp-box">
+        <p class="lp-kicker">RHINE LAB · ANALYSIS OS</p>
+        <h1 class="lp-title">正在载入三维档案资源</h1>
+        <div class="lp-track"><i class="lp-fill"></i></div>
+        <p class="lp-meta">
+          <span class="lp-percent">0%</span>
+          <span class="lp-bytes">0.0 / 0.0 MB</span>
+        </p>
+      </div>
+    </div>
     <main id="viewport"><div id="stage"></div></main>
   </body>
 </html>

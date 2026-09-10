@@ -1,0 +1,33 @@
+{
+  "total": 3918111,
+  "files": [
+    {
+      "path": "assets/archive-cassette.glb",
+      "bytes": 2433628
+    },
+    {
+      "path": "assets/index-CK1DSOjW.css",
+      "bytes": 53324
+    },
+    {
+      "path": "assets/index-CTFu-qx2.js",
+      "bytes": 905507
+    },
+    {
+      "path": "fonts/MiSans-Bold.woff2",
+      "bytes": 132664
+    },
+    {
+      "path": "fonts/MiSans-Demibold.woff2",
+      "bytes": 132024
+    },
+    {
+      "path": "fonts/MiSans-Light.woff2",
+      "bytes": 130912
+    },
+    {
+      "path": "fonts/MiSans-Regular.woff2",
+      "bytes": 130052
+    }
+  ]
+}
