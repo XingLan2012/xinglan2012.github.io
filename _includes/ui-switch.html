@@ -1,6 +1,5 @@
-<!-- 左上角：界面设置（切换默认 UI / Rhine Lab 第二 UI） -->
+<!-- 左上角：界面设置（切换博客默认界面 / Rhine Lab 三维终端） -->
 <style>
-  /* 基础样式对应「默认 UI」（暗金星澜）；Rhine Lab 模式下由 rhine-ui.css 覆盖 */
   .ui-switch-btn {
     position: fixed;
     top: 16px;
@@ -38,7 +37,7 @@
     top: 66px;
     left: 16px;
     z-index: 9998;
-    width: 286px;
+    width: 292px;
     padding: 16px 18px;
     background: rgba(8, 12, 35, 0.94);
     border: 1px solid rgba(255, 215, 0, 0.12);
@@ -74,11 +73,14 @@
   }
   .ui-switch-opts { display: flex; gap: 6px; }
   .ui-switch-opt {
+    display: block;
     flex: 1;
-    padding: 7px 6px;
+    padding: 8px 6px;
     font-size: 11px;
     font-family: inherit;
     letter-spacing: 1px;
+    text-align: center;
+    text-decoration: none;
     color: rgba(255, 255, 255, 0.45);
     background: transparent;
     border: 1px solid rgba(255, 215, 0, 0.1);
@@ -95,9 +97,10 @@
     background: rgba(255, 215, 0, 0.08);
     border-color: rgba(255, 215, 0, 0.35);
   }
-  .ui-switch-opt:disabled {
-    opacity: 0.35;
+  .ui-switch-opt.disabled {
+    opacity: 0.4;
     cursor: not-allowed;
+    pointer-events: none;
   }
   .ui-switch-note {
     font-size: 10px;
@@ -106,12 +109,12 @@
     line-height: 1.6;
     margin-top: 4px;
   }
-  .ui-switch-note.warn { color: rgba(255, 170, 90, 0.6); }
+  .ui-switch-note.warn { color: rgba(255, 170, 90, 0.65); }
   .ui-switch-hint {
     font-size: 9px;
     color: rgba(255, 255, 255, 0.18);
     letter-spacing: 1px;
-    line-height: 1.6;
+    line-height: 1.7;
     margin-top: 12px;
     padding-top: 10px;
     border-top: 1px solid rgba(255, 215, 0, 0.06);
@@ -130,21 +133,16 @@
   <div class="ui-switch-row">
     <div class="ui-switch-label">界面风格</div>
     <div class="ui-switch-opts" id="uiStyleOpts">
-      <button class="ui-switch-opt active" data-ui-opt="default">星澜（默认）</button>
-      <button class="ui-switch-opt" data-ui-opt="rhine">Rhine Lab</button>
-    </div>
-  </div>
-
-  <div class="ui-switch-row">
-    <div class="ui-switch-label">背景动效</div>
-    <div class="ui-switch-opts" id="uiFxOpts">
-      <button class="ui-switch-opt active" data-fx-opt="on">开启</button>
-      <button class="ui-switch-opt" data-fx-opt="off">关闭</button>
+      <button class="ui-switch-opt active" type="button" data-ui-opt="default">星澜（默认）</button>
+      <a class="ui-switch-opt" href="/rhine/" data-ui-opt="rhine">Rhine Lab 终端</a>
     </div>
   </div>
 
   <div class="ui-switch-note" id="uiSwitchNote">正在检测环境…</div>
-  <div class="ui-switch-hint">Rhine Lab 皮肤基于 RhineLabUI 设计语言（MIT · LBEILC）；默认界面不依赖 WebGL，兼容性最好。</div>
+  <div class="ui-switch-hint">
+    Rhine Lab 终端为独立的三维档案界面（RhineLabUI，MIT · LBEILC），需要 WebGL；<br>
+    不支持时请留在默认界面。浏览后可用浏览器「返回」回到博客。
+  </div>
 </div>
 
 <script src="/assets/js/rhine-ui.js"></script>
