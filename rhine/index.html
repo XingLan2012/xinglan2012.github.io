@@ -151,7 +151,8 @@
         height: 100%;
         width: 0%;
         background: #a67d48;
-        transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+        /* 短过渡配合分片级刷新，进度条连续推进而不出现台阶感 */
+        transition: width 0.12s linear;
       }
       #load-progress .lp-meta {
         display: flex;
@@ -178,6 +179,7 @@
         var bytesEl = null;
         var tracked = null;
         var credited = {};
+        var streamed = {};
         var loaded = 0;
         var total = 0;
         var finished = false;
@@ -185,14 +187,6 @@
 
         function fmtMB(bytes) {
           return (bytes / 1048576).toFixed(1);
-        }
-
-        function render() {
-          if (!fill) return;
-          var ratio = total > 0 ? Math.min(1, loaded / total) : 0;
-          fill.style.width = (ratio * 100).toFixed(1) + "%";
-          percentEl.textContent = Math.round(ratio * 100) + "%";
-          bytesEl.textContent = fmtMB(loaded) + " / " + fmtMB(total) + " MB";
         }
 
         function finish() {
@@ -207,39 +201,170 @@
           }
         }
 
+        // 进度更新按动画帧合并：分片可能每秒到达数十次，重排合并到帧级
+        var rafId = 0;
+        var raf =
+          window.requestAnimationFrame ||
+          function (callback) {
+            return setTimeout(callback, 16);
+          };
+
+        function render() {
+          if (!fill) return;
+          var ratio = total > 0 ? Math.min(1, loaded / total) : 0;
+          fill.style.width = (ratio * 100).toFixed(1) + "%";
+          percentEl.textContent = Math.round(ratio * 100) + "%";
+          bytesEl.textContent = fmtMB(loaded) + " / " + fmtMB(total) + " MB";
+        }
+
+        function scheduleRender() {
+          if (rafId) return;
+          rafId = raf(function () {
+            rafId = 0;
+            render();
+          });
+        }
+
+        /**
+         * 固定刷新节拍：分片到达靠 scheduleRender 即时绘制，另有固定频率兜底重绘，
+         * 保证 rAF 被节流（后台标签页、无头环境）时进度条仍持续刷新。
+         */
+        var tick = setInterval(function () {
+          if (finished) {
+            clearInterval(tick);
+            return;
+          }
+          render();
+        }, 120);
+
         function basePrefix() {
           return location.pathname.replace(/[^/]*$/, "");
         }
 
-        /** 记录一条资源请求；命中启动清单才计入进度 */
-        function track(name, size) {
-          if (finished) return;
-          if (!tracked) {
-            buffered.push([name, size]);
-            return;
-          }
+        /** URL → 启动清单内的相对路径 */
+        function relativePath(name) {
           var pathname;
           try {
             pathname = new URL(name, location.href).pathname;
           } catch (error) {
-            return;
+            return null;
           }
           var base = basePrefix();
-          if (pathname.indexOf(base) !== 0) return;
-          var rel = pathname.slice(base.length);
-          var file = tracked[rel];
-          if (!file || credited[rel]) return;
-          credited[rel] = true;
-          loaded += file;
+          return pathname.indexOf(base) === 0 ? pathname.slice(base.length) : null;
+        }
+
+        /**
+         * 惰性读取构建时内联的启动清单。该清单在 head 中先于模块脚本执行，
+         * 因此应用发起请求时已可同步取到，无需等待任何网络请求。
+         */
+        function ensureTracked() {
+          if (tracked) return tracked;
+          var inline = window.__XINGLAN_STARTUP__;
+          if (!inline || !inline.files || !inline.files.length) return null;
+          tracked = {};
+          total = 0;
+          inline.files.forEach(function (item) {
+            tracked[item[0]] = item[1];
+            total += item[1];
+          });
           render();
+          return tracked;
+        }
+
+        function complete(rel) {
+          credited[rel] = true;
+          scheduleRender();
           if (loaded >= total) setTimeout(finish, 400);
+        }
+
+        /** 资源整体完成（脚本／样式／字体走这条路） */
+        function track(name) {
+          if (finished) return;
+          var rel = relativePath(name);
+          if (!rel) return;
+          if (!ensureTracked()) {
+            buffered.push(name);
+            return;
+          }
+          if (!tracked[rel] || credited[rel]) return;
+          if (streamed[rel] !== undefined) return; // 该资源由分片计数负责
+          loaded += tracked[rel];
+          complete(rel);
+        }
+
+        /**
+         * 流式计数：对响应体做 tee 分流，一条交给应用、一条用于统计。
+         * 因此得到的是真实字节进度，且不会产生第二次下载。
+         */
+        function consume(stream, rel) {
+          streamed[rel] = 0;
+          var reader = stream.getReader();
+          var pump = function () {
+            reader
+              .read()
+              .then(function (result) {
+                if (result.done) {
+                  if (credited[rel]) return;
+                  // 补齐到清单体积（应对传输编码导致的字节数差异）
+                  var remain = (tracked[rel] || 0) - streamed[rel];
+                  if (remain > 0) {
+                    streamed[rel] = tracked[rel];
+                    loaded += remain;
+                  }
+                  complete(rel);
+                  return;
+                }
+                var size = result.value ? result.value.byteLength : 0;
+                var capacity = (tracked[rel] || 0) - streamed[rel];
+                if (size > 0 && capacity > 0) {
+                  var add = Math.min(size, capacity);
+                  streamed[rel] += add;
+                  loaded += add;
+                  scheduleRender();
+                }
+                pump();
+              })
+              .catch(function () {
+                /* 读取中断时留给 PerformanceObserver 兜底 */
+                streamed[rel] = undefined;
+              });
+          };
+          pump();
+        }
+
+        // 包装 fetch：只对启动清单内的流式响应做分流计数，其余请求原样透传
+        try {
+          var nativeFetch = window.fetch;
+          if (nativeFetch) {
+            window.fetch = function (input, init) {
+              var url =
+                typeof input === "string" ? input : input && input.url ? input.url : "";
+              var promise = nativeFetch.call(this, input, init);
+              var rel = url ? relativePath(url) : null;
+              if (!rel) return promise;
+              var files = ensureTracked();
+              if (!files || !files[rel]) return promise;
+              return promise.then(function (response) {
+                if (!response || !response.ok || !response.body) return response;
+                var branches = response.body.tee();
+                consume(branches[0], rel);
+                return new Response(branches[1], {
+                  status: response.status,
+                  statusText: response.statusText,
+                  headers: response.headers,
+                });
+              });
+            };
+          }
+        } catch (error) {
+          /* 包装失败时退回整体计数的观测路径 */
         }
 
         // 尽早注册，buffered:true 可补捞注册前已完成的请求
         try {
           new PerformanceObserver(function (list) {
             list.getEntries().forEach(function (entry) {
-              track(entry.name, entry.decodedBodySize || 0);
+              track(entry.name);
             });
           }).observe({ type: "resource", buffered: true });
         } catch (error) {
@@ -275,42 +400,35 @@
             return;
           }
 
-          var useManifest = function (files) {
-            tracked = {};
-            total = 0;
-            files.forEach(function (file) {
-              tracked[file.path] = file.bytes;
-              total += file.bytes;
-            });
-            if (!total) throw new Error("empty manifest");
-            buffered.forEach(function (item) {
-              track(item[0], item[1]);
-            });
+          var flushBuffered = function () {
+            var pending = buffered;
             buffered = [];
-            render();
+            pending.forEach(function (name) {
+              track(name);
+            });
           };
 
-          // 优先使用构建时内联的启动清单（无额外请求，弱网也能立即给出总量）
-          var inline = window.__XINGLAN_STARTUP__;
-          if (inline && inline.files && inline.files.length) {
-            try {
-              useManifest(
-                inline.files.map(function (item) {
-                  return { path: item[0], bytes: item[1] };
-                }),
-              );
-            } catch (error) {
-              /* 落到下方兜底 */
-            }
-          }
-          if (!tracked) {
+          // 清单优先取构建时内联数据（同步可得）；缺失时退回独立清单文件
+          if (ensureTracked()) {
+            flushBuffered();
+            render(); // 初始化路径显式绘制一次，不依赖 rAF
+          } else {
             fetch("load-manifest.json", { cache: "no-cache" })
               .then(function (response) {
                 if (!response.ok) throw new Error("HTTP " + response.status);
                 return response.json();
               })
               .then(function (manifest) {
-                useManifest(manifest.files || []);
+                var files = manifest.files || [];
+                tracked = {};
+                total = 0;
+                files.forEach(function (file) {
+                  tracked[file.path] = file.bytes;
+                  total += file.bytes;
+                });
+                if (!total) throw new Error("empty manifest");
+                flushBuffered();
+                render();
               })
               .catch(function () {
                 // 清单不可用：退化为不确定进度，仍会在应用就绪时淡出
@@ -325,8 +443,9 @@
         });
       })();
     </script>
-    <script type="module" crossorigin src="/rhine/assets/index-_9XoQZL6.js"></script>
+    <script type="module" crossorigin src="/rhine/assets/index-CVefCD3_.js"></script>
     <link rel="stylesheet" crossorigin href="/rhine/assets/index-CK1DSOjW.css">
+      <!--xinglan-startup-manifest--><script>window.__XINGLAN_STARTUP__={"total":5063411,"files":[["assets/archive-cassette.glb",3565116],["assets/index-CK1DSOjW.css",53324],["assets/index-CVefCD3_.js",905603],["fonts/MiSans-Bold.woff2",135248],["fonts/MiSans-Demibold.woff2",135680],["fonts/MiSans-Light.woff2",134644],["fonts/MiSans-Regular.woff2",133796]]};</script>
   </head>
   <body>
     <div id="load-progress" role="status" aria-live="polite">
