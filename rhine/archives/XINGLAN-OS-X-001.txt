@@ -14,5 +14,5 @@ SPARSE TABLE
 2. 查询时用两个长度为 2^k 的区间覆盖目标区间，可重复贡献的信息才能合并。
 3. 训练目标是基础练熟，与线段树、树状数组同属第一二天的区间维护主题。
 
-来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/ioer/20260722ST%E8%A1%A8%2B%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84.md
+原文：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/ioer/20260722ST%E8%A1%A8%2B%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84.md
 本档案编目自星澜之境站点内容。

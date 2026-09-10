@@ -14,5 +14,5 @@ FORTUNE
 2. 页面为独立单页，与博客正文系统解耦。
 3. 导航面板中归类于「时运」条目。
 
-来源：https://xinglan2012.github.io/gacha.html
+原文：https://xinglan2012.github.io/gacha.html
 本档案编目自星澜之境站点内容。

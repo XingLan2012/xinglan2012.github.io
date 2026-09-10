@@ -14,5 +14,5 @@ MOB PARAMETERS
 2. 推导自由运动的速度与位移关系。
 3. 结论可用于预测生物移动路径与时间。
 
-来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/MC%E6%95%B0%E5%AD%A6%E6%96%87%E6%A1%A3.md
+原文：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/MC%E6%95%B0%E5%AD%A6%E6%96%87%E6%A1%A3.md
 本档案编目自星澜之境站点内容。

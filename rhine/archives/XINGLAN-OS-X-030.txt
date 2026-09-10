@@ -14,5 +14,5 @@ ZHANGLI WORKS B
 2. 文件体积接近仓库单文件建议上限，故以 zip 原样存放。
 3. 下载直链指向 master 分支的 raw 地址。
 
-来源：https://xinglan2012.github.io/pan.html
+原文：https://xinglan2012.github.io/pan.html
 本档案编目自星澜之境站点内容。

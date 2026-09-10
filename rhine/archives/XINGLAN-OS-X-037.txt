@@ -14,5 +14,5 @@ MINECART DYNAMICS
 2. 给出多个矿车耦合运动的组合方法。
 3. 理论来源标注为 nenn《Minecraft 自动化铁路系统的设计准备》。
 
-来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/MC%E6%95%B0%E5%AD%A6%E6%96%87%E6%A1%A3.md
+原文：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/MC%E6%95%B0%E5%AD%A6%E6%96%87%E6%A1%A3.md
 本档案编目自星澜之境站点内容。

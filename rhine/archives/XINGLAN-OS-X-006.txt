@@ -14,5 +14,5 @@ FENWICK TREE
 2. 修改时不断向上累加，查询时不断减去 lowbit。
 3. 与 ST 表同篇整理，构成区间维护类问题的基础工具组。
 
-来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/ioer/20260722ST%E8%A1%A8%2B%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84.md
+原文：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/ioer/20260722ST%E8%A1%A8%2B%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84.md
 本档案编目自星澜之境站点内容。

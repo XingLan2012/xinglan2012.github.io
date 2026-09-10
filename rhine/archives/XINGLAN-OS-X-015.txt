@@ -14,5 +14,5 @@ PHILOSOPHY AND MATHEMATICS
 2. 前置知识要求涵盖高等数学、逻辑与计算机三类基础。
 3. 目标是以严谨的数学语言重建实体运动理论，用于设计珍珠炮与天基屠龙炮等大型装置。
 
-来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/MC%E6%95%B0%E5%AD%A6%E6%96%87%E6%A1%A3.md
+原文：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/MC%E6%95%B0%E5%AD%A6%E6%96%87%E6%A1%A3.md
 本档案编目自星澜之境站点内容。

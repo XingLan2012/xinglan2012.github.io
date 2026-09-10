@@ -14,5 +14,5 @@ DYNAMIC SEGMENT TREE
 2. 空间复杂度与操作次数同阶，避免 4n 的固定开销。
 3. 同篇还整理了棋子等级、旅馆两道练习题的建模思路。
 
-来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/ioer/20260723Day2%E7%BA%BF%E6%AE%B5%E6%A0%91%2B%E5%8A%A8%E6%80%81%E5%BC%80%E7%82%B9.md
+原文：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/ioer/20260723Day2%E7%BA%BF%E6%AE%B5%E6%A0%91%2B%E5%8A%A8%E6%80%81%E5%BC%80%E7%82%B9.md
 本档案编目自星澜之境站点内容。

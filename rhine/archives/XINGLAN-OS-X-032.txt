@@ -14,5 +14,5 @@ FLUID AND PISTON
 2. 活塞推动造成的速度突变与可叠加性。
 3. 蜂蜜块侧面移动的特殊摩擦与减速表现。
 
-来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/MC%E6%95%B0%E5%AD%A6%E6%96%87%E6%A1%A3.md
+原文：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/MC%E6%95%B0%E5%AD%A6%E6%96%87%E6%A1%A3.md
 本档案编目自星澜之境站点内容。

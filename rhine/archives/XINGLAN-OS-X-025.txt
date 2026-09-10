@@ -14,5 +14,5 @@ ZHANGLI WORKS A
 2. 文件名含空格与全角括号，下载链接按 URL 编码处理。
 3. 与另一份张黎作品档案成组收录。
 
-来源：https://xinglan2012.github.io/pan.html
+原文：https://xinglan2012.github.io/pan.html
 本档案编目自星澜之境站点内容。

@@ -14,5 +14,5 @@ MINDBOOK README
 2. 新增文件需在 mindbook.html 手动补一行清单条目。
 3. 目录当前包含指令说明、MC 数学文档、工具调用规范与说明文档。
 
-来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/README.md
+原文：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/README.md
 本档案编目自星澜之境站点内容。

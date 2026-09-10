@@ -14,5 +14,5 @@ TOOLCALL SPEC
 2. 与 MC 数学文档、指令说明并列，构成外接知识库的三大件。
 3. 知识库页面标注 noindex，不参与站点导航。
 
-来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/toolcall.txt
+原文：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/toolcall.txt
 本档案编目自星澜之境站点内容。

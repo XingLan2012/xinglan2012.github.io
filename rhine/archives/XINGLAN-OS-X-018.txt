@@ -14,5 +14,5 @@ CLOUD DRIVE
 2. 文件列表带 5 分钟本地缓存，远程失败时回退到缓存并提示。
 3. 页面默认纯黑背景，并设有外部链接区用于分发超过仓库体积上限的第三方资源。
 
-来源：https://xinglan2012.github.io/pan.html
+原文：https://xinglan2012.github.io/pan.html
 本档案编目自星澜之境站点内容。

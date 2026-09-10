@@ -14,5 +14,5 @@ CRYSTAL PENDANT
 2. 图标由主星、四颗碎星与四向星芒射线构成，带呼吸式辉光动画。
 3. 移动端面板宽度收窄，遮罩层点击即收起。
 
-来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/_includes/crystal-pendant.html
+原文：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/_includes/crystal-pendant.html
 本档案编目自星澜之境站点内容。

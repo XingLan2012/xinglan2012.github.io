@@ -14,5 +14,5 @@ CLOUD INDEX
 2. 超出仓库单文件上限的资源以外部链接方式列于页面底部。
 3. 目录支持 5 分钟本地缓存与手动刷新。
 
-来源：https://xinglan2012.github.io/pan.html
+原文：https://xinglan2012.github.io/pan.html
 本档案编目自星澜之境站点内容。

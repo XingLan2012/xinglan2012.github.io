@@ -14,5 +14,5 @@ COMMAND SYNTAX
 2. 含目标选择器、坐标与数据标签等参数形态说明。
 3. 与实体 ID、物品组件章节交叉引用。
 
-来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/Minecraft-Java26.2%E7%89%88%E6%9C%AC%E6%8C%87%E4%BB%A4%E8%AF%B4%E6%98%8E.md
+原文：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/Minecraft-Java26.2%E7%89%88%E6%9C%AC%E6%8C%87%E4%BB%A4%E8%AF%B4%E6%98%8E.md
 本档案编目自星澜之境站点内容。

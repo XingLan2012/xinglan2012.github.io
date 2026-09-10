@@ -14,5 +14,5 @@ MINIMUM SPANNING TREE
 2. Prim 从点集扩展，配合堆优化适合稠密图。
 3. 与并查集删除同篇，构成图论系列的开篇。
 
-来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/ioer/20260724%E5%9B%BE%E8%AE%BA%E7%9B%B8%E5%85%B3.md
+原文：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/ioer/20260724%E5%9B%BE%E8%AE%BA%E7%9B%B8%E5%85%B3.md
 本档案编目自星澜之境站点内容。

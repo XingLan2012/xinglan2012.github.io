@@ -59,7 +59,7 @@
           document.body.appendChild(layer);
         }
         if (!webglAvailable()) {
-          window.__RHINE_NO_WEBGL__ = true;
+          window.__XINGLAN_NO_WEBGL__ = true;
           document.addEventListener("DOMContentLoaded", function () {
             showFallback("");
           });
@@ -70,7 +70,7 @@
             if (/WebGL|webgl/i.test(message)) showFallback(message);
           });
         }
-        window.__RHINE_SHOW_FALLBACK__ = showFallback;
+        window.__XINGLAN_SHOW_FALLBACK__ = showFallback;
       })();
     </script>
     <style>
@@ -291,7 +291,7 @@
           };
 
           // 优先使用构建时内联的启动清单（无额外请求，弱网也能立即给出总量）
-          var inline = window.__RHINE_STARTUP__;
+          var inline = window.__XINGLAN_STARTUP__;
           if (inline && inline.files && inline.files.length) {
             try {
               useManifest(
@@ -325,7 +325,7 @@
         });
       })();
     </script>
-    <script type="module" crossorigin src="/rhine/assets/index-Bf3INcJ6.js"></script>
+    <script type="module" crossorigin src="/rhine/assets/index-_9XoQZL6.js"></script>
     <link rel="stylesheet" crossorigin href="/rhine/assets/index-CK1DSOjW.css">
   </head>
   <body>

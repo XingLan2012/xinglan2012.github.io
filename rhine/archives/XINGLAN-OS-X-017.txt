@@ -14,5 +14,5 @@ ENTITY MOTION TAXONOMY
 2. 分类后各类可分别建立运动方程。
 3. 为后续计算速度、运动时间与轨道方程提供分类依据。
 
-来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/MC%E6%95%B0%E5%AD%A6%E6%96%87%E6%A1%A3.md
+原文：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/MC%E6%95%B0%E5%AD%A6%E6%96%87%E6%A1%A3.md
 本档案编目自星澜之境站点内容。

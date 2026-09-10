@@ -14,5 +14,5 @@ STARFIELD
 2. 画面由渐变夜空、辉光主星、散布星点与四向星芒构成。
 3. 相册页按子文件夹编目，此图属 demo 相册。
 
-来源：https://xinglan2012.github.io/album.html
+原文：https://xinglan2012.github.io/album.html
 本档案编目自星澜之境站点内容。

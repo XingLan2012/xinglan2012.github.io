@@ -14,5 +14,5 @@ TARJAN SCC
 2. 基环树视为环上挂树的结构，拆环后按树处理。
 3. 第 3 天训练主题即为图论 tarjan，与并查集、MST 同批整理。
 
-来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/ioer/20260724%E5%9B%BE%E8%AE%BA%E7%9B%B8%E5%85%B3.md
+原文：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/ioer/20260724%E5%9B%BE%E8%AE%BA%E7%9B%B8%E5%85%B3.md
 本档案编目自星澜之境站点内容。

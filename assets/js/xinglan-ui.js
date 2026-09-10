@@ -118,5 +118,5 @@
     init();
   }
 
-  window.RhineUI = { support: support };
+  window.XinglanUI = { support: support };
 })();

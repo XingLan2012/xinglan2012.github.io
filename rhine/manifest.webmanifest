@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "XinglanOS · Analysis OS",
+  "name": "XinglanOS · 星澜实验室分析终端",
   "short_name": "XinglanOS",
-  "description": "星澜之境交互式三维研究档案终端",
+  "description": "星澜实验室 · 交互式三维研究档案终端",
   "lang": "zh-CN",
   "start_url": "./?source=pwa",
   "scope": "./",

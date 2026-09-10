@@ -14,5 +14,5 @@ Minecraft Java 版 26.2 的完整参考文档开篇，汇总该版本相对前�
 2. 全部条目按版本 26.2 校验，避免跨版本混用。
 3. 编目范围为单版本速查，与 MC 数学文档同属 Minecraft 知识体系。
 
-来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/Minecraft-Java26.2%E7%89%88%E6%9C%AC%E6%8C%87%E4%BB%A4%E8%AF%B4%E6%98%8E.md
+原文：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/Minecraft-Java26.2%E7%89%88%E6%9C%AC%E6%8C%87%E4%BB%A4%E8%AF%B4%E6%98%8E.md
 本档案编目自星澜之境站点内容。

@@ -14,5 +14,5 @@ Minecraft 坐标系与常用数学坐标系之间的转换方法，含示例与�
 2. 附转换示例与误差说明。
 3. 章节末给出总结，衔接实体运动分类。
 
-来源：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/MC%E6%95%B0%E5%AD%A6%E6%96%87%E6%A1%A3.md
+原文：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/mindbook/MC%E6%95%B0%E5%AD%A6%E6%96%87%E6%A1%A3.md
 本档案编目自星澜之境站点内容。
