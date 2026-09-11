@@ -96,18 +96,23 @@
   var CACHE_TTL = 5 * 60 * 1000; // 列表缓存 5 分钟，避免频繁请求 API
 
   // ── 自动识别仓库与分支 ─────────────────────────────────────────────────
-  function detectRepo() {
-    if (REPO) return REPO;
+  //
+  // 注意：用户页与项目页在地址上无法直接区分——
+  //   owner.github.io/tools/    可能是「用户页里的 tools 目录」
+  //   owner.github.io/my-repo/  也可能是「名为 my-repo 的项目页」
+  // 两者形状完全相同，所以这里给出候选列表，逐个用接口验证，哪个能列目录就用哪个。
+  function candidateRepos() {
+    if (REPO) return [REPO];
     var host = location.hostname;
-    if (!/\.github\.io$/i.test(host)) return '';
+    if (!/\.github\.io$/i.test(host)) return [];
     var owner = host.split('.')[0];
+    var list = [owner + '/' + host]; // 用户页：仓库名等于域名
     var seg = location.pathname.split('/').filter(Boolean)[0];
-    // 用户页 owner.github.io → 仓库名就是域名；项目页 owner.github.io/repo → 取第一段路径
-    var repo = seg || host;
-    return owner + '/' + repo;
+    if (seg && seg !== host) list.push(owner + '/' + seg); // 项目页：仓库名是路径首段
+    return list;
   }
 
-  var repo = detectRepo();
+  var repo = '';
   var branch = BRANCH;
 
   function api(path) {
@@ -119,9 +124,26 @@
       name.split('/').map(encodeURIComponent).join('/');
   }
 
+  // 命中过的仓库名缓存 24 小时，之后正常加载只发一次列目录请求
+  var REPO_KEY = 'pan_repo_' + DIR;
+
+  function cachedRepo() {
+    try {
+      var data = JSON.parse(localStorage.getItem(REPO_KEY) || 'null');
+      if (data && Date.now() - data.time < 86400000) return data.value;
+    } catch (e) {}
+    return '';
+  }
+
+  function rememberRepo(value) {
+    try {
+      localStorage.setItem(REPO_KEY, JSON.stringify({ time: Date.now(), value: value }));
+    } catch (e) {}
+  }
+
   // 读取仓库默认分支（缓存 24 小时），避免手写 master / main 出错
   function resolveBranch() {
-    if (branch) return Promise.resolve(branch);
+    if (BRANCH) return Promise.resolve(BRANCH);
     var key = 'pan_branch_' + repo;
     try {
       var cached = JSON.parse(localStorage.getItem(key) || 'null');
@@ -143,6 +165,42 @@
         branch = 'main';
         return branch;
       });
+  }
+
+  /** 依次尝试候选仓库，返回第一个能列出该目录的仓库名 */
+  function resolveRepo() {
+    if (repo) return Promise.resolve(repo);
+    var cached = cachedRepo();
+    if (cached) {
+      repo = cached;
+      return Promise.resolve(repo);
+    }
+    var candidates = candidateRepos();
+    if (!candidates.length) return Promise.resolve('');
+
+    var tryNext = function (index, lastError) {
+      if (index >= candidates.length) throw lastError || new Error('未找到可用的仓库');
+      repo = candidates[index];
+      branch = BRANCH;
+      return resolveBranch()
+        .then(function () { return fetch(api('/contents/' + DIR)); })
+        .then(function (resp) {
+          if (resp.ok) {
+            rememberRepo(repo);
+            return repo;
+          }
+          throw new Error('HTTP ' + resp.status);
+        })
+        .catch(function (err) {
+          repo = '';
+          return tryNext(index + 1, err);
+        });
+    };
+
+    return tryNext(0, null).catch(function () {
+      repo = '';
+      return '';
+    });
   }
 
   // ── 缓存 ───────────────────────────────────────────────────────────────
@@ -205,17 +263,13 @@
   }
 
   function load(force) {
-    if (!repo) {
-      statusEl.textContent = '';
-      showMessage('⚠ 无法自动识别仓库：当前页面不在 GitHub Pages 上。<br>' +
-        '请在源码里把 <code>REPO</code> 写成 <code>\'用户名/仓库名\'</code>。', true);
-      return;
-    }
     document.getElementById('dirLabel').textContent = '/' + DIR + ' 目录中的文件';
 
     if (!force) {
       var cached = readCache();
-      if (cached) {
+      var known = repo || cachedRepo();
+      if (cached && known) {
+        repo = known;
         statusEl.textContent = '✦ ' + cached.length + ' 个文件（缓存）';
         render(cached);
         return;
@@ -223,20 +277,30 @@
     }
 
     statusEl.textContent = '✦ 加载中…';
-    resolveBranch()
-      .then(function () { return fetch(api('/contents/' + DIR)); })
-      .then(function (resp) {
-        if (resp.status === 404) {
-          throw new Error('目录不存在：仓库里还没有 <code>' + DIR + '/</code>，或仓库为私有。');
+    resolveRepo()
+      .then(function (found) {
+        if (!found) {
+          statusEl.textContent = '';
+          showMessage('⚠ 无法自动识别仓库。当前页面不在 GitHub Pages 上，' +
+            '或仓库或目录名与预期不同。<br>请在源码开头把 ' +
+            '<code>REPO</code> 写成 <code>\'用户名/仓库名\'</code>，' +
+            '<code>BRANCH</code> 写成 <code>\'main\'</code> 或 <code>\'master\'</code>。', true);
+          return null;
         }
-        if (resp.status === 403) {
-          throw new Error('接口请求次数超限（未登录时每小时 60 次），请稍后再试；' +
-            '页面已有 5 分钟缓存，正常浏览不会触发。');
-        }
-        if (!resp.ok) throw new Error('接口返回 HTTP ' + resp.status);
-        return resp.json();
+        return fetch(api('/contents/' + DIR)).then(function (resp) {
+          if (resp.status === 404) {
+            throw new Error('目录不存在：仓库里还没有 <code>' + DIR + '/</code>，或仓库为私有。');
+          }
+          if (resp.status === 403) {
+            throw new Error('接口请求次数超限（未登录时每小时 60 次），请稍后再试；' +
+              '页面已有 5 分钟缓存，正常浏览不会触发。');
+          }
+          if (!resp.ok) throw new Error('接口返回 HTTP ' + resp.status);
+          return resp.json();
+        });
       })
       .then(function (data) {
+        if (!data) return;
         if (!Array.isArray(data)) throw new Error('返回内容不是目录列表');
         var files = data
           .filter(function (item) { return item.type === 'file'; })
