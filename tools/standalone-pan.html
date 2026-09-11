@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<!--
+  独立版云盘页 —— 可直接复制到任意 GitHub Pages 仓库使用，不依赖 Jekyll 或任何框架。
+
+  用法：
+    1. 把本文件放进仓库任意位置（例如根目录的 pan.html，或 /files/index.html）
+    2. 在仓库里新建一个目录存放要分享的文件（默认名称 pan，可用 DIR 改）
+    3. 提交后访问该页面即可
+
+  默认全自动：从访问地址推断「用户名 / 仓库名」，再通过 API 读取仓库默认分支，
+  因此无需手改任何常量。托管在 GitHub Pages 之外（Netlify / Vercel / 本地）时，
+  取消下面 REPO 与 BRANCH 的注释并手动填写即可。
+
+  原理：GitHub 仓库本身就是存储与 CDN。
+    · 列目录：GET /repos/{owner}/{repo}/contents/{dir}
+    · 下载  ：https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{dir}/{name}
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>云盘</title>
+<style>
+  :root {
+    --bg: #0e0e12;
+    --panel: #16161d;
+    --line: rgba(255, 215, 0, 0.08);
+    --gold: #ffd700;
+    --text: rgba(255, 255, 255, 0.68);
+    --muted: rgba(255, 255, 255, 0.3);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 40px 20px;
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.7 -apple-system, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  .title { font-size: 22px; letter-spacing: 6px; color: var(--gold); font-weight: 300; margin: 0 0 4px; }
+  .sub { font-size: 12px; letter-spacing: 3px; color: rgba(255, 215, 0, 0.3); margin: 0 0 12px; }
+  .sub code { color: rgba(255, 215, 0, 0.45); }
+  .bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; min-height: 32px; }
+  .refresh {
+    padding: 6px 18px; border: 1px solid rgba(255, 215, 0, 0.1); border-radius: 16px;
+    background: transparent; color: rgba(255, 215, 0, 0.35); font: inherit; font-size: 11px;
+    letter-spacing: 2px; cursor: pointer; transition: all 0.25s;
+  }
+  .refresh:hover { border-color: rgba(255, 215, 0, 0.25); color: var(--gold); }
+  .status { font-size: 12px; letter-spacing: 1px; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  th {
+    padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 400;
+    letter-spacing: 2px; color: rgba(255, 215, 0, 0.3); border-bottom: 1px solid var(--line);
+  }
+  td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); }
+  tr:hover td { background: rgba(255, 215, 0, 0.02); }
+  .name { color: rgba(255, 255, 255, 0.78); letter-spacing: 1px; word-break: break-all; }
+  .size { font-size: 11px; color: var(--muted); font-family: monospace; white-space: nowrap; }
+  .dl {
+    padding: 4px 14px; border: 1px solid rgba(255, 215, 0, 0.15); border-radius: 14px;
+    background: transparent; color: rgba(255, 215, 0, 0.5); font: inherit; font-size: 11px;
+    letter-spacing: 1px; cursor: pointer; transition: all 0.25s; white-space: nowrap;
+  }
+  .dl:hover { border-color: rgba(255, 215, 0, 0.35); color: var(--gold); background: rgba(255, 215, 0, 0.04); }
+  .msg { text-align: center; padding: 50px 20px; letter-spacing: 3px; font-size: 13px; color: rgba(255, 215, 0, 0.16); }
+  .msg.error { color: rgba(255, 120, 120, 0.5); letter-spacing: 1px; line-height: 1.9; text-align: left; }
+  .msg.error code { color: rgba(255, 215, 0, 0.5); }
+  @media (max-width: 600px) {
+    th:nth-child(2), td:nth-child(2) { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="title">✦ 云盘</h1>
+  <p class="sub"><code id="dirLabel">/pan</code> 目录中的文件</p>
+  <div class="bar">
+    <button class="refresh" id="refresh">⟳ 刷新</button>
+    <span class="status" id="status">✦ 加载中…</span>
+  </div>
+  <div id="list"></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ── 配置 ───────────────────────────────────────────────────────────────
+  var DIR = 'pan';        // 存放文件的目录名
+  var REPO = '';          // 留空 = 自动识别；也可写死 '用户名/仓库名'（托管在 GitHub 之外时必填）
+  var BRANCH = '';        // 留空 = 自动读取默认分支；也可写死 'main' 或 'master'
+
+  var CACHE_TTL = 5 * 60 * 1000; // 列表缓存 5 分钟，避免频繁请求 API
+
+  // ── 自动识别仓库与分支 ─────────────────────────────────────────────────
+  function detectRepo() {
+    if (REPO) return REPO;
+    var host = location.hostname;
+    if (!/\.github\.io$/i.test(host)) return '';
+    var owner = host.split('.')[0];
+    var seg = location.pathname.split('/').filter(Boolean)[0];
+    // 用户页 owner.github.io → 仓库名就是域名；项目页 owner.github.io/repo → 取第一段路径
+    var repo = seg || host;
+    return owner + '/' + repo;
+  }
+
+  var repo = detectRepo();
+  var branch = BRANCH;
+
+  function api(path) {
+    return 'https://api.github.com/repos/' + repo + path;
+  }
+
+  function rawUrl(name) {
+    return 'https://raw.githubusercontent.com/' + repo + '/' + branch + '/' + DIR + '/' +
+      name.split('/').map(encodeURIComponent).join('/');
+  }
+
+  // 读取仓库默认分支（缓存 24 小时），避免手写 master / main 出错
+  function resolveBranch() {
+    if (branch) return Promise.resolve(branch);
+    var key = 'pan_branch_' + repo;
+    try {
+      var cached = JSON.parse(localStorage.getItem(key) || 'null');
+      if (cached && Date.now() - cached.time < 86400000) {
+        branch = cached.value;
+        return Promise.resolve(branch);
+      }
+    } catch (e) {}
+    return fetch(api(''))
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (info) {
+        branch = (info && info.default_branch) || 'main';
+        try {
+          localStorage.setItem(key, JSON.stringify({ time: Date.now(), value: branch }));
+        } catch (e) {}
+        return branch;
+      })
+      .catch(function () {
+        branch = 'main';
+        return branch;
+      });
+  }
+
+  // ── 缓存 ───────────────────────────────────────────────────────────────
+  var CACHE_KEY = 'pan_files_' + DIR;
+
+  function readCache() {
+    try {
+      var data = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+      if (data && Date.now() - data.time < CACHE_TTL) return data.files;
+    } catch (e) {}
+    return null;
+  }
+
+  function writeCache(files) {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ time: Date.now(), files: files }));
+    } catch (e) {}
+  }
+
+  // ── 渲染 ───────────────────────────────────────────────────────────────
+  var listEl = document.getElementById('list');
+  var statusEl = document.getElementById('status');
+
+  function fmtSize(bytes) {
+    if (!bytes) return '';
+    var units = ['B', 'KB', 'MB', 'GB'], i = 0, n = bytes;
+    while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+    return n.toFixed(i > 0 ? 1 : 0) + ' ' + units[i];
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function showMessage(html, isError) {
+    listEl.innerHTML = '<div class="msg' + (isError ? ' error' : '') + '">' + html + '</div>';
+  }
+
+  function render(files) {
+    if (!files.length) {
+      statusEl.textContent = '';
+      showMessage('✦ 暂无文件');
+      return;
+    }
+    var html = '<table><tr><th>文件名</th><th>大小</th><th>操作</th></tr>';
+    files.forEach(function (f) {
+      html += '<tr><td class="name">' + escapeHtml(f.name) + '</td>' +
+        '<td class="size">' + fmtSize(f.size) + '</td>' +
+        '<td><button class="dl" data-name="' + escapeHtml(f.name) + '">⬇ 下载</button></td></tr>';
+    });
+    html += '</table>';
+    listEl.innerHTML = html;
+
+    Array.prototype.forEach.call(listEl.querySelectorAll('.dl'), function (btn) {
+      btn.addEventListener('click', function () {
+        window.open(rawUrl(this.getAttribute('data-name')), '_blank');
+      });
+    });
+  }
+
+  function load(force) {
+    if (!repo) {
+      statusEl.textContent = '';
+      showMessage('⚠ 无法自动识别仓库：当前页面不在 GitHub Pages 上。<br>' +
+        '请在源码里把 <code>REPO</code> 写成 <code>\'用户名/仓库名\'</code>。', true);
+      return;
+    }
+    document.getElementById('dirLabel').textContent = '/' + DIR + ' 目录中的文件';
+
+    if (!force) {
+      var cached = readCache();
+      if (cached) {
+        statusEl.textContent = '✦ ' + cached.length + ' 个文件（缓存）';
+        render(cached);
+        return;
+      }
+    }
+
+    statusEl.textContent = '✦ 加载中…';
+    resolveBranch()
+      .then(function () { return fetch(api('/contents/' + DIR)); })
+      .then(function (resp) {
+        if (resp.status === 404) {
+          throw new Error('目录不存在：仓库里还没有 <code>' + DIR + '/</code>，或仓库为私有。');
+        }
+        if (resp.status === 403) {
+          throw new Error('接口请求次数超限（未登录时每小时 60 次），请稍后再试；' +
+            '页面已有 5 分钟缓存，正常浏览不会触发。');
+        }
+        if (!resp.ok) throw new Error('接口返回 HTTP ' + resp.status);
+        return resp.json();
+      })
+      .then(function (data) {
+        if (!Array.isArray(data)) throw new Error('返回内容不是目录列表');
+        var files = data
+          .filter(function (item) { return item.type === 'file'; })
+          .map(function (item) { return { name: item.name, size: item.size }; })
+          .sort(function (a, b) { return a.name.localeCompare(b.name); });
+        writeCache(files);
+        statusEl.textContent = '✦ ' + files.length + ' 个文件';
+        render(files);
+      })
+      .catch(function (err) {
+        var cached = readCache();
+        if (cached) {
+          statusEl.textContent = '⚠ 加载失败，显示缓存数据';
+          render(cached);
+          return;
+        }
+        statusEl.textContent = '';
+        showMessage('✕ 加载失败：' + (err && err.message ? err.message : err), true);
+      });
+  }
+
+  document.getElementById('refresh').addEventListener('click', function () {
+    try { localStorage.removeItem(CACHE_KEY); } catch (e) {}
+    load(true);
+  });
+
+  load(false);
+})();
+</script>
+</body>
+</html>
