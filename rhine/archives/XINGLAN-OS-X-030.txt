@@ -1,18 +1,18 @@
 ﻿XINGLAN OS · INTERNAL DATABASE
-FILE X-030 / 张黎作品（作 人 思）
-ZHANGLI WORKS B
+FILE X-030 / 用 GitHub 当免费云盘
+HOSTING A CLOUD DRIVE
 
 科室：档案科
-编目范围：2026-08-28
-相关人物：张黎
+编目范围：2026-09-11
+相关人物：星澜 / Xinglan
 访问范围：PUBLIC AREA
 
-云盘收录的作品压缩包之二，约 13.4 MB，为同名系列的另一份归档，由云盘页统一编目。
+一篇写给别人的教程：如何把 GitHub 仓库当作文件分发站，fork 之后用上云盘功能，全程不需要服务器与后端。
 
 研究记录
-1. 归档于 /pan 目录，与前者构成同系列两份档案。
-2. 文件体积接近仓库单文件建议上限，故以 zip 原样存放。
-3. 下载直链指向 master 分支的 raw 地址。
+1. 讲清原理（API 列目录 + raw 直链下载）与边界（单文件 100 MB 上限、仅公开文件、私有仓库不可用）。
+2. 记录了默认分支写错会导致「能列出文件、但下载全 404」这个坑，以及自动识别分支的写法。
+3. 附中文文件名编码、超大文件走 Release 分发、批量上传命令与 API 限流说明。
 
-原文：https://xinglan2012.github.io/pan.html
+原文：https://xinglan2012.github.io/2026/09/11/github-pages-cloud-drive.html
 本档案编目自星澜之境站点内容。

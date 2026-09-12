@@ -1,18 +1,18 @@
 ﻿XINGLAN OS · INTERNAL DATABASE
-FILE X-025 / 张黎作品（程 P 动）
-ZHANGLI WORKS A
+FILE X-025 / 独立版云盘页
+STANDALONE CLOUD DRIVE
 
 科室：档案科
-编目范围：2026-08-28
-相关人物：张黎
+编目范围：2026-09-11
+相关人物：星澜 / Xinglan
 访问范围：PUBLIC AREA
 
-云盘收录的作品压缩包之一，约 7.2 MB，以 zip 形式提供下载，由云盘页统一编目。
+从云盘功能里抽出的自包含版本：单个 HTML 文件、零依赖，放进任意 GitHub Pages 仓库即可使用，不需要 Jekyll 或任何框架。
 
 研究记录
-1. 归档于 /pan 目录，随仓库一同版本管理。
-2. 文件名含空格与全角括号，下载链接按 URL 编码处理。
-3. 与另一份张黎作品档案成组收录。
+1. 自动从访问地址推断「用户名 / 仓库名」，并读取仓库默认分支，避免手改常量出错。
+2. 列目录走 GitHub API，下载走 raw 直链，列表带五分钟本地缓存。
+3. 托管在 GitHub Pages 之外时，只需填写仓库名与分支两个常量即可。
 
-原文：https://xinglan2012.github.io/pan.html
+原文：https://github.com/XingLan2012/xinglan2012.github.io/blob/master/tools/standalone-pan.html
 本档案编目自星澜之境站点内容。
