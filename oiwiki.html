@@ -114,7 +114,7 @@ title: OI Wiki
   <div class="ow-note">
     本页内容来自开源项目 <a href="https://github.com/OI-wiki/OI-wiki" target="_blank" rel="noopener">OI Wiki</a>，
     采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" target="_blank" rel="noopener">CC BY-SA 4.0</a> 许可。
-    正文按需实时读取并缓存在本机，目录为构建时快照。
+    正文读取<b>站内镜像</b>（<code>/oiwiki/</code>），镜像缺失时回退到 GitHub 接口；目录为构建时快照。
   </div>
 
   <div class="ow-layout">
@@ -135,7 +135,7 @@ title: OI Wiki
   </div>
 
   <div class="ow-foot">
-    内容版权归 OI Wiki 贡献者所有，依 CC BY-SA 4.0 许可使用；本站仅作阅览，未作修改。<br>
+    内容版权归 OI Wiki 贡献者所有，依 CC BY-SA 4.0 许可使用；本站以本地镜像方式提供阅览，未作修改。<br>
     若这些内容对你有帮助，请到 <a href="https://github.com/OI-wiki/OI-wiki" target="_blank" rel="noopener">GitHub 仓库</a> 点一个 Star（这也是其附加许可 SATA 的期望）。
   </div>
 </div>
@@ -229,6 +229,36 @@ title: OI Wiki
   }
 
   /* ---------------- 正文 ---------------- */
+
+  /** 站内镜像（同步脚本落盘，Jekyll 原样复制，同源秒开且不消耗接口额度） */
+  function fetchLocal(path) {
+    return fetch('oiwiki/' + path.split('/').map(encodeURIComponent).join('/'), { cache: 'force-cache' })
+      .then(function (response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.text();
+      })
+      .then(function (text) {
+        if (!text || text.length < 20) throw new Error('内容为空');
+        return text;
+      });
+  }
+
+  /** GitHub 接口兜底：镜像里还没有的文档（例如刚新增的）走这条路 */
+  function fetchRemote(path) {
+    return fetch('https://api.github.com/repos/' + REPO + '/contents/docs/' + path + '?ref=' + BRANCH)
+      .then(function (response) {
+        if (response.status === 403) {
+          throw new Error('读取次数已达上限（且站内镜像中没有这篇）。稍后再试，或改用官方站阅读。');
+        }
+        if (response.status === 404) throw new Error('镜像与接口均未找到这篇文档（可点「重新读取」重试）');
+        if (!response.ok) throw new Error('接口返回 HTTP ' + response.status);
+        return response.json();
+      })
+      .then(function (data) {
+        if (!data || !data.content) throw new Error('返回内容为空');
+        return stripFrontMatter(b64ToUtf8(data.content));
+      });
+  }
 
   function readCache(path) {
     try {
@@ -329,21 +359,18 @@ title: OI Wiki
     docEl.innerHTML = '<div class="ow-placeholder">✦ 正在读取…</div>';
     setStatus('正在读取…');
 
-    fetch('https://api.github.com/repos/' + REPO + '/contents/docs/' + path + '?ref=' + BRANCH)
-      .then(function (response) {
-        if (response.status === 403) {
-          throw new Error('读取次数已达上限（GitHub 未登录时每小时 60 次）。稍后再试，或改用官方站阅读。');
-        }
-        if (response.status === 404) throw new Error('该文档不存在或路径有变（可点「重新读取」重试）');
-        if (!response.ok) throw new Error('接口返回 HTTP ' + response.status);
-        return response.json();
+    // 站内镜像优先；镜像里没有（例如刚新增的文档）才走接口
+    fetchLocal(path)
+      .then(function (md) { return { md: md, source: '站内镜像' }; })
+      .catch(function () {
+        return fetchRemote(path).then(function (md) {
+          writeCache(path, md);
+          return { md: md, source: 'GitHub 接口' };
+        });
       })
-      .then(function (data) {
-        if (!data || !data.content) throw new Error('返回内容为空');
-        var md = stripFrontMatter(b64ToUtf8(data.content));
-        writeCache(path, md);
-        render(md, path);
-        setStatus('已读取 · ' + Math.round(md.length / 1024) + ' KB');
+      .then(function (result) {
+        render(result.md, path);
+        setStatus(result.source + ' · ' + Math.round(result.md.length / 1024) + ' KB');
       })
       .catch(function (error) {
         docEl.innerHTML = '<div class="ow-error">✕ 读取失败：' + error.message +
