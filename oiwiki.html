@@ -114,7 +114,7 @@ title: OI Wiki
   <div class="ow-note">
     本页内容来自开源项目 <a href="https://github.com/OI-wiki/OI-wiki" target="_blank" rel="noopener">OI Wiki</a>，
     采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" target="_blank" rel="noopener">CC BY-SA 4.0</a> 许可。
-    正文读取<b>站内镜像</b>（<code>/oiwiki/</code>），镜像缺失时回退到 GitHub 接口；目录为构建时快照。
+    正文读取<b>站内镜像</b>（<code>/oiwiki/data/</code>，按分类打包），镜像缺失时回退到 GitHub 接口；目录为构建时快照。
   </div>
 
   <div class="ow-layout">
@@ -230,16 +230,30 @@ title: OI Wiki
 
   /* ---------------- 正文 ---------------- */
 
-  /** 站内镜像（同步脚本落盘，Jekyll 原样复制，同源秒开且不消耗接口额度） */
+  /**
+   * 站内镜像：按分类打包成少数几个 JSON（`oiwiki/data/<分类>.json`）。
+   * 若把 465 篇拆成 465 个文件，仓库构建会明显变慢，因此打包为十余个文件；
+   * 每个包首次读取后常驻内存，同分类内切换无需再请求。
+   */
+  var bundleCache = {};
+
   function fetchLocal(path) {
-    return fetch('oiwiki/' + path.split('/').map(encodeURIComponent).join('/'), { cache: 'force-cache' })
+    var segments = path.split('/');
+    var bundle = segments.length > 1 ? segments[0] : '_root';
+    if (bundleCache[bundle]) {
+      var cached = bundleCache[bundle][path];
+      return cached ? Promise.resolve(cached) : Promise.reject(new Error('该篇不在镜像中'));
+    }
+    return fetch('oiwiki/data/' + bundle + '.json', { cache: 'force-cache' })
       .then(function (response) {
         if (!response.ok) throw new Error('HTTP ' + response.status);
-        return response.text();
+        return response.json();
       })
-      .then(function (text) {
-        if (!text || text.length < 20) throw new Error('内容为空');
-        return text;
+      .then(function (data) {
+        bundleCache[bundle] = data;
+        var md = data[path];
+        if (!md) throw new Error('该篇不在镜像中');
+        return md;
       });
   }
 
