@@ -1,0 +1,1045 @@
+--- a/src/scene/world.ts
++++ b/src/scene/world.ts
+@@ -13,6 +13,7 @@
+ import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+ 
+ import { ALL_BODIES, PLANETS, SUN, type Body, type Moon } from '../data/bodies';
++import { bodyName, onLangChange, tr } from '../i18n';
+ import { DAY, AU_KM, AU, G, M_SUN } from '../data/constants';
+ import { keplerState } from '../physics/state';
+ import { keplerPosition, sampleOrbit, orbitalPeriodDays } from '../physics/kepler';
+@@ -91,6 +92,17 @@
+   vecSun: boolean;             // the Sun's own motion arrow (helix)
+ }
+ 
++// Sphere-of-influence labels ("Earth's SOI" in English, "地球的引力影响球" in zh).
++function soiLabel(id: 'sun' | 'earth' | 'moon'): string {
++  const en = id === 'sun' ? 'Sun' : id === 'earth' ? 'Earth' : 'Moon';
++  const pl = id === 'sun' ? 'Słońca' : id === 'earth' ? 'Ziemi' : 'Księżyca';
++  return tr(
++    id === 'sun' ? 'Sun’s sphere of influence' : `${en}’s SOI`,
++    id === 'sun' ? 'Strefa wpływu Słońca' : `Strefa wpływu ${pl}`,
++    `${bodyName(id, en)}的引力影响球`,
++  );
++}
++
+ export class World {
+   readonly scene = new Scene();
+   readonly camera: PerspectiveCamera;
+@@ -349,6 +361,25 @@
+     this.buildNBody();
+     this.resize();
+     window.addEventListener('resize', () => this.resize());
++
++    // Planet/moon/SOI/probe labels are DOM elements, so a language switch just
++    // rewrites their text — no scene rebuild, no camera or simulation change.
++    onLangChange(() => this.applyLang());
++  }
++
++  /** Re-label every named object in the current language. */
++  private applyLang(): void {
++    for (const v of this.views) (v.label.element as HTMLElement).textContent = bodyName(v.body.id, v.body.name);
++    for (const mv of this.moonViews) (mv.label.element as HTMLElement).textContent = bodyName(mv.moon.id, mv.moon.name);
++    (this.soiSunLabel.element as HTMLElement).textContent = soiLabel('sun');
++    (this.soiEarthLabel.element as HTMLElement).textContent = soiLabel('earth');
++    (this.soiMoonLabel.element as HTMLElement).textContent = soiLabel('moon');
++    (this.precessLabel.element as HTMLElement).textContent = bodyName('mercury', 'Mercury');
++    const probes: Array<'1' | '2'> = ['1', '2'];
++    this.voyagerLabels.forEach((lab, i) => {
++      const n = probes[i];
++      if (n) (lab.element as HTMLElement).textContent = tr(`Voyager ${n}`, `Voyager ${n}`, `旅行者 ${n} 号`);
++    });
+   }
+ 
+   // ---- construction -------------------------------------------------------
+@@ -480,7 +511,7 @@
+       projDot.visible = false;
+       this.scene.add(projDot);
+ 
+-      const label = this.makeLabel(body.name, 'body-label');
++      const label = this.makeLabel(bodyName(body.id, body.name), 'body-label');
+       mesh.add(label);
+ 
+       // Rotation axis (local Y) — invariant under spin, tilted by the body's
+@@ -543,7 +574,7 @@
+         const orbitLine = new Line(lgeo, new LineBasicMaterial({ color: dim(moon.color, 0.6), transparent: true, opacity: 0.45 }));
+         this.scene.add(orbitLine);
+ 
+-        const label = this.makeLabel(moon.name, 'moon-label');
++        const label = this.makeLabel(bodyName(moon.id, moon.name), 'moon-label');
+         mesh.add(label);
+ 
+         const trailGeo = new BufferGeometry();
+@@ -1074,15 +1105,15 @@
+     this.soiEarthSphere = this.buildSoiSphere(4.2, 0x4aa3ff);
+     this.soiMoonSphere = this.buildSoiSphere(1.2, 0xbfeaff);
+     this.soiMoon = this.smallMoon(0.32);
+-    this.soiSunLabel = this.makeLabel('Sun’s sphere of influence', 'vec-label');
+-    this.soiEarthLabel = this.makeLabel('Earth’s SOI', 'vec-label');
+-    this.soiMoonLabel = this.makeLabel('Moon’s SOI', 'vec-label');
++    this.soiSunLabel = this.makeLabel(soiLabel('sun'), 'vec-label');
++    this.soiEarthLabel = this.makeLabel(soiLabel('earth'), 'vec-label');
++    this.soiMoonLabel = this.makeLabel(soiLabel('moon'), 'vec-label');
+     for (const l of [this.soiSunLabel, this.soiEarthLabel, this.soiMoonLabel]) { l.visible = false; this.scene.add(l); }
+ 
+     // Gravity-assist: Voyager 1 & 2. The path lines are rebuilt in scene units at
+     // slide start (so they sit on the real orbit rings); here we just make the
+     // craft markers + labels and empty lines.
+-    for (const [i, name] of ['Voyager 1', 'Voyager 2'].entries()) {
++    for (const [i, name] of [tr('Voyager 1', 'Voyager 1', '旅行者 1 号'), tr('Voyager 2', 'Voyager 2', '旅行者 2 号')].entries()) {
+       const color = i === 0 ? 0xffcf66 : 0x6fe0ff;
+       const line = new Line(new BufferGeometry(), new LineBasicMaterial({ color, transparent: true, opacity: 0.95 }));
+       line.frustumCulled = false; line.visible = false; this.scene.add(line);
+@@ -1159,7 +1190,7 @@
+     this.precessPeri.visible = false; this.precessPeri.frustumCulled = false;
+     this.scene.add(this.precessPeri);
+ 
+-    this.precessLabel = this.makeLabel('Mercury', 'vec-label');
++    this.precessLabel = this.makeLabel(bodyName('mercury', 'Mercury'), 'vec-label');
+     this.precessLabel.visible = false; this.scene.add(this.precessLabel);
+   }
+ 
+@@ -1222,7 +1253,7 @@
+       this.voyagerCraft[i].position.copy(this.tmp);
+       if (!this.state.paused) this.voyagerCraft[i].rotation.y += dtReal * 1.6; // spin in flight
+       this.voyagerLabels[i].position.copy(this.tmp);
+-      const name = i === 0 ? 'Voyager 1' : 'Voyager 2';
++      const name = i === 0 ? tr('Voyager 1', 'Voyager 1', '旅行者 1 号') : tr('Voyager 2', 'Voyager 2', '旅行者 2 号');
+       (this.voyagerLabels[i].element as HTMLElement).textContent = `${name} · ${fmtMissionDate(this.flybyDays)}`;
+     }
+ 
+--- a/src/style.css
++++ b/src/style.css
+@@ -383,3 +383,30 @@
+   /* Keep the CTA in the upper area, clear of the bottom-sheet panel. */
+   .tour-cta { bottom: auto; top: 34%; }
+ }
++
++/* ── Chinese (zh-CN) typography ─────────────────────────────────────────
++   Added by this deployment alongside the zh translation: CJK font
++   fallbacks, roomier leading and tighter tracking (wide Latin tracking and
++   uppercase transforms are meaningless or ugly for Han text). */
++html[lang^='zh'] {
++  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
++    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC',
++    'Source Han Sans SC', 'WenQuanYi Micro Hei', sans-serif;
++  --mono: 'Roboto Mono', ui-monospace, 'SF Mono', Menlo,
++    'PingFang SC', 'Microsoft YaHei', monospace;
++}
++html[lang^='zh'] .tour-body { font-size: 13px; line-height: 1.85; letter-spacing: 0.01em; }
++html[lang^='zh'] .tour-title { font-size: 14px; line-height: 1.5; letter-spacing: 0.05em; }
++html[lang^='zh'] .step-item .step-title { text-transform: none; letter-spacing: 0.02em; }
++html[lang^='zh'] .tour-dd-toggle { text-transform: none; letter-spacing: 0.02em; }
++html[lang^='zh'] .dd-current { font-size: 11px; }
++html[lang^='zh'] .tour-skip { text-transform: none; letter-spacing: 0.04em; }
++html[lang^='zh'] .tour-eyebrow { letter-spacing: 0.18em; }
++html[lang^='zh'] .tour-restart { text-transform: none; letter-spacing: 0.04em; }
++html[lang^='zh'] .glabel,
++html[lang^='zh'] .chk,
++html[lang^='zh'] .hint,
++html[lang^='zh'] .seg button { text-transform: none; letter-spacing: 0.03em; }
++html[lang^='zh'] .chk,
++html[lang^='zh'] .hint { line-height: 1.75; }
++html[lang^='zh'] .credit { letter-spacing: 0.02em; }
+--- a/src/ui/panel.ts
++++ b/src/ui/panel.ts
+@@ -1,189 +1,222 @@
+ import { World } from '../scene/world';
+ import { ALL_BODIES } from '../data/bodies';
++import { T, bodyName, fmtSpeed, onLangChange } from '../i18n';
+ 
+ // Builds the control HTML overlay and wires it to the World instance.
+ // Kept dependency-free (plain DOM) so the demo has no UI-framework weight.
++// The markup lives in mount() so a language change can rebuild it in place
++// (the panel owns its own host element — the tour overlay is a sibling).
+ 
+ export function buildUI(world: World, onStartTour: () => void): () => void {
+   const app = document.getElementById('app')!;
+-  app.innerHTML = `
++  app.innerHTML = '<div id="panel-host"></div>';
++  const host = app.querySelector('#panel-host') as HTMLElement;
++
++  let scaleSeg!: HTMLElement;
++  let scaleHint!: HTMLElement;
++  let physSeg!: HTMLElement;
++  let dimSeg!: HTMLElement;
++  let speed!: HTMLInputElement;
++  let speedVal!: HTMLElement;
++  let pauseBtn!: HTMLButtonElement;
++  let focus!: HTMLSelectElement;
++  let selected = 'earth';
++
++  function mount(): void {
++    const ui = T();
++    host.innerHTML = `
+     <div class="panel" id="controls">
+-      <h1>Gravity</h1>
+-      <p class="sub">Solar System · Newtonian Model</p>
++      <h1>${ui.title}</h1>
++      <p class="sub">${ui.sub}</p>
+ 
+       <div class="group">
+-        <div class="glabel">Scale model</div>
++        <div class="glabel">${ui.scaleModel}</div>
+         <div class="seg" id="scaleSeg">
+-          <button data-v="visual" class="on">Visual</button>
+-          <button data-v="real">True scale</button>
++          <button data-v="visual" class="on">${ui.visual}</button>
++          <button data-v="real">${ui.realScale}</button>
+         </div>
+         <div class="hint" id="scaleHint"></div>
+       </div>
+ 
+       <div class="group">
+-        <div class="glabel">Physics</div>
++        <div class="glabel">${ui.physics}</div>
+         <div class="seg" id="physSeg">
+-          <button data-v="kepler" class="on">Keplerian</button>
+-          <button data-v="nbody">N-body</button>
++          <button data-v="kepler" class="on">${ui.kepler}</button>
++          <button data-v="nbody">${ui.nbody}</button>
+         </div>
+         <div class="hint" id="physHint"></div>
+       </div>
+ 
+       <div class="group">
+-        <div class="glabel">Dimension</div>
++        <div class="glabel">${ui.dimension}</div>
+         <div class="seg" id="dimSeg">
+-          <button data-v="3d" class="on">3D</button>
+-          <button data-v="2d">2D ecliptic</button>
++          <button data-v="3d" class="on">${ui.dim3d}</button>
++          <button data-v="2d">${ui.dim2d}</button>
+         </div>
+-        <div class="hint">3D shows real orbital inclinations; 2D flattens onto the ecliptic plane.</div>
++        <div class="hint">${ui.dimHint}</div>
+       </div>
+ 
+       <div class="group">
+-        <label class="chk"><input type="checkbox" id="cOrbits" checked> Orbit paths</label>
+-        <label class="chk"><input type="checkbox" id="cMoons"> Moons <span class="tag">heavier</span></label>
+-        <label class="chk"><input type="checkbox" id="cProj"> Projection lines onto ecliptic</label>
+-        <label class="chk"><input type="checkbox" id="cLabels" checked> Labels</label>
++        <label class="chk"><input type="checkbox" id="cOrbits" checked> ${ui.orbits}</label>
++        <label class="chk"><input type="checkbox" id="cMoons"> ${ui.moons} <span class="tag">${ui.heavier}</span></label>
++        <label class="chk"><input type="checkbox" id="cProj"> ${ui.projection}</label>
++        <label class="chk"><input type="checkbox" id="cLabels" checked> ${ui.labels}</label>
+       </div>
+ 
+       <div class="group">
+-        <div class="glabel">Time · <span id="speedVal"></span></div>
++        <div class="glabel">${ui.time} · <span id="speedVal"></span></div>
+         <input type="range" id="speed" min="0" max="100" value="42">
+         <div class="row">
+-          <button id="pause">⏸ Pause</button>
+-          <button id="reset">⟲ J2000</button>
++          <button id="pause">${ui.pause}</button>
++          <button id="reset">${ui.reset}</button>
+         </div>
+       </div>
+ 
+       <div class="group">
+-        <div class="glabel">Focus camera</div>
++        <div class="glabel">${ui.focusCamera}</div>
+         <select id="focus"></select>
+       </div>
+ 
+-      <button id="tourBtn" class="tour-restart">▶ Replay guided tour</button>
++      <button id="tourBtn" class="tour-restart">${ui.replayTour}</button>
+     </div>
+   `;
+ 
+-  // ---- scale segment ----
+-  const scaleSeg = app.querySelector('#scaleSeg')!;
+-  const scaleHint = app.querySelector('#scaleHint') as HTMLElement;
+-  scaleHint.textContent = world['scale']?.label ?? '';
+-  scaleSeg.addEventListener('click', (e) => {
+-    const b = (e.target as HTMLElement).closest('button');
+-    if (!b) return;
+-    seg(scaleSeg, b);
+-    const v = b.dataset.v as 'visual' | 'real';
+-    world.setScaleMode(v);
+-    scaleHint.textContent = v === 'real'
+-      ? 'True scale — accurate sizes & distances. Planets are specks; zoom in.'
+-      : 'Visual scale — sizes & distances compressed so everything is visible.';
+-  });
+-  scaleHint.textContent = 'Visual scale — sizes & distances compressed so everything is visible.';
+-
+-  // ---- physics segment ----
+-  const physSeg = app.querySelector('#physSeg')!;
+-  const physHint = app.querySelector('#physHint') as HTMLElement;
+-  const setPhysHint = (v: string) => {
+-    physHint.textContent = v === 'kepler'
+-      ? 'Analytic two-body orbits from J2000 elements — exact, stable positions.'
+-      : 'Direct F = G·m₁·m₂/r² integration of every pair — gravity, simulated.';
+-  };
+-  setPhysHint('kepler');
+-  physSeg.addEventListener('click', (e) => {
+-    const b = (e.target as HTMLElement).closest('button');
+-    if (!b) return;
+-    seg(physSeg, b);
+-    const v = b.dataset.v as 'kepler' | 'nbody';
+-    world.setPhysics(v);
+-    setPhysHint(v);
+-  });
+-
+-  // ---- dimension segment ----
+-  const dimSeg = app.querySelector('#dimSeg')!;
+-  dimSeg.addEventListener('click', (e) => {
+-    const b = (e.target as HTMLElement).closest('button');
+-    if (!b) return;
+-    seg(dimSeg, b);
+-    world.setTwoD(b.dataset.v === '2d');
+-  });
+-
+-  // ---- checkboxes ----
+-  (app.querySelector('#cOrbits') as HTMLInputElement).addEventListener('change', (e) => {
+-    world.state.showOrbits = (e.target as HTMLInputElement).checked;
+-  });
+-  (app.querySelector('#cProj') as HTMLInputElement).addEventListener('change', (e) => {
+-    world.state.showProjection = (e.target as HTMLInputElement).checked;
+-  });
+-  (app.querySelector('#cLabels') as HTMLInputElement).addEventListener('change', (e) => {
+-    world.state.showLabels = (e.target as HTMLInputElement).checked;
+-  });
+-  (app.querySelector('#cMoons') as HTMLInputElement).addEventListener('change', (e) => {
+-    world.setShowMoons((e.target as HTMLInputElement).checked);
+-  });
+-
+-  (app.querySelector('#tourBtn') as HTMLButtonElement).addEventListener('click', onStartTour);
+-
+-  // ---- time ----
+-  const speed = app.querySelector('#speed') as HTMLInputElement;
+-  const speedVal = app.querySelector('#speedVal') as HTMLElement;
+-  const applySpeed = () => {
+-    // Map slider 0..100 to ~0.2 .. 4000 days/sec, logarithmically.
++    // ---- scale segment ----
++    scaleSeg = host.querySelector('#scaleSeg')!;
++    scaleHint = host.querySelector('#scaleHint') as HTMLElement;
++    const setScaleHint = (v: string) => {
++      scaleHint.textContent = v === 'real' ? T().scaleHintReal : T().scaleHintVisual;
++    };
++    setScaleHint(world.state.scaleMode);
++    scaleSeg.addEventListener('click', (e) => {
++      const b = (e.target as HTMLElement).closest('button');
++      if (!b) return;
++      seg(scaleSeg, b);
++      const v = b.dataset.v as 'visual' | 'real';
++      world.setScaleMode(v);
++      setScaleHint(v);
++    });
++
++    // ---- physics segment ----
++    physSeg = host.querySelector('#physSeg')!;
++    const physHint = host.querySelector('#physHint') as HTMLElement;
++    const setPhysHint = (v: string) => {
++      physHint.textContent = v === 'kepler' ? T().keplerHint : T().nbodyHint;
++    };
++    setPhysHint(world.state.physics);
++    physSeg.addEventListener('click', (e) => {
++      const b = (e.target as HTMLElement).closest('button');
++      if (!b) return;
++      seg(physSeg, b);
++      const v = b.dataset.v as 'kepler' | 'nbody';
++      world.setPhysics(v);
++      setPhysHint(v);
++    });
++
++    // ---- dimension segment ----
++    dimSeg = host.querySelector('#dimSeg')!;
++    dimSeg.addEventListener('click', (e) => {
++      const b = (e.target as HTMLElement).closest('button');
++      if (!b) return;
++      seg(dimSeg, b);
++      world.setTwoD(b.dataset.v === '2d');
++    });
++
++    // ---- checkboxes ----
++    (host.querySelector('#cOrbits') as HTMLInputElement).addEventListener('change', (e) => {
++      world.state.showOrbits = (e.target as HTMLInputElement).checked;
++    });
++    (host.querySelector('#cProj') as HTMLInputElement).addEventListener('change', (e) => {
++      world.state.showProjection = (e.target as HTMLInputElement).checked;
++    });
++    (host.querySelector('#cLabels') as HTMLInputElement).addEventListener('change', (e) => {
++      world.state.showLabels = (e.target as HTMLInputElement).checked;
++    });
++    (host.querySelector('#cMoons') as HTMLInputElement).addEventListener('change', (e) => {
++      world.setShowMoons((e.target as HTMLInputElement).checked);
++    });
++
++    (host.querySelector('#tourBtn') as HTMLButtonElement).addEventListener('click', onStartTour);
++
++    // ---- time ----
++    speed = host.querySelector('#speed') as HTMLInputElement;
++    speedVal = host.querySelector('#speedVal') as HTMLElement;
++    speed.addEventListener('input', applySpeed);
++
++    pauseBtn = host.querySelector('#pause') as HTMLButtonElement;
++    pauseBtn.addEventListener('click', () => {
++      world.state.paused = !world.state.paused;
++      pauseBtn.textContent = world.state.paused ? T().play : T().pause;
++    });
++    (host.querySelector('#reset') as HTMLButtonElement).addEventListener('click', () => {
++      world.simDays = 0;
++      if (world.state.physics === 'nbody') world.setPhysics('nbody');
++    });
++
++    // ---- focus selector ----
++    focus = host.querySelector('#focus') as HTMLSelectElement;
++    for (const b of ALL_BODIES) {
++      const o = document.createElement('option');
++      o.value = b.id;
++      o.textContent = bodyName(b.id, b.name);
++      focus.appendChild(o);
++    }
++    focus.value = selected;
++    focus.addEventListener('change', () => {
++      selected = focus.value;
++      world.focusOn(selected);
++    });
++  }
++
++  // Map slider 0..100 to ~0.2 .. 4000 days/sec, logarithmically.
++  function applySpeed(): void {
+     const t = +speed.value / 100;
+     const dps = 0.2 * Math.pow(20000, t);
+     world.state.daysPerSecond = dps;
+     speedVal.textContent = fmtSpeed(dps);
+-  };
+-  speed.addEventListener('input', applySpeed);
+-  applySpeed();
+-
+-  const pauseBtn = app.querySelector('#pause') as HTMLButtonElement;
+-  pauseBtn.addEventListener('click', () => {
+-    world.state.paused = !world.state.paused;
+-    pauseBtn.textContent = world.state.paused ? '▶ Play' : '⏸ Pause';
+-  });
+-  (app.querySelector('#reset') as HTMLButtonElement).addEventListener('click', () => {
+-    world.simDays = 0;
+-    if (world.state.physics === 'nbody') world.setPhysics('nbody');
+-  });
+-
+-  // ---- focus selector ----
+-  const focus = app.querySelector('#focus') as HTMLSelectElement;
+-  for (const b of ALL_BODIES) {
+-    const o = document.createElement('option');
+-    o.value = b.id;
+-    o.textContent = b.name;
+-    focus.appendChild(o);
+   }
+-  let selected = 'earth';
+-  focus.value = selected;
+-  focus.addEventListener('change', () => {
+-    selected = focus.value;
+-    world.focusOn(selected);
+-  });
+ 
+   // Reflect world state into the controls (the tour mutates state directly).
+   function setSeg(container: Element, value: string): void {
+     container.querySelectorAll('button').forEach((b) =>
+       b.classList.toggle('on', (b as HTMLElement).dataset.v === value));
+   }
+-  return function sync(): void {
++
++  function setPhysHintOf(v: string): void {
++    const h = host.querySelector('#physHint');
++    if (h) h.textContent = v === 'kepler' ? T().keplerHint : T().nbodyHint;
++  }
++  function setScaleHintOf(v: string): void {
++    const h = host.querySelector('#scaleHint');
++    if (h) h.textContent = v === 'real' ? T().scaleHintReal : T().scaleHintVisual;
++  }
++
++  function sync(): void {
+     const st = world.state;
+     setSeg(scaleSeg, st.scaleMode);
+     setSeg(physSeg, st.physics);
+     setSeg(dimSeg, st.twoD ? '2d' : '3d');
+-    setPhysHint(st.physics);
+-    scaleHint.textContent = st.scaleMode === 'real'
+-      ? 'True scale — accurate sizes & distances. Planets are specks; zoom in.'
+-      : 'Visual scale — sizes & distances compressed so everything is visible.';
+-    (app.querySelector('#cOrbits') as HTMLInputElement).checked = st.showOrbits;
+-    (app.querySelector('#cProj') as HTMLInputElement).checked = st.showProjection;
+-    (app.querySelector('#cLabels') as HTMLInputElement).checked = st.showLabels;
+-    (app.querySelector('#cMoons') as HTMLInputElement).checked = st.showMoons;
++    setPhysHintOf(st.physics);
++    setScaleHintOf(st.scaleMode);
++    (host.querySelector('#cOrbits') as HTMLInputElement).checked = st.showOrbits;
++    (host.querySelector('#cProj') as HTMLInputElement).checked = st.showProjection;
++    (host.querySelector('#cLabels') as HTMLInputElement).checked = st.showLabels;
++    (host.querySelector('#cMoons') as HTMLInputElement).checked = st.showMoons;
+     // Invert the log speed mapping to position the slider.
+     const t = Math.log(st.daysPerSecond / 0.2) / Math.log(20000);
+     speed.value = String(Math.round(Math.max(0, Math.min(1, t)) * 100));
+     speedVal.textContent = fmtSpeed(st.daysPerSecond);
+-    pauseBtn.textContent = st.paused ? '▶ Play' : '⏸ Pause';
+-  };
++    pauseBtn.textContent = st.paused ? T().play : T().pause;
++  }
++
++  mount();
++  sync();
++
++  // Rebuild the panel in the new language, then restore every control from the
++  // live world state (a language switch never changes the simulation).
++  onLangChange(() => { mount(); sync(); });
++
++  return sync;
+ }
+ 
+ // ---- helpers ----
+@@ -191,8 +224,3 @@
+   container.querySelectorAll('button').forEach((x) => x.classList.remove('on'));
+   active.classList.add('on');
+ }
+-function fmtSpeed(dps: number): string {
+-  if (dps < 1) return `${(dps * 24).toFixed(1)} h/s`;
+-  if (dps < 400) return `${dps.toFixed(1)} days/s`;
+-  return `${(dps / 365.25).toFixed(2)} yr/s`;
+-}
+--- a/src/ui/tour.ts
++++ b/src/ui/tour.ts
+@@ -1,6 +1,13 @@
+ import type { World } from '../scene/world';
+ import type { ScaleMode } from '../scene/scale';
+ import type { PhysicsMode, DemoMode } from '../scene/world';
++import {
++  LANGS, LANG_BTN, T, fmtSpeed, getLang, setLang as setI18nLang, stepWord, syncUrlLang,
++  type Lang,
++} from '../i18n';
++import { ZH } from './tour-zh';
++
++export type { Lang };
+ 
+ // A narrated walkthrough that builds up *why* orbits exist, one idea at a time:
+ // gravity between two masses → gravity builds the Sun and Earth from dust →
+@@ -57,12 +64,6 @@
+   sideFollow?: boolean;
+ }
+ 
+-function fmtSpeed(dps: number): string {
+-  if (dps < 1) return `${(dps * 24).toFixed(1)} h/s`;
+-  if (dps < 400) return `${dps.toFixed(1)} days/s`;
+-  return `${(dps / 365.25).toFixed(2)} yr/s`;
+-}
+-
+ const V = (o: TourStep['vectors']) => o;
+ 
+ export const STEPS: TourStep[] = [
+@@ -316,9 +317,8 @@
+   },
+ ];
+ 
+-export type Lang = 'en' | 'pl';
++// English is the base text; PL (below) and ZH (ui/tour-zh.ts) override it per id.
+ 
+-// Polish translations, keyed by step id. UI chrome strings below.
+ export const PL: Record<string, { title: string; body: string }> = {
+   'what-is-gravity': {
+     title: 'Czym jest grawitacja?',
+@@ -418,11 +418,6 @@
+   },
+ };
+ 
+-const UI = {
+-  en: { tour: 'Guided Tour', explore: 'Explore ✕', back: '‹ Back', next: 'Next ›', finish: 'Finish ✓', speed: 'Time speed', step: 'Step', playCta: 'Play with narration & music' },
+-  pl: { tour: 'Przewodnik', explore: 'Eksploruj ✕', back: '‹ Wstecz', next: 'Dalej ›', finish: 'Zakończ ✓', speed: 'Prędkość czasu', step: 'Krok', playCta: 'Odtwórz z narracją i muzyką' },
+-};
+-
+ export function stepIndexFromHash(): number {
+   const id = location.hash.replace(/^#/, '');
+   const i = STEPS.findIndex((s) => s.id === id);
+@@ -442,7 +437,8 @@
+   private speedRange: HTMLInputElement;
+   private speedVal: HTMLElement;
+   private active = false;
+-  private lang: Lang = (localStorage.getItem('gravity-lang') as Lang) === 'pl' ? 'pl' : 'en';
++  /** Current language lives in i18n.ts (shared with the panel + world labels). */
++  private get lang(): Lang { return getLang(); }
+   // Narrated auto-play: plays each slide's audio, then waits 5s and advances.
+   private autoPlay = false;
+   private audio = new Audio();
+@@ -462,14 +458,13 @@
+     this.root.innerHTML = `
+       <div class="tour-progress"><span class="tour-progress-fill"></span></div>
+       <div class="tour-head">
+-        <span class="tour-eyebrow">${UI[this.lang].tour}</span>
++        <span class="tour-eyebrow">${T().tour}</span>
+         <div class="lang-switch">
+-          <button class="lang-btn" data-lang="en">EN</button>
+-          <button class="lang-btn" data-lang="pl">PL</button>
++          ${LANGS.map((l) => `<button class="lang-btn" data-lang="${l}">${LANG_BTN[l]}</button>`).join('')}
+         </div>
+-        <button class="tour-auto" title="Auto-play narration" aria-label="Auto-play narration">▶</button>
+-        <button class="tour-skip">${UI[this.lang].explore}</button>
+-        <button class="tour-collapse" aria-label="Hide description">▾</button>
++        <button class="tour-auto" title="${T().autoPlay}" aria-label="${T().autoPlay}">▶</button>
++        <button class="tour-skip">${T().explore}</button>
++        <button class="tour-collapse" aria-label="${T().hideDesc}">▾</button>
+       </div>
+       <div class="tour-dd">
+         <button class="tour-dd-toggle"><span class="dd-current"></span><span class="dd-chev">▾</span></button>
+@@ -478,12 +473,12 @@
+       <div class="tour-title"></div>
+       <div class="tour-body"></div>
+       <div class="tour-speed">
+-        <div class="glabel">Time speed · <span class="speed-val"></span></div>
++        <div class="glabel">${T().speed} · <span class="speed-val"></span></div>
+         <input type="range" class="speed-range" min="0" max="100" />
+       </div>
+       <div class="tour-foot">
+-        <button class="tour-prev">‹ Back</button>
+-        <button class="tour-next">Next ›</button>
++        <button class="tour-prev">${T().back}</button>
++        <button class="tour-next">${T().next}</button>
+       </div>`;
+     document.getElementById('app')!.appendChild(this.root);
+ 
+@@ -494,7 +489,7 @@
+     this.cta.style.display = 'none';
+     this.cta.innerHTML = `
+       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+-      <span class="tour-cta-label">${UI[this.lang].playCta}</span>`;
++      <span class="tour-cta-label">${T().playCta}</span>`;
+     this.cta.addEventListener('click', () => this.startPlayback());
+     document.getElementById('app')!.appendChild(this.cta);
+ 
+@@ -514,7 +509,7 @@
+     STEPS.forEach((step, i) => {
+       const li = document.createElement('li');
+       li.className = 'step-item';
+-      li.innerHTML = `<span class="step-num">${i + 1}</span><span class="step-title">${step.title}</span>`;
++      li.innerHTML = `<span class="step-num">${i + 1}</span><span class="step-title">${this.localized(step).title}</span>`;
+       li.addEventListener('click', () => this.go(i));
+       list.appendChild(li);
+     });
+@@ -575,7 +570,7 @@
+       this.setCollapsed(!this.root.classList.contains('collapsed'));
+     });
+ 
+-    // Language switch (EN / PL), persisted to localStorage.
++    // Language switch (EN / PL / 中文), persisted to localStorage.
+     this.root.querySelectorAll('.lang-btn').forEach((btn) => {
+       btn.addEventListener('click', () => {
+         const l = (btn as HTMLElement).dataset.lang as Lang;
+@@ -658,8 +653,8 @@
+     this.apply(step);
+ 
+     const loc = this.localized(step);
+-    const ui = UI[this.lang];
+-    this.titleEl.textContent = `${ui.step} ${this.index + 1} · ${loc.title}`;
++    const ui = T();
++    this.titleEl.textContent = `${stepWord(this.index + 1)} · ${loc.title}`;
+     this.bodyEl.textContent = loc.body;
+     this.prevBtn.disabled = this.index === 0;
+     this.prevBtn.textContent = ui.back;
+@@ -698,7 +693,7 @@
+     this.root.classList.toggle('collapsed', on);
+     const btn = this.root.querySelector('.tour-collapse') as HTMLButtonElement;
+     btn.textContent = on ? '▴' : '▾';
+-    btn.setAttribute('aria-label', on ? 'Show description' : 'Hide description');
++    btn.setAttribute('aria-label', on ? T().showDesc : T().hideDesc);
+   }
+ 
+   /** First-slide CTA: turn the music on and start the narrated auto-play. */
+@@ -739,7 +734,10 @@
+     this.autoSlideStart = performance.now();
+     this.autoEnd = this.autoSlideStart + this.fallbackMs(); // until audio metadata loads
+     this.progressFill.style.width = '0%';
+-    this.audio.src = `${import.meta.env.BASE_URL}audio/${STEPS[this.index].id}.${this.lang}.mp3`;
++    // Narration audio exists for EN + PL only; the Chinese slides therefore play
++    // the English narration rather than 404-ing (the text stays Chinese).
++    const audioLang = this.lang === 'zh' ? 'en' : this.lang;
++    this.audio.src = `${import.meta.env.BASE_URL}audio/${STEPS[this.index].id}.${audioLang}.mp3`;
+     // play() may reject if the file is missing/blocked — fall back to a timer.
+     this.audio.play().catch(() => {
+       const ms = this.fallbackMs();
+@@ -768,9 +766,15 @@
+     }, afterMs);
+   }
+ 
+-  /** Estimated read time when there's no audio file (~160 wpm), min 9s. */
++  /** Estimated read time when there's no audio file (~160 wpm, min 9s). Chinese
++   *  has no spaces, so it is timed per character (~4.5 chars/s) instead. */
+   private fallbackMs(): number {
+-    const words = this.localized(STEPS[this.index]).body.split(/\s+/).length;
++    const body = this.localized(STEPS[this.index]).body;
++    if (this.lang === 'zh') {
++      const chars = body.replace(/\s+/g, '').length;
++      return Math.min(32000, Math.max(9000, Math.round(chars * 220))) + 5000;
++    }
++    const words = body.split(/\s+/).length;
+     return Math.min(32000, Math.max(9000, words * 380)) + 5000;
+   }
+ 
+@@ -830,23 +834,28 @@
+ 
+   /** Title + body for a step in the current language (falls back to English). */
+   private localized(step: TourStep): { title: string; body: string } {
++    if (this.lang === 'zh' && ZH[step.id]) return ZH[step.id];
+     if (this.lang === 'pl' && PL[step.id]) return PL[step.id];
+     return { title: step.title, body: step.body };
+   }
+ 
+   private setLang(l: Lang): void {
+-    this.lang = l;
+-    localStorage.setItem('gravity-lang', l);
++    setI18nLang(l);        // notifies the panel + 3-D labels, persists, retitles
++    syncUrlLang();         // so the URL still says which language you're reading
+     this.applyLang();
+     if (this.active) this.go(this.index, false); // re-render title/body/nav without touching hash
+   }
+ 
+   /** Re-render all language-dependent chrome (eyebrow, buttons, step list). */
+   private applyLang(): void {
+-    const ui = UI[this.lang];
++    const ui = T();
+     (this.root.querySelector('.tour-eyebrow') as HTMLElement).textContent = ui.tour;
+     (this.root.querySelector('.tour-skip') as HTMLElement).textContent = ui.explore;
+     (this.root.querySelector('.glabel') as HTMLElement).childNodes[0].textContent = `${ui.speed} · `;
++    const autoBtn = this.root.querySelector('.tour-auto') as HTMLButtonElement;
++    autoBtn.title = ui.autoPlay;
++    autoBtn.setAttribute('aria-label', ui.autoPlay);
++    this.setCollapsed(this.root.classList.contains('collapsed'));
+     this.root.querySelectorAll('.lang-btn').forEach((btn) => {
+       btn.classList.toggle('on', (btn as HTMLElement).dataset.lang === this.lang);
+     });
+--- /dev/null
++++ b/src/i18n.ts
+@@ -0,0 +1,225 @@
++// ---------------------------------------------------------------------------
++// Language state + shared UI strings.
++//
++// Upstream Gravity ships English + Polish. This deployment adds Simplified
++// Chinese (zh) — a GPL-3.0 modification of https://github.com/qunabu/Gravity,
++// disclosed in /gravity/NOTICE.md. English stays the base language: every
++// string without a translation falls back to it.
++// ---------------------------------------------------------------------------
++
++export type Lang = 'en' | 'pl' | 'zh';
++
++export const LANGS: Lang[] = ['en', 'pl', 'zh'];
++export const LANG_BTN: Record<Lang, string> = { en: 'EN', pl: 'PL', zh: '中文' };
++
++const KEY = 'gravity-lang';
++
++const isLang = (v: unknown): v is Lang => v === 'en' || v === 'pl' || v === 'zh';
++
++/** Stored choice → ?lang= override → browser language → English. */
++function detect(): Lang {
++  try {
++    const q = new URLSearchParams(location.search).get('lang');
++    if (isLang(q)) return q;
++  } catch { /* ignore */ }
++  try {
++    const stored = localStorage.getItem(KEY);
++    if (isLang(stored)) return stored;
++  } catch { /* ignore */ }
++  const nav = ((navigator.languages && navigator.languages[0]) || navigator.language || '').toLowerCase();
++  if (nav.startsWith('zh')) return 'zh';
++  if (nav.startsWith('pl')) return 'pl';
++  return 'en';
++}
++
++let lang: Lang = detect();
++const listeners = new Set<(l: Lang) => void>();
++
++export function getLang(): Lang { return lang; }
++
++export function setLang(l: Lang): void {
++  lang = l;
++  try { localStorage.setItem(KEY, l); } catch { /* private mode */ }
++  applyDocument();
++  listeners.forEach((fn) => { try { fn(l); } catch (e) { console.error(e); } });
++}
++
++/** Register a re-render callback for language changes (world labels, panel). */
++export function onLangChange(fn: (l: Lang) => void): void { listeners.add(fn); }
++
++/** Pick one of the three strings for the current language. */
++export function tr(en: string, pl: string, zh: string): string {
++  return lang === 'zh' ? zh : lang === 'pl' ? pl : en;
++}
++
++// ---------------------------------------------------------------------------
++// Solar-system body names (ids come from data/bodies.ts).
++// ---------------------------------------------------------------------------
++
++const ZH_BODIES: Record<string, string> = {
++  sun: '太阳',
++  mercury: '水星',
++  venus: '金星',
++  earth: '地球',
++  moon: '月球',
++  mars: '火星',
++  phobos: '火卫一',
++  deimos: '火卫二',
++  jupiter: '木星',
++  io: '木卫一',
++  europa: '木卫二',
++  ganymede: '木卫三',
++  callisto: '木卫四',
++  saturn: '土星',
++  titan: '土卫六',
++  rhea: '土卫五',
++  uranus: '天王星',
++  titania: '天卫三',
++  oberon: '天卫四',
++  neptune: '海王星',
++  triton: '海卫一',
++  pluto: '冥王星',
++  charon: '冥卫一',
++};
++
++/** Display name of a body: Chinese in zh, the upstream English name otherwise. */
++export function bodyName(id: string, en: string): string {
++  return lang === 'zh' ? (ZH_BODIES[id] ?? en) : en;
++}
++
++/** Time-speed readout, with localized units. */
++export function fmtSpeed(dps: number): string {
++  if (dps < 1) return lang === 'zh' ? `${(dps * 24).toFixed(1)} 小时/秒` : `${(dps * 24).toFixed(1)} h/s`;
++  if (dps < 400) return lang === 'zh' ? `${dps.toFixed(1)} 天/秒` : `${dps.toFixed(1)} days/s`;
++  return lang === 'zh' ? `${(dps / 365.25).toFixed(2)} 年/秒` : `${(dps / 365.25).toFixed(2)} yr/s`;
++}
++
++// ---------------------------------------------------------------------------
++// Panel + tour chrome.
++// ---------------------------------------------------------------------------
++
++export interface UIStrings {
++  title: string;
++  sub: string;
++  scaleModel: string; visual: string; realScale: string;
++  scaleHintVisual: string; scaleHintReal: string;
++  physics: string; kepler: string; nbody: string; keplerHint: string; nbodyHint: string;
++  dimension: string; dim3d: string; dim2d: string; dimHint: string;
++  orbits: string; moons: string; heavier: string; projection: string; labels: string;
++  time: string; pause: string; play: string; reset: string;
++  focusCamera: string; replayTour: string;
++  tour: string; explore: string; back: string; next: string; finish: string;
++  speed: string; playCta: string; autoPlay: string; hideDesc: string; showDesc: string;
++  madeBy: string; earthTexture: string;
++}
++
++export const UI: Record<Lang, UIStrings> = {
++  en: {
++    title: 'Gravity',
++    sub: 'Solar System · Newtonian Model',
++    scaleModel: 'Scale model', visual: 'Visual', realScale: 'True scale',
++    scaleHintVisual: 'Visual scale — sizes & distances compressed so everything is visible.',
++    scaleHintReal: 'True scale — accurate sizes & distances. Planets are specks; zoom in.',
++    physics: 'Physics', kepler: 'Keplerian', nbody: 'N-body',
++    keplerHint: 'Analytic two-body orbits from J2000 elements — exact, stable positions.',
++    nbodyHint: 'Direct F = G·m₁·m₂/r² integration of every pair — gravity, simulated.',
++    dimension: 'Dimension', dim3d: '3D', dim2d: '2D ecliptic',
++    dimHint: '3D shows real orbital inclinations; 2D flattens onto the ecliptic plane.',
++    orbits: 'Orbit paths', moons: 'Moons', heavier: 'heavier',
++    projection: 'Projection lines onto ecliptic', labels: 'Labels',
++    time: 'Time', pause: '⏸ Pause', play: '▶ Play', reset: '⟲ J2000',
++    focusCamera: 'Focus camera', replayTour: '▶ Replay guided tour',
++    tour: 'Guided Tour', explore: 'Explore ✕', back: '‹ Back', next: 'Next ›', finish: 'Finish ✓',
++    speed: 'Time speed', playCta: 'Play with narration & music',
++    autoPlay: 'Auto-play narration', hideDesc: 'Hide description', showDesc: 'Show description',
++    madeBy: 'Made by', earthTexture: 'Earth texture',
++  },
++  pl: {
++    title: 'Grawitacja',
++    sub: 'Układ Słoneczny · model newtonowski',
++    scaleModel: 'Skala modelu', visual: 'Wizualna', realScale: 'Rzeczywista',
++    scaleHintVisual: 'Skala wizualna — rozmiary i odległości ściśnięte, by wszystko było widoczne.',
++    scaleHintReal: 'Skala rzeczywista — dokładne rozmiary i odległości. Planety to drobiny; przybliż.',
++    physics: 'Fizyka', kepler: 'Kepler', nbody: 'N-ciał',
++    keplerHint: 'Analityczne orbity dwuciałowe z elementów J2000 — dokładne, stabilne pozycje.',
++    nbodyHint: 'Bezpośrednie całkowanie F = G·m₁·m₂/r² dla każdej pary — symulowana grawitacja.',
++    dimension: 'Wymiar', dim3d: '3D', dim2d: '2D ekliptyka',
++    dimHint: '3D pokazuje prawdziwe nachylenia orbit; 2D spłaszcza je do płaszczyzny ekliptyki.',
++    orbits: 'Linie orbit', moons: 'Księżyce', heavier: 'cięższe',
++    projection: 'Linie rzutu na ekliptykę', labels: 'Etykiety',
++    time: 'Czas', pause: '⏸ Pauza', play: '▶ Odtwórz', reset: '⟲ J2000',
++    focusCamera: 'Kamera na', replayTour: '▶ Powtórz przewodnik',
++    tour: 'Przewodnik', explore: 'Eksploruj ✕', back: '‹ Wstecz', next: 'Dalej ›', finish: 'Zakończ ✓',
++    speed: 'Prędkość czasu', playCta: 'Odtwórz z narracją i muzyką',
++    autoPlay: 'Auto-odtwarzanie narracji', hideDesc: 'Ukryj opis', showDesc: 'Pokaż opis',
++    madeBy: 'Autor', earthTexture: 'Tekstura Ziemi',
++  },
++  zh: {
++    title: '引力',
++    sub: '太阳系 · 牛顿力学模型',
++    scaleModel: '比例模型', visual: '视觉比例', realScale: '真实比例',
++    scaleHintVisual: '视觉比例 —— 压缩了天体大小与距离，让所有天体都能同框可见。',
++    scaleHintReal: '真实比例 —— 大小与距离都按真实数值。行星只是一粒微尘，请放大查看。',
++    physics: '物理引擎', kepler: '开普勒轨道', nbody: 'N 体模拟',
++    keplerHint: '由 J2000 轨道根数解析求解二体问题 —— 位置精确且长期稳定。',
++    nbodyHint: '对每一对天体直接积分 F = G·m₁·m₂/r² —— 把引力真正算出来。',
++    dimension: '维度', dim3d: '三维', dim2d: '二维黄道面',
++    dimHint: '三维显示真实的轨道倾角；二维则把所有轨道压平到黄道面上。',
++    orbits: '轨道线', moons: '卫星', heavier: '更吃性能',
++    projection: '投影到黄道面的连线', labels: '天体名称',
++    time: '时间', pause: '⏸ 暂停', play: '▶ 播放', reset: '⟲ 回到 J2000',
++    focusCamera: '镜头对准', replayTour: '▶ 重看引导讲解',
++    tour: '引导讲解', explore: '自由探索 ✕', back: '‹ 上一步', next: '下一步 ›', finish: '完成 ✓',
++    speed: '时间速度', playCta: '播放旁白与配乐',
++    autoPlay: '自动播放讲解', hideDesc: '收起讲解', showDesc: '展开讲解',
++    madeBy: '作者', earthTexture: '地球贴图',
++  },
++};
++
++/** "Step 3" / "Krok 3" / "第 3 步" — the number is appended by the caller. */
++export function stepWord(n: number): string {
++  return lang === 'zh' ? `第 ${n} 步` : lang === 'pl' ? `Krok ${n}` : `Step ${n}`;
++}
++
++/** "12 · Title" uses the same localized word (dropdown shows the bare number). */
++export function T(): UIStrings { return UI[lang]; }
++
++// ---------------------------------------------------------------------------
++// Static page chrome that lives in index.html (credits/attribution — the links
++// and names stay exactly as upstream, only the labels are translated).
++// ---------------------------------------------------------------------------
++
++function applyDocument(): void {
++  const ui = UI[lang];
++  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
++  document.title = lang === 'zh'
++    ? 'GRAVITY · 太阳系引力模型'
++    : lang === 'pl' ? 'GRAVITY · Model Układu Słonecznego' : 'GRAVITY · Solar System Model';
++
++  const left = document.querySelector('.credit.credit-left');
++  if (left) {
++    left.innerHTML = `${ui.madeBy} <a href="https://github.com/qunabu/Gravity" target="_blank" rel="noopener noreferrer">qunabu</a>`;
++  }
++  const right = document.querySelector('.credit:not(.credit-left)');
++  if (right) {
++    right.innerHTML = `${ui.earthTexture} <a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener noreferrer">Solar System Scope</a> · CC BY 4.0`;
++  }
++  const musicBtn = document.getElementById('music-toggle');
++  if (musicBtn) {
++    const label = lang === 'zh' ? '背景音乐' : lang === 'pl' ? 'Muzyka w tle' : 'Background music';
++    musicBtn.setAttribute('title', label);
++    musicBtn.setAttribute('aria-label', lang === 'zh' ? '开关背景音乐' : `Toggle ${label.toLowerCase()}`);
++  }
++}
++
++applyDocument();
++
++// Keep ?lang= in the URL honest if the visitor switches language by hand.
++export function syncUrlLang(): void {
++  try {
++    const url = new URL(location.href);
++    if (url.searchParams.get('lang') === lang) return;
++    url.searchParams.set('lang', lang);
++    history.replaceState(null, '', url.toString());
++  } catch { /* ignore */ }
++}
+--- /dev/null
++++ b/src/ui/tour-zh.ts
+@@ -0,0 +1,106 @@
++// ---------------------------------------------------------------------------
++// Simplified Chinese translation of the 24 guided-tour slides, keyed by step id
++// (ids are stable — see STEPS in tour.ts). Added by this deployment; upstream
++// Gravity ships EN + PL only. See /gravity/NOTICE.md (GPL-3.0).
++//
++// Numbers, dates and units are kept exactly as in the English original.
++// ---------------------------------------------------------------------------
++
++export const ZH: Record<string, { title: string; body: string }> = {
++  'what-is-gravity': {
++    title: '什么是引力？',
++    body: '引力是任意两个有质量的物体之间的相互吸引：F = G · m₁·m₂ / r² —— 质量越大越强，距离越远越弱（与距离的平方成反比）。这里只画了两个天体。箭头表示它们各自对对方的拉力：大小完全相等、方向相反（牛顿第三定律），约 3.5 × 10²² 牛顿。太阳的质量约是地球的 333 000 倍，所以同样大的力几乎推不动它，却足以把地球甩着绕圈。这一条规律就是全部故事 —— 接下来你会看到，连这两个天体本身也是它造出来的。',
++  },
++  'birth-of-sun': {
++    title: '引力造出了太阳',
++    body: '约 46 亿年前，这里还没有任何行星 —— 只有一片巨大而寒冷的尘埃气体云（太阳星云）。每一粒尘埃都在吸引着其他每一粒。引力把整片云向内拉，云一边塌缩一边旋转，摊平成一个盘，中心结出越来越致密的核心。当核心足够炽热、足够沉重、点燃核聚变时，太阳就亮了。看着这些尘埃聚拢到一起。',
++  },
++  'birth-of-earth': {
++    title: '引力造出了地球',
++    body: '同样的事在年轻太阳周围的每一处小规模重演。在残余的尘埃盘里，尘埃颗粒彼此粘连，越长越大，增长的引力又扫进更多物质 —— 这是一个失控的正反馈过程，叫作吸积。砾石变成巨石，巨石变成星子，星子再合并成行星。地球就是这样一个由岩石和金属吸积而成的球体。点亮太阳的那股力，也铺好了你脚下的地面。',
++  },
++  'inertia': {
++    title: '运动的物体保持运动',
++    body: '现在把太阳整个拿走。没有任何力作用时，地球遵从牛顿第一定律：以 29.8 km/s 的速度沿一条完美的直线永远漂下去（绿色箭头＝它的速度）。这就是惯性。单靠自身的运动只能画出直线 —— 永远不会拐弯，也不会转圈。必须有东西来弯折这条路径。记住这个漂移中的地球，下一步要用。',
++  },
++  'why-no-fall': {
++    title: '为什么地球不会掉进太阳',
++    body: '把前面两件事合起来。太阳的引力（红色箭头）始终把地球径直拉向自己 —— 那为什么没有撞上去？因为地球同时还在以 29.8 km/s 横向运动（绿色箭头）。每一瞬间它确实在朝太阳下落，但横向的速度把它带了过去 —— 它一直在“错过”。虚线表示只靠惯性它会飞向哪里；引力把这条直线弯成一个闭合的环。所谓轨道，不过是持续地下落，并且永远错过。',
++  },
++  'too-slow': {
++    title: '太慢 —— 掉进去',
++    body: '绕行是一种平衡，是速度把天体“托”在空中。给地球的横向速度太小，引力就赢了：路径拐得太急，于是它不是绕圈，而是直直地向太阳扎下去。走得太慢的行星不会绕行 —— 它会掉下去。',
++  },
++  'too-fast': {
++    title: '太快 —— 逃出去',
++    body: '现在反过来。把地球加速到超过“逃逸速度”，引力就再也留不住它：路径仍在弯曲，却永远闭不上。地球从太阳旁边掠过一次，就飞向太空，再也不回来。在“太慢”和“太快”之间，只有很窄的一段速度能形成稳定的轨道。',
++  },
++  'rocket-too-slow': {
++    title: '低于环绕速度 —— 掉回地面',
++    body: '火箭要多快才能离开地球？横向发射得太慢，它只会划出一道弧线摔回来：还没绕完一圈，引力就把它拽到了地上。无论朝哪个方向，速度不够的结局都一样 —— 坠毁。',
++  },
++  'first-cosmic': {
++    title: '第一宇宙速度 —— 进入环绕轨道',
++    body: '给它刚好够用的横向速度 —— 第一宇宙速度，约 7.9 km/s —— 它就不再掉回来。此时火箭是绕着地球“下落”，而不是砸向地球，于是稳定在一条圆轨道上。这就是所有近地轨道卫星的速度。',
++  },
++  'second-cosmic': {
++    title: '第二宇宙速度 —— 逃离地球',
++    body: '加速到第二宇宙速度，约 11.2 km/s（正好是第一宇宙速度的 √2 倍），火箭就不再绕行 —— 它彻底挣脱地球引力，径直飞走。这就是飞往月球或其他行星所需的逃逸速度。',
++  },
++  'earth-moon': {
++    title: '地球与月球',
++    body: '同一条规律在每一层尺度上层层嵌套。月球（质量为地球的 1.2%）被地球引力牵引，在 384 400 km 处每 27.3 天绕地球一圈 —— 轨道之中还有轨道。它还被潮汐锁定：每绕一圈正好自转一圈，所以永远是同一面朝着地球，我们在这里永远看不到它的背面 —— 尽管被叫作“暗面”，那一面被照亮的次数并不更少。稍后可以在面板里把物理引擎切换到“N 体”，看月球如何反拉地球、两者一起绕共同质心转动。',
++  },
++  'moon-no-fall': {
++    title: '为什么月球不会掉到地球上',
++    body: '这和地球与太阳的关系完全是同一套平衡，只是低了一个层级。地球引力（红色箭头）把月球径直拉向我们 —— 约 2 × 10²⁰ N —— 可它从不坠落。月球同时在以 1.02 km/s 横向运动（绿色箭头）：每一瞬间它都在朝地球下落，但速度把它带了过去，于是它不是着陆，而是绕圈。虚线表示没有引力时它会沿直线飞向哪里。它已经这样绕着地球“下落并且错过”了 45 亿年。',
++  },
++  'into-3d': {
++    title: '进入第三维',
++    body: '轨道并不是完全平的。月球的轨道相对地球轨道倾斜 5.1°，而每颗行星的轨道都相对黄道面倾斜。转到三维就能看到这些倾角 —— 拖动鼠标可以转动镜头。在面板里打开“投影”，把每个天体投到平坦的二维平面上，看看三维位置是如何被压下去的。',
++  },
++  'self-rotation': {
++    title: '自转',
++    body: '绕太阳公转只是运动的一半 —— 每个天体还在绕自己的轴自转，与公转无关。地球每 23 小时 56 分转一圈（一个恒星日），自转轴倾斜 23.4°（蓝线）。自转带来昼夜，倾角带来四季。转速差异极大：木星不到 10 小时就转一圈，而金星要 243 天 —— 而且还是倒着转。看地球转起来。',
++  },
++  'sun-moving': {
++    title: '太阳也在动 —— 真实的轨道是螺旋线',
++    body: '我们一直把每条轨道画成平的闭合环 —— 但那只是相对太阳而言。太阳自己并不静止：它以约 230 km/s 绕银河系前进，带着整个太阳系一起走。所以行星在空间中真正的轨迹从不闭合：它一边绕太阳转，一边被拖着向前，画出一条长长的三维螺旋线。每条彩色拖尾都是行星在空间中的真实路径；太阳那条直线，就是所有螺旋线缠绕的轴。',
++  },
++  'sun-moving-vectors': {
++    title: '同样的力，依旧在起作用',
++    body: '即使在这种完全三维的运动里，物理也没有任何改变。每颗行星依然感受到引力（红色）把它径直拉向太阳，也依然拥有速度（绿色）—— 只不过速度现在指向螺旋线的方向，而不是平面圆圈的切向。引力在每一瞬间弯折路径，向前的漂移把每个环拉成弹簧。还是同一个 F = G·m₁·m₂/r²，还是同一个“下落并错过” —— 只是在太阳的运动参考系里去看它。',
++  },
++  'sun-moving-moons': {
++    title: '卫星也跟着飞',
++    body: '这种嵌套一直向下延伸。太阳拖着地球沿螺旋线前进时，地球也拖着月球 —— 于是月球画出的一条螺旋线缠绕在地球的螺旋线上，而地球的螺旋线又缠绕在太阳的轨迹上。每个天体同时都在绕行、被携带，并携带自己的卫星。空间中的真实运动，是螺旋线套着螺旋线。',
++  },
++  'solar-system': {
++    title: '整个太阳系',
++    body: '现在是剩下的全部：八颗行星（外加冥王星）以及它们的主要卫星，全部按真实的 J2000 轨道运行，大小和距离也都准确，每个天体各自自转。用面板可以在“视觉比例”和“真实比例”之间切换（后者里行星会变成它们真正的那点微尘）、打开 N 体引力、调整速度，也可以把镜头对准任意天体。自由探索吧。',
++  },
++  'third-cosmic': {
++    title: '第三宇宙速度 —— 离开太阳系',
++    body: '最后再往外一层。即使已经逃离地球，探测器仍然被太阳束缚着。第三宇宙速度 —— 从地球出发约 16.7 km/s —— 才足以连太阳的引力也一起摆脱，离开太阳系飞向星际空间，也就是旅行者号正在走的路。看探测器绕过行星向外盘旋，一去不回。',
++  },
++  'sphere-of-influence': {
++    title: '引力影响球',
++    body: '谁的引力说了算？每个天体周围都有一片区域 —— 它的影响球 —— 在里面由它主导。而且这些球层层嵌套：巨大的太阳影响球包住整个太阳系；球内地球又切出自己的一块（约 924 000 km）；再往里，月球（在 384 400 km 处）切出一块更小的。正是这种嵌套让月球绕地球、而不是直接绕太阳 —— 越过一条边界，就换成外面那个天体说了算。任务设计者正是利用这一点，把探测器从一个影响球交接给下一个，把复杂问题拆成一串简单的二体问题。',
++  },
++  'gravity-assist-1': {
++    title: '引力弹弓 —— 旅行者 1 号',
++    body: '探测器可以从行星的公转里“偷”走一小部分：从行星身后近距离掠过时，行星的引力把探测器甩得更快、更远，而且不花燃料 —— 这就是引力弹弓。旅行者 1 号于 1977 年 9 月发射，借木星（1979 年）加速奔向土星（1980 年），随后近距离掠过土星卫星土卫六，被折向上方、离开行星所在的平面，飞向星际空间。这里的时钟走的是真实日期 —— 看行星如何随着探测器抵达而各就各位。',
++  },
++  'gravity-assist-2': {
++    title: '引力弹弓 —— 旅行者 2 号（大巡游）',
++    body: '旅行者 2 号（1977 年 8 月发射）赶上了一次约 175 年才有一次的罕见排列：它把四颗巨行星串成一线 —— 木星（1979 年）、土星（1981 年）、天王星（1986 年）、海王星（1989 年）—— 每次飞掠都弯折它的轨道并把它甩得更远，这是单靠火箭不可能完成的旅程。日期同样是真实的：巨行星摆成大巡游的队形，探测器依次与它们相遇。',
++  },
++  'spacetime': {
++    title: '爱因斯坦：引力是弯曲的时空',
++    body: '以上全都是牛顿的图像 —— 质量隔空相互吸引。它把轨道预测得极其漂亮，但爱因斯坦的广义相对论（1915）走得更深。质量和能量会弯曲它们周围的时空结构，就像一颗重球在绷紧的布面上压出凹陷。附近的天体并不是被某种力“拉”着走 —— 它只是沿着弯曲空间里最直的那条路前进，于是滚进了这个凹陷。不过牛顿并没有错：当引力很弱、速度远低于光速时，爱因斯坦的理论正好退化成他的定律 —— 还是你一路看过来的那些下落轨道，只是有了更深一层的原因。',
++  },
++  'mercury-precession': {
++    title: '证据：水星轨道的进动',
++    body: '到这里它不再是哲学。水星的椭圆轨道并不闭合 —— 它的近日点（离太阳最近的那一点）每绕一圈都会稍稍前移。牛顿力学在计入其他行星的拉扯后能预测出其中大部分，但每世纪还差 43 角秒。这个微小的缺口几十年无人能解释 —— 直到广义相对论算出正好 43″。太阳弯曲的时空让轨道整体旋转。这里的效应被大幅夸张了，好让你看清椭圆如何转动并画出玫瑰线；蓝线标出的是移动中的近日点。',
++  },
++};
