@@ -1,10 +1,10 @@
 # Mindbook · 外接知识库
 
-本目录存放供 AI 读取的外接知识内容，通过 /mindbook.html 加载目录。
+本目录存放供 AI 读取的外接知识内容（下列地址均为完整绝对地址，以 https://xinglan2012.github.io 开头），通过 https://xinglan2012.github.io/mindbook.html 加载目录。
 
 ## 搜索（非必要不使用）
 
-`/mindbook/search?q=关键词` 为精确搜索，不建议使用；建议直接阅览目录并打开原文。仅当明确目标关键词时才使用搜索。
+`https://xinglan2012.github.io/mindbook/search?q=关键词` 为精确搜索，不建议使用；建议直接阅览目录并打开原文。仅当明确目标关键词时才使用搜索。
 
 说明：
 - 每个文件为独立知识条目，格式不限（Markdown / 纯文本均可）。

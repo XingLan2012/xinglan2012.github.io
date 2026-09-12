@@ -2,20 +2,22 @@
 
 本条目说明站内镜像的 OI Wiki 内容，供 AI 读取与检索。
 
+> 本文所有地址均为**完整绝对地址**（以 https://xinglan2012.github.io 开头），可直接请求，无需拼接 base。
+
 ## 来源与许可
 
 - 原始项目：OI Wiki（https://github.com/OI-wiki/OI-wiki），26k+ Star，持续更新。
 - 内容许可：**CC BY-SA 4.0**（署名 — 相同方式共享）及附加的 The Star And Thank Author License（SATA）。
 - 本站以**本地镜像**方式提供，未作修改；引用时请署名 OI Wiki 并以相同方式共享。
 - 官方站：https://oi-wiki.org（支持全文搜索）
-- 站内阅览页：/oiwiki.html
+- 站内阅览页：https://xinglan2012.github.io/oiwiki.html
 
 ## 内容位置与读取方式
 
-镜像按分类打包为 JSON，位于 `/oiwiki/data/<分类>.json`，避免数百个小文件拖慢构建。
+镜像按分类打包为 JSON，全部放在 https://xinglan2012.github.io/oiwiki/data/ 之下，每个分类一个文件（例如线段树所在的数据结构包：https://xinglan2012.github.io/oiwiki/data/ds.json）。该目录地址本身也会列出全部分类包。打包是为了避免数百个小文件拖慢站点构建。
 
 ```
-GET /oiwiki/data/ds.json
+GET https://xinglan2012.github.io/oiwiki/data/ds.json
 {
   "ds/seg.md":   "<该篇 Markdown 正文>",
   "ds/fenwick.md": "<该篇 Markdown 正文>",
@@ -24,51 +26,50 @@ GET /oiwiki/data/ds.json
 ```
 
 - **键**为文档路径（相对 docs/），**值**为 Markdown 原文（UTF-8）。
-- 目录索引（标题与路径的完整清单）在 `/assets/data/oiwiki-index.json`（463 条）。
+- 目录索引（标题与路径的完整清单）在 `https://xinglan2012.github.io/assets/data/oiwiki-index.json`（463 条）。
 - 正文首行常为 `author: ...` 的作者行，其后为正文；本站镜像保留原样。
-- 目录地址同样可用：`/oiwiki/` 会转到阅览页，`/oiwiki/data/` 列出下列全部分类包。
+- 目录地址同样可用：`https://xinglan2012.github.io/oiwiki/` 会转到阅览页，`https://xinglan2012.github.io/oiwiki/data/` 列出下列全部分类包。
 
 ### 实际文件清单（可直接请求）
 
 ```
-/oiwiki/data/_root.json
-/oiwiki/data/basic.json
-/oiwiki/data/contest.json
-/oiwiki/data/dp.json
-/oiwiki/data/ds.json
-/oiwiki/data/geometry.json
-/oiwiki/data/graph.json
-/oiwiki/data/intro.json
-/oiwiki/data/lang.json
-/oiwiki/data/math.json
-/oiwiki/data/misc.json
-/oiwiki/data/search.json
-/oiwiki/data/string.json
-/oiwiki/data/tools.json
-/oiwiki/data/topic.json
+https://xinglan2012.github.io/oiwiki/data/_root.json
+https://xinglan2012.github.io/oiwiki/data/basic.json
+https://xinglan2012.github.io/oiwiki/data/contest.json
+https://xinglan2012.github.io/oiwiki/data/dp.json
+https://xinglan2012.github.io/oiwiki/data/ds.json
+https://xinglan2012.github.io/oiwiki/data/geometry.json
+https://xinglan2012.github.io/oiwiki/data/graph.json
+https://xinglan2012.github.io/oiwiki/data/intro.json
+https://xinglan2012.github.io/oiwiki/data/lang.json
+https://xinglan2012.github.io/oiwiki/data/math.json
+https://xinglan2012.github.io/oiwiki/data/misc.json
+https://xinglan2012.github.io/oiwiki/data/search.json
+https://xinglan2012.github.io/oiwiki/data/string.json
+https://xinglan2012.github.io/oiwiki/data/tools.json
+https://xinglan2012.github.io/oiwiki/data/topic.json
 ```
 
-> 注意：取某篇正文时请拼出**具体文件名**，例如 `/oiwiki/data/ds.json`；
-> 不要写成 `/oiwiki/data/<> .json` 这类占位形式。
+> 注意：请使用**完整地址并拼出具体文件名**，例如 `https://xinglan2012.github.io/oiwiki/data/ds.json`；不要使用占位形式（如把分类名留空或用尖括号代替）。
 
 ## 分类一览（共 14 类、463 篇）
 
 | 分类 | 篇数 | 打包文件 |
 | --- | --- | --- |
-| 简介 | 9 | `/oiwiki/data/_root.json` |
-| 比赛相关 | 12 | `/oiwiki/data/contest.json` |
-| 工具软件 | 36 | `/oiwiki/data/tools.json` |
-| 语言基础 | 41 | `/oiwiki/data/lang.json` |
-| 算法基础 | 26 | `/oiwiki/data/basic.json` |
-| 搜索 | 12 | `/oiwiki/data/search.json` |
-| 动态规划 | 22 | `/oiwiki/data/dp.json` |
-| 字符串 | 22 | `/oiwiki/data/string.json` |
-| 数学 | 113 | `/oiwiki/data/math.json` |
-| 数据结构 | 59 | `/oiwiki/data/ds.json` |
-| 图论 | 61 | `/oiwiki/data/graph.json` |
-| 计算几何 | 14 | `/oiwiki/data/geometry.json` |
-| 杂项 | 32 | `/oiwiki/data/misc.json` |
-| 专题 | 4 | `/oiwiki/data/topic.json` |
+| 简介 | 9 | `https://xinglan2012.github.io/oiwiki/data/_root.json` |
+| 比赛相关 | 12 | `https://xinglan2012.github.io/oiwiki/data/contest.json` |
+| 工具软件 | 36 | `https://xinglan2012.github.io/oiwiki/data/tools.json` |
+| 语言基础 | 41 | `https://xinglan2012.github.io/oiwiki/data/lang.json` |
+| 算法基础 | 26 | `https://xinglan2012.github.io/oiwiki/data/basic.json` |
+| 搜索 | 12 | `https://xinglan2012.github.io/oiwiki/data/search.json` |
+| 动态规划 | 22 | `https://xinglan2012.github.io/oiwiki/data/dp.json` |
+| 字符串 | 22 | `https://xinglan2012.github.io/oiwiki/data/string.json` |
+| 数学 | 113 | `https://xinglan2012.github.io/oiwiki/data/math.json` |
+| 数据结构 | 59 | `https://xinglan2012.github.io/oiwiki/data/ds.json` |
+| 图论 | 61 | `https://xinglan2012.github.io/oiwiki/data/graph.json` |
+| 计算几何 | 14 | `https://xinglan2012.github.io/oiwiki/data/geometry.json` |
+| 杂项 | 32 | `https://xinglan2012.github.io/oiwiki/data/misc.json` |
+| 专题 | 4 | `https://xinglan2012.github.io/oiwiki/data/topic.json` |
 
 ## 全部条目（标题 → 路径）
 
