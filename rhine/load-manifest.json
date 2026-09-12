@@ -1,17 +1,17 @@
 {
-  "total": 5078010,
+  "total": 5078046,
   "files": [
     {
       "path": "assets/archive-cassette.glb",
       "bytes": 3565116
     },
     {
-      "path": "assets/index-DLhjq4G7.css",
-      "bytes": 58239
+      "path": "assets/index-ApeUQTnf.js",
+      "bytes": 915323
     },
     {
-      "path": "assets/index-aSIO-oRK.js",
-      "bytes": 915287
+      "path": "assets/index-DLhjq4G7.css",
+      "bytes": 58239
     },
     {
       "path": "fonts/MiSans-Bold.woff2",

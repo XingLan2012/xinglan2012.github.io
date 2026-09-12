@@ -1,6 +1,6 @@
 {
-  "version": "8da4d282e518ff7a",
-  "bytes": 1057118,
+  "version": "a91fa427ab341f73",
+  "bytes": 1057154,
   "files": [
     "archives/XINGLAN-OS-X-001.txt",
     "archives/XINGLAN-OS-X-002.txt",
@@ -42,8 +42,8 @@
     "archives/XINGLAN-OS-X-038.txt",
     "archives/XINGLAN-OS-X-039.txt",
     "archives/XINGLAN-OS-X-040.txt",
+    "assets/index-ApeUQTnf.js",
     "assets/index-DLhjq4G7.css",
-    "assets/index-aSIO-oRK.js",
     "favicon.svg",
     "icons/app-icon.svg",
     "icons/apple-touch-icon.png",
