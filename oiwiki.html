@@ -1,0 +1,392 @@
+---
+layout: default
+title: OI Wiki
+---
+
+<style>
+  .ow-wrap { max-width: 1080px; margin: 0 auto; padding: 20px; }
+
+  .ow-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+  .ow-title { font-size: 22px; color: #ffd700; letter-spacing: 6px; font-weight: 300; }
+  .ow-sub { font-size: 12px; color: rgba(255,215,0,0.3); letter-spacing: 3px; }
+  .ow-note {
+    font-size: 11px; line-height: 1.8; letter-spacing: 1px;
+    color: rgba(255,255,255,0.25); margin: 10px 0 18px;
+    padding: 10px 14px; border: 1px solid rgba(255,215,0,0.06); border-radius: 8px;
+  }
+  .ow-note a { color: rgba(255,215,0,0.55); text-decoration: none; border-bottom: 1px dotted rgba(255,215,0,0.25); }
+  .ow-note a:hover { color: #ffd700; }
+
+  .ow-layout { display: grid; grid-template-columns: 268px 1fr; gap: 22px; align-items: start; }
+
+  /* 侧栏 */
+  .ow-side { position: sticky; top: 16px; max-height: calc(100vh - 40px); overflow-y: auto; padding-right: 6px; }
+  .ow-side::-webkit-scrollbar { width: 3px; }
+  .ow-side::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.12); border-radius: 3px; }
+  .ow-search {
+    width: 100%; box-sizing: border-box; padding: 8px 12px; margin-bottom: 12px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,215,0,0.1);
+    border-radius: 8px; color: rgba(255,255,255,0.75); font: inherit; font-size: 12px;
+    letter-spacing: 1px; outline: none;
+  }
+  .ow-search:focus { border-color: rgba(255,215,0,0.3); }
+  .ow-sec { margin-bottom: 4px; }
+  .ow-sec-title {
+    display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+    padding: 8px 10px; font-size: 12px; letter-spacing: 2px; color: rgba(255,215,0,0.6);
+    border-radius: 6px; transition: background 0.2s; user-select: none;
+  }
+  .ow-sec-title:hover { background: rgba(255,215,0,0.04); }
+  .ow-sec-count { font-size: 10px; color: rgba(255,255,255,0.2); font-family: monospace; }
+  .ow-sec-body { display: none; padding: 2px 0 6px 6px; }
+  .ow-sec.open .ow-sec-body { display: block; }
+  .ow-group { font-size: 10px; letter-spacing: 1px; color: rgba(255,255,255,0.2); padding: 8px 8px 3px; }
+  .ow-link {
+    display: block; padding: 5px 10px; font-size: 12px; letter-spacing: 0.5px;
+    color: rgba(255,255,255,0.5); text-decoration: none; border-radius: 6px;
+    border-left: 2px solid transparent; transition: all 0.18s;
+  }
+  .ow-link:hover { color: #ffd700; background: rgba(255,215,0,0.04); border-left-color: rgba(255,215,0,0.3); }
+  .ow-link.active { color: #ffd700; background: rgba(255,215,0,0.06); border-left-color: #ffd700; }
+
+  /* 正文 */
+  .ow-main { min-width: 0; }
+  .ow-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; min-height: 30px; }
+  .ow-btn {
+    padding: 5px 14px; border: 1px solid rgba(255,215,0,0.1); border-radius: 14px;
+    background: transparent; color: rgba(255,215,0,0.4); font: inherit; font-size: 11px;
+    letter-spacing: 1px; cursor: pointer; text-decoration: none; transition: all 0.22s;
+  }
+  .ow-btn:hover { border-color: rgba(255,215,0,0.3); color: #ffd700; }
+  .ow-status { font-size: 11px; color: rgba(255,255,255,0.25); letter-spacing: 1px; }
+  .ow-placeholder { text-align: center; padding: 70px 20px; color: rgba(255,215,0,0.15); letter-spacing: 3px; font-size: 13px; }
+  .ow-error { padding: 24px; border: 1px solid rgba(255,100,100,0.15); border-radius: 8px; color: rgba(255,120,120,0.6); font-size: 13px; line-height: 2; }
+
+  /* Markdown 渲染（沿用 OIer 页的排版） */
+  .ow-doc { font-size: 14px; line-height: 1.95; color: rgba(255,255,255,0.78); }
+  .ow-doc h1, .ow-doc h2 { color: #ffd700; font-weight: 400; letter-spacing: 2px; }
+  .ow-doc h1 { font-size: 21px; margin: 8px 0 16px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,215,0,0.1); }
+  .ow-doc h2 { font-size: 17px; margin: 26px 0 10px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,215,0,0.07); }
+  .ow-doc h3 { color: #ffec8b; font-size: 15px; font-weight: 400; margin: 20px 0 8px; }
+  .ow-doc p { margin: 10px 0; }
+  .ow-doc ul, .ow-doc ol { padding-left: 22px; margin: 10px 0; }
+  .ow-doc li { margin: 4px 0; }
+  .ow-doc code {
+    background: rgba(255,215,0,0.06); padding: 2px 6px; border-radius: 4px;
+    font-size: 13px; color: #ffd700; font-family: 'Consolas','Courier New',monospace;
+  }
+  .ow-doc pre {
+    background: rgba(0,0,0,0.35); border: 1px solid rgba(255,215,0,0.06);
+    border-radius: 8px; padding: 14px 16px; overflow-x: auto; margin: 14px 0; line-height: 1.6;
+  }
+  .ow-doc pre code { background: none; padding: 0; color: rgba(255,255,255,0.75); font-size: 13px; }
+  .ow-doc blockquote {
+    border-left: 3px solid rgba(255,215,0,0.2); padding: 6px 16px; margin: 14px 0;
+    color: rgba(255,255,255,0.5); background: rgba(255,215,0,0.02); border-radius: 0 6px 6px 0;
+  }
+  .ow-doc table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13px; }
+  .ow-doc th, .ow-doc td { padding: 7px 11px; border: 1px solid rgba(255,215,0,0.08); text-align: left; }
+  .ow-doc th { color: #ffd700; font-weight: 400; background: rgba(255,215,0,0.03); }
+  .ow-doc img { max-width: 100%; border-radius: 6px; }
+  .ow-doc a { color: #ffd700; text-decoration: none; border-bottom: 1px dotted rgba(255,215,0,0.25); }
+  .ow-doc a:hover { border-bottom-color: #ffd700; }
+  .ow-doc hr { border: none; height: 1px; background: rgba(255,215,0,0.08); margin: 24px 0; }
+
+  .ow-foot {
+    margin-top: 34px; padding-top: 14px; border-top: 1px solid rgba(255,215,0,0.06);
+    font-size: 11px; line-height: 2; color: rgba(255,255,255,0.22); letter-spacing: 1px;
+  }
+  .ow-foot a { color: rgba(255,215,0,0.5); text-decoration: none; border-bottom: 1px dotted rgba(255,215,0,0.2); }
+  .ow-foot a:hover { color: #ffd700; }
+
+  @media (max-width: 820px) {
+    .ow-layout { grid-template-columns: 1fr; }
+    .ow-side { position: static; max-height: 300px; }
+  }
+</style>
+
+<div class="ow-wrap">
+  <div class="ow-head">
+    <div class="ow-title">✦ OI Wiki</div>
+    <div class="ow-sub">算法竞赛知识库 · 站内阅览</div>
+  </div>
+
+  <div class="ow-note">
+    本页内容来自开源项目 <a href="https://github.com/OI-wiki/OI-wiki" target="_blank" rel="noopener">OI Wiki</a>，
+    采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" target="_blank" rel="noopener">CC BY-SA 4.0</a> 许可。
+    正文按需实时读取并缓存在本机，目录为构建时快照。
+  </div>
+
+  <div class="ow-layout">
+    <aside class="ow-side">
+      <input class="ow-search" id="owSearch" type="search" placeholder="筛选目录…" autocomplete="off">
+      <div id="owNav"><div class="ow-status">✦ 目录加载中…</div></div>
+    </aside>
+
+    <main class="ow-main">
+      <div class="ow-bar">
+        <button class="ow-btn" id="owReload">⟳ 重新读取</button>
+        <button class="ow-btn" id="owRandom">🎲 随机一篇</button>
+        <a class="ow-btn" id="owOfficial" href="https://oi-wiki.org/" target="_blank" rel="noopener">官方站 ↗</a>
+        <span class="ow-status" id="owStatus"></span>
+      </div>
+      <div id="owDoc"><div class="ow-placeholder">✦ 从左侧目录选择一篇文档</div></div>
+    </main>
+  </div>
+
+  <div class="ow-foot">
+    内容版权归 OI Wiki 贡献者所有，依 CC BY-SA 4.0 许可使用；本站仅作阅览，未作修改。<br>
+    若这些内容对你有帮助，请到 <a href="https://github.com/OI-wiki/OI-wiki" target="_blank" rel="noopener">GitHub 仓库</a> 点一个 Star（这也是其附加许可 SATA 的期望）。
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var REPO = 'OI-wiki/OI-wiki';
+  var BRANCH = 'master';
+  var INDEX_URL = '/assets/data/oiwiki-index.json';
+  var CONTENT_TTL = 7 * 24 * 60 * 60 * 1000; // 正文缓存 7 天
+  var MAX_CACHE = 60;                         // 最多缓存 60 篇，避免撑爆 localStorage
+
+  var navEl = document.getElementById('owNav');
+  var docEl = document.getElementById('owDoc');
+  var statusEl = document.getElementById('owStatus');
+  var officialEl = document.getElementById('owOfficial');
+  var searchEl = document.getElementById('owSearch');
+
+  var index = null;
+  var pathIndex = {};      // path -> {title, section}
+  var currentPath = '';
+  var currentLinks = [];   // 当前正文里的站内链接顺序，供随机/上下文使用
+
+  marked.setOptions({ breaks: true, gfm: true });
+
+  function setStatus(text) { statusEl.textContent = text || ''; }
+
+  function b64ToUtf8(b64) {
+    var bin = atob(String(b64).replace(/\s/g, ''));
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder('utf-8').decode(bytes);
+  }
+
+  /** 去掉 OI Wiki 文档头部的 YAML front matter */
+  function stripFrontMatter(md) {
+    return md.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '');
+  }
+
+  /* ---------------- 目录 ---------------- */
+
+  function renderNav(filter) {
+    if (!index) return;
+    var keyword = (filter || '').trim().toLowerCase();
+    var html = '';
+    var shown = 0;
+
+    index.sections.forEach(function (section, si) {
+      var items = section.items.filter(function (item) {
+        if (!keyword) return true;
+        return item.title.toLowerCase().indexOf(keyword) >= 0 ||
+               item.path.toLowerCase().indexOf(keyword) >= 0;
+      });
+      if (!items.length) return;
+      shown += items.length;
+
+      var open = keyword || si === 0 || section.items.some(function (i) { return i.path === currentPath; });
+      html += '<div class="ow-sec' + (open ? ' open' : '') + '" data-sec="' + si + '">';
+      html += '<div class="ow-sec-title"><span>' + section.section + '</span>' +
+              '<span class="ow-sec-count">' + items.length + '</span></div><div class="ow-sec-body">';
+      var lastGroup = '';
+      items.forEach(function (item) {
+        if (item.group && item.group !== lastGroup) {
+          html += '<div class="ow-group">' + item.group + '</div>';
+          lastGroup = item.group;
+        }
+        html += '<a class="ow-link' + (item.path === currentPath ? ' active' : '') +
+                '" href="#' + encodeURIComponent(item.path) + '" data-path="' + item.path + '">' +
+                item.title + '</a>';
+      });
+      html += '</div></div>';
+    });
+
+    navEl.innerHTML = html || '<div class="ow-status">✦ 没有匹配的条目</div>';
+
+    navEl.querySelectorAll('.ow-sec-title').forEach(function (title) {
+      title.addEventListener('click', function () {
+        this.parentNode.classList.toggle('open');
+      });
+    });
+    navEl.querySelectorAll('.ow-link').forEach(function (link) {
+      link.addEventListener('click', function (event) {
+        event.preventDefault();
+        open(this.getAttribute('data-path'));
+      });
+    });
+    setStatus(keyword ? '匹配 ' + shown + ' 条' : index.sections.length + ' 个分区 · ' + Object.keys(pathIndex).length + ' 篇');
+  }
+
+  /* ---------------- 正文 ---------------- */
+
+  function readCache(path) {
+    try {
+      var data = JSON.parse(localStorage.getItem('oiwiki:' + path) || 'null');
+      if (data && Date.now() - data.time < CONTENT_TTL) return data.md;
+    } catch (e) {}
+    return null;
+  }
+
+  function writeCache(path, md) {
+    try {
+      var keys = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (key && key.indexOf('oiwiki:') === 0) keys.push(key);
+      }
+      if (keys.length >= MAX_CACHE) localStorage.removeItem(keys[0]);
+      localStorage.setItem('oiwiki:' + path, JSON.stringify({ time: Date.now(), md: md }));
+    } catch (e) {}
+  }
+
+  function clearCache(path) {
+    try { localStorage.removeItem('oiwiki:' + path); } catch (e) {}
+  }
+
+  /** 把正文里的相对 .md 链接改写成站内跳转 */
+  function rewriteLinks(container, basePath) {
+    var baseDir = basePath.split('/').slice(0, -1);
+    container.querySelectorAll('a[href]').forEach(function (a) {
+      var href = a.getAttribute('href');
+      if (!href || /^https?:|^#|^mailto:/.test(href)) return;
+      var hash = '';
+      var target = href;
+      var hashAt = href.indexOf('#');
+      if (hashAt >= 0) { hash = href.slice(hashAt); target = href.slice(0, hashAt); }
+      if (!/\.md$/.test(target)) {
+        a.setAttribute('href', 'https://oi-wiki.org/' + target.replace(/^\//, '') + hash);
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener');
+        return;
+      }
+      var parts = baseDir.slice();
+      target.split('/').forEach(function (seg) {
+        if (!seg || seg === '.') return;
+        if (seg === '..') parts.pop();
+        else parts.push(seg);
+      });
+      var resolved = parts.join('/');
+      if (pathIndex[resolved]) {
+        a.setAttribute('href', '#' + encodeURIComponent(resolved));
+        a.setAttribute('data-path', resolved);
+        a.addEventListener('click', function (event) {
+          event.preventDefault();
+          open(resolved);
+        });
+      } else {
+        a.setAttribute('href', 'https://oi-wiki.org/' + resolved.replace(/\.md$/, '/'));
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener');
+      }
+    });
+  }
+
+  function render(md, path) {
+    var info = pathIndex[path] || { title: path, section: '' };
+    docEl.innerHTML = '<div class="ow-doc"></div>';
+    var doc = docEl.querySelector('.ow-doc');
+    doc.innerHTML = marked.parse(md);
+    doc.insertAdjacentHTML('afterbegin',
+      '<div class="ow-status" style="margin-bottom:6px">' + (info.section || '') + '</div>' +
+      '<h1>' + info.title + '</h1>');
+    rewriteLinks(doc, path);
+    officialEl.href = 'https://oi-wiki.org/' + path.replace(/^([^/]+)\/.*$/, '$1/').replace(/\.md$/, '/');
+    document.title = info.title + ' - OI Wiki';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function open(path, force) {
+    if (!path) return;
+    currentPath = path;
+    history.replaceState(null, '', '?p=' + encodeURIComponent(path));
+    navEl.querySelectorAll('.ow-link').forEach(function (link) {
+      link.classList.toggle('active', link.getAttribute('data-path') === path);
+    });
+    var active = navEl.querySelector('.ow-link.active');
+    if (active && active.closest('.ow-sec') && !active.closest('.ow-sec').classList.contains('open')) {
+      active.closest('.ow-sec').classList.add('open');
+    }
+
+    if (force) clearCache(path);
+    var cached = force ? null : readCache(path);
+    if (cached) {
+      render(cached, path);
+      setStatus('来自本机缓存');
+      return;
+    }
+
+    docEl.innerHTML = '<div class="ow-placeholder">✦ 正在读取…</div>';
+    setStatus('正在读取…');
+
+    fetch('https://api.github.com/repos/' + REPO + '/contents/docs/' + path + '?ref=' + BRANCH)
+      .then(function (response) {
+        if (response.status === 403) {
+          throw new Error('读取次数已达上限（GitHub 未登录时每小时 60 次）。稍后再试，或改用官方站阅读。');
+        }
+        if (response.status === 404) throw new Error('该文档不存在或路径有变（可点「重新读取」重试）');
+        if (!response.ok) throw new Error('接口返回 HTTP ' + response.status);
+        return response.json();
+      })
+      .then(function (data) {
+        if (!data || !data.content) throw new Error('返回内容为空');
+        var md = stripFrontMatter(b64ToUtf8(data.content));
+        writeCache(path, md);
+        render(md, path);
+        setStatus('已读取 · ' + Math.round(md.length / 1024) + ' KB');
+      })
+      .catch(function (error) {
+        docEl.innerHTML = '<div class="ow-error">✕ 读取失败：' + error.message +
+          '<br><br>可以改用官方站阅读：<a href="https://oi-wiki.org/" target="_blank" rel="noopener" ' +
+          'style="color:#ffd700">oi-wiki.org ↗</a></div>';
+        setStatus('读取失败');
+      });
+  }
+
+  /* ---------------- 交互 ---------------- */
+
+  document.getElementById('owReload').addEventListener('click', function () {
+    if (currentPath) open(currentPath, true);
+  });
+  document.getElementById('owRandom').addEventListener('click', function () {
+    var paths = Object.keys(pathIndex);
+    if (paths.length) open(paths[Math.floor(Math.random() * paths.length)]);
+  });
+  searchEl.addEventListener('input', function () { renderNav(this.value); });
+
+  /* ---------------- 启动 ---------------- */
+
+  fetch(INDEX_URL)
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)); })
+    .then(function (data) {
+      index = data;
+      pathIndex = {};
+      index.sections.forEach(function (section) {
+        section.items.forEach(function (item) {
+          pathIndex[item.path] = { title: item.title, section: section.section };
+        });
+      });
+      var params = new URLSearchParams(location.search);
+      var target = params.get('p');
+      renderNav('');
+      if (target && pathIndex[target]) open(target);
+      else if (location.hash) {
+        var fromHash = decodeURIComponent(location.hash.slice(1));
+        if (pathIndex[fromHash]) open(fromHash);
+      }
+    })
+    .catch(function (error) {
+      navEl.innerHTML = '<div class="ow-error">✕ 目录加载失败：' + error.message + '</div>';
+    });
+})();
+</script>
