@@ -24,9 +24,32 @@ GET /oiwiki/data/ds.json
 ```
 
 - **键**为文档路径（相对 docs/），**值**为 Markdown 原文（UTF-8）。
-- 每个分类一个文件；顶层散篇在 `_root.json`。
-- 目录索引（标题与路径的完整清单）在 `/assets/data/oiwiki-index.json`。
+- 目录索引（标题与路径的完整清单）在 `/assets/data/oiwiki-index.json`（463 条）。
 - 正文首行常为 `author: ...` 的作者行，其后为正文；本站镜像保留原样。
+- 目录地址同样可用：`/oiwiki/` 会转到阅览页，`/oiwiki/data/` 列出下列全部分类包。
+
+### 实际文件清单（可直接请求）
+
+```
+/oiwiki/data/_root.json
+/oiwiki/data/basic.json
+/oiwiki/data/contest.json
+/oiwiki/data/dp.json
+/oiwiki/data/ds.json
+/oiwiki/data/geometry.json
+/oiwiki/data/graph.json
+/oiwiki/data/intro.json
+/oiwiki/data/lang.json
+/oiwiki/data/math.json
+/oiwiki/data/misc.json
+/oiwiki/data/search.json
+/oiwiki/data/string.json
+/oiwiki/data/tools.json
+/oiwiki/data/topic.json
+```
+
+> 注意：取某篇正文时请拼出**具体文件名**，例如 `/oiwiki/data/ds.json`；
+> 不要写成 `/oiwiki/data/<> .json` 这类占位形式。
 
 ## 分类一览（共 14 类、463 篇）
 
