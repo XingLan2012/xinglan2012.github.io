@@ -233,7 +233,11 @@
 <script>
 (function() {
   // ========== 曲目列表 ==========
-  var SONGS = [
+  // 运行时优先从 music/manifest.json 读取曲目与音源前缀；取不到时用下面的内置
+  // 列表与站内目录兜底。把 manifest 的 base 指向仓库之外的地址（例如 Release
+  // 下载前缀），站点便不再随仓库分发音频，播放时按需拉取。
+  var audioBase = '/music/';
+  var FALLBACK_SONGS = [
     "aerie", "alpha", "ancestry", "an_ordinary_day", "aria_math",
     "axolotl", "a_familiar_room", "ballad_of_the_cats", "below_and_above",
     "biome_fest", "blind_spots", "boss", "broken_clocks", "bromeliad",
@@ -249,6 +253,7 @@
     "taswell", "the_end", "warmth", "watcher", "wending", "wet_hands",
     "yakusoku"
   ];
+  var SONGS = FALLBACK_SONGS.slice();
 
   // DOM 引用
   var btn = document.getElementById('musicBtn');
@@ -290,12 +295,44 @@
   }
   renderList();
 
+  // ========== 动态曲目表 ==========
+  function applyManifest(data) {
+    if (!data || typeof data !== 'object') return;
+    var base = typeof data.base === 'string' ? data.base.trim() : '';
+    if (base && base.charAt(base.length - 1) !== '/') base += '/';
+    if (base) audioBase = base;
+    if (Array.isArray(data.tracks) && data.tracks.length) {
+      SONGS = data.tracks.slice();
+      if (currentIndex >= SONGS.length) currentIndex = -1;
+      renderList();
+    }
+  }
+
+  fetch('/music/manifest.json', { cache: 'no-cache' })
+    .then(function (response) { return response.ok ? response.json() : null; })
+    .then(applyManifest)
+    .catch(function () { /* 保留内置列表与站内目录 */ });
+
+  // 外部音源不可用时回退到站内目录，迁移期间与源站抖动时都不中断播放
+  audio.addEventListener('error', function () {
+    var name = audio.dataset.name;
+    if (!name || audio.dataset.fellback === '1') return;
+    if (audioBase === '/music/') return;
+    audio.dataset.fellback = '1';
+    var at = audio.currentTime;
+    audio.src = '/music/' + name + '.ogg';
+    if (at > 0) audio.currentTime = at;
+    audio.play().catch(function () {});
+  });
+
   // 播放指定索引
   function playIndex(i) {
     if (i < 0 || i >= SONGS.length) return;
     currentIndex = i;
     var name = SONGS[i];
-    audio.src = '/music/' + name + '.ogg';
+    audio.dataset.name = name;
+    audio.dataset.fellback = '';
+    audio.src = audioBase + name + '.ogg';
     audio.play().then(function() {
       isPlaying = true;
       updateUI();
