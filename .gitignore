@@ -1,5 +1,6 @@
 *.bat
 _*.py
+_*.mjs
 run_*.bat
 cleanup_temp.py
 converted_files/
