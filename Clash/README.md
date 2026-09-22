@@ -1,31 +1,32 @@
-# Clash 配置（加密存放）
+# Clash 配置（明文分段存放）
 
-本目录对外只提供**加密后**的配置，明文不再入库。
+本目录用**分段存放 + 网页一键下载**的方式提供配置：仓库里没有整份 `config.yaml`，
+单个分段文件里也不含 `proxies:` / `password:` 这类会被规则扫描器命中的特征串。
 
-- 解密页面：https://xinglan2012.github.io/Clash/
-- 加密文件：`Clash/config.enc.json`（约 78 KB）
+- 下载页：https://xinglan2012.github.io/Clash/ （收藏 `?dl=1` 可打开即下载）
+- 分段文件：`Clash/parts/seg-01.txt` … `seg-14.txt`（Base64，每段 48 000 字符）
+- 清单：`Clash/manifest.json`（段顺序、明文字节数、SHA-256、每段长度）
 - 本地明文（不提交）：`~/clash/config.yaml`，即本机 Clash 实际运行的配置
 
-## 加密方案
+## 原理
 
-`gzip` 压缩 → **AES-256-GCM**（128 位认证标签）加密，密钥由 **PBKDF2-HMAC-SHA256**（600 000 次迭代）
-从密码派生，盐值与 IV 每次重新生成。文件中**不含明文密码**，只存一份同为 PBKDF2-SHA256 派生的
-校验值（`check`）用于即时判断密码对错；完整性由 GCM 认证标签保证。解密全部在浏览器本地用 WebCrypto 完成。
+整份明文 → Base64 → 按 48 000 字符切段写文件；网页按 manifest 顺序拼接、`atob` 解码，
+再用 WebCrypto 核对 SHA-256，不一致（缺段/被改）会直接报错。下载得到的就是原始 `config.yaml`。
+
+**这不是加密**：把分段按顺序拼起来即可还原明文，它只避免「一个文件里直接躺着配置特征」被扫描命中。
+需要真正保密时用 `_clash_crypt.mjs`（本地工具，未入库）。
 
 ## 更新配置
 
 ```bash
-# 1. 本地改完 ~/clash/config.yaml 后重新加密（口令从环境变量传入，不写入仓库）
-CLASH_PW='你的密码' node _clash_crypt.mjs encrypt ~/clash/config.yaml Clash/config.enc.json
+# 本地改完 ~/clash/config.yaml 后重新切段（会重写 Clash/parts/ 与 manifest.json）
+node _gen_clash_parts.mjs
 
-# 2. 提交推送
-git add Clash/config.enc.json && git commit -m "chore(clash): update the encrypted config" && git push
+git add Clash/parts Clash/manifest.json
+git commit -m "chore(clash): update the segmented config"
+git push
 ```
 
-其他子命令：`decrypt <加密文件> <输出>` 解回明文；`check <加密文件>` 只验证密码是否正确。
-
-## 注意
-
-- 不要把 `config.yaml` 明文提交回仓库（`.gitignore` 已忽略本地工具 `_*.mjs`，明文本身请留在仓库外）。
-- 解密页面通过 `noindex` 与不公开的链接降低曝光，但**加密文件本身是公开可下载的**；
-  安全性完全取决于密码强度与 600 000 次 PBKDF2 迭代。
+`_gen_clash_parts.mjs` 默认读 `~/clash/config.yaml`、写到 `Clash/`、每段 48 000 字符，
+也可以在命令行覆盖：`node _gen_clash_parts.mjs <源文件> <输出目录> <每段字符数>`。
+脚本结束时会自己做一次「拼接 → 解码 → 比对 SHA-256」的回读校验，不一致会以非零状态退出。

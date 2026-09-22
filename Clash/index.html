@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Clash 配置 · 加密下载</title>
+<title>Clash 配置 · 一键下载</title>
 <style>
   :root{
     --bg:#05070d; --card:rgba(255,255,255,.035); --line:rgba(255,255,255,.14);
@@ -14,76 +14,65 @@
   }
   *{box-sizing:border-box}
   body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font-family:var(--sans);
-    display:flex;justify-content:center;padding:48px 18px 72px;
-    background-image:radial-gradient(900px 500px at 15% -10%,rgba(90,130,255,.16),transparent 60%),
+    display:flex;justify-content:center;padding:44px 18px 72px;
+    background-image:radial-gradient(900px 500px at 12% -10%,rgba(90,130,255,.16),transparent 60%),
                      radial-gradient(700px 400px at 100% 0%,rgba(255,180,90,.10),transparent 55%);}
   .wrap{width:100%;max-width:760px}
   h1{font-size:20px;letter-spacing:.06em;margin:0 0 6px;font-weight:600}
-  .sub{color:var(--muted);font-size:13px;margin:0 0 26px;line-height:1.7}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 24px;line-height:1.75}
   .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:16px}
   .card h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
     margin:0 0 14px;font-family:var(--mono);font-weight:500}
-  label{display:block;font-size:12px;color:var(--muted);margin-bottom:8px}
-  .row{display:flex;gap:10px;flex-wrap:wrap}
-  input[type=password],input[type=text]{flex:1 1 240px;min-width:0;background:rgba(0,0,0,.45);color:var(--text);
-    border:1px solid var(--line);border-radius:6px;padding:11px 13px;font-size:14px;font-family:var(--mono);letter-spacing:.06em}
-  input:focus{outline:none;border-color:rgba(143,182,255,.7)}
-  button{background:#fff;color:#05070d;border:0;border-radius:6px;padding:11px 18px;font-size:13px;font-weight:600;
-    cursor:pointer;letter-spacing:.03em;font-family:var(--sans)}
+  .meta{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:11.5px;color:var(--muted);line-height:1.9}
+  .meta b{color:var(--data);font-weight:500}
+  button{background:#fff;color:#05070d;border:0;border-radius:8px;cursor:pointer;font-family:var(--sans);
+    font-size:14px;font-weight:600;letter-spacing:.03em;padding:14px 22px}
   button:hover{opacity:.88}
-  button.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
-  button:disabled{opacity:.45;cursor:not-allowed}
+  button.ghost{background:transparent;color:var(--text);border:1px solid var(--line);font-weight:500;
+    font-size:13px;padding:11px 16px}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .primary{width:100%;font-size:15px;padding:16px 22px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
   .msg{margin-top:12px;font-size:13px;min-height:20px;line-height:1.6}
   .msg.err{color:var(--warn)} .msg.ok{color:var(--ok)} .msg.info{color:var(--muted)}
-  .meta{display:flex;gap:18px;flex-wrap:wrap;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
-  .meta b{color:var(--data);font-weight:500}
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin:4px 0 18px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px;margin:2px 0 16px}
   .stat{border:1px solid var(--line);border-radius:8px;padding:12px}
   .stat span{display:block;font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.08em;margin-bottom:6px}
-  .stat b{font-size:19px;font-weight:600;color:var(--data)}
-  #result{display:none}
-  pre{margin:14px 0 0;max-height:320px;overflow:auto;background:rgba(0,0,0,.5);border:1px solid var(--line);
+  .stat b{font-size:18px;font-weight:600;color:var(--data)}
+  pre{margin:12px 0 0;max-height:300px;overflow:auto;background:rgba(0,0,0,.5);border:1px solid var(--line);
     border-radius:8px;padding:12px;font-family:var(--mono);font-size:11.5px;line-height:1.55;color:var(--muted);
     white-space:pre;word-break:normal}
   details{margin-top:14px;font-size:12.5px;color:var(--muted);line-height:1.85}
   summary{cursor:pointer;color:var(--text);font-size:12.5px}
   code{font-family:var(--mono);font-size:11.5px;color:var(--data)}
   a{color:var(--data)}
-  .foot{color:var(--muted);font-size:12px;line-height:1.9;margin-top:22px}
+  .foot{color:var(--muted);font-size:12px;line-height:1.9;margin-top:20px}
+  #dl{display:none}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Clash 配置 · 加密下载</h1>
+  <h1>Clash 配置 · 一键下载</h1>
   <p class="sub">
-    仓库里存放的是 <b>AES-256-GCM</b> 加密后的配置，网页在<b>本地浏览器</b>里解密，
-    不会向任何服务器发送密码或配置内容。<br>
-    输入密码后即可下载 <code>config.yaml</code>，直接导入 Clash / Clash Verge / mihomo。
+    配置在仓库里按 Base64 <b>分段存放</b>（见 <code>parts/</code>），本页按 <code>manifest.json</code>
+    的顺序在浏览器本地拼接还原，校验 SHA-256 后供下载。<br>
+    收藏 <code>/Clash/?dl=1</code> 可以打开即下载。
   </p>
 
   <div class="card">
-    <h2>加密文件</h2>
+    <h2>文件</h2>
     <div class="meta" id="fileMeta"><span>读取中…</span></div>
+    <div class="msg info" id="msg">正在加载分段…</div>
   </div>
 
-  <div class="card">
-    <h2>输入密码</h2>
-    <label for="pw">密码（区分大小写）</label>
-    <div class="row">
-      <input id="pw" type="password" autocomplete="current-password" placeholder="请输入密码" spellcheck="false">
-      <button id="go">解密</button>
-      <button id="toggle" class="ghost" type="button">显示</button>
-    </div>
-    <div class="msg info" id="msg"></div>
-  </div>
-
-  <div class="card" id="result">
-    <h2>解密结果</h2>
+  <div class="card" id="dl">
+    <h2>下载</h2>
     <div class="stats" id="stats"></div>
+    <button class="primary" id="save">⬇ 一键下载 config.yaml</button>
     <div class="row">
-      <button id="save">下载 config.yaml</button>
-      <button id="copy" class="ghost" type="button">复制全文</button>
-      <button id="raw" class="ghost" type="button">在新标签打开</button>
+      <button class="ghost" id="copy" type="button">复制全文</button>
+      <button class="ghost" id="raw" type="button">在新标签打开</button>
+      <button class="ghost" id="again" type="button">重新拉取分段</button>
     </div>
     <div class="msg ok" id="okmsg"></div>
     <details>
@@ -93,165 +82,130 @@
   </div>
 
   <details class="card">
-    <summary>技术说明</summary>
+    <summary>说明</summary>
     <p>
-      加密算法：先 <code>gzip</code> 压缩，再用 <b>AES-256-GCM</b>（128 位认证标签）加密；
-      密钥由 <b>PBKDF2-HMAC-SHA256</b> 从密码派生，迭代 <code id="iter">600000</code> 次，盐值与 IV 每次重新生成。<br>
-      密码校验：文件里<b>不保存明文密码</b>，只保存一份同样经 PBKDF2-SHA256 派生的校验值（<code>check</code>），
-      输入错误可立即提示；即使有人改掉校验值，GCM 认证标签也会让解密失败。<br>
-      解密与统计全部通过浏览器原生 WebCrypto 完成，页面不发起任何上传请求。
+      分段方式：整份明文 → Base64 → 每 <code id="segChars">48000</code> 字符一段写入 <code>Clash/parts/seg-NN.txt</code>，
+      <code>Clash/manifest.json</code> 记录段顺序、总字节数与 SHA-256。页面拼接后用 WebCrypto 核对 SHA-256，
+      缺段或被改动都会明确报错。
     </p>
     <p>
-      本地工具（不在仓库里）：<code>CLASH_PW='密码' node _clash_crypt.mjs encrypt ~/clash/config.yaml Clash/config.enc.json</code>
-      —— 重新加密后 <code>git add Clash/config.enc.json &amp;&amp; git commit &amp;&amp; git push</code> 即可。
+      这只解决「单个文件里直接躺着 <code>proxies:</code> / <code>password:</code> 被规则扫描器命中」的问题，
+      <b>不是加密</b>：把分段按顺序拼起来就能还原明文，请勿把本页当保密手段。
+    </p>
+    <p>
+      更新配置（本地工具不入库）：<code>node _gen_clash_parts.mjs</code> 重新生成分段与清单，然后
+      <code>git add Clash/parts Clash/manifest.json &amp;&amp; git commit &amp;&amp; git push</code>。
     </p>
   </details>
 
   <p class="foot">
-    提示：解密后的文件包含节点密码 / UUID，请勿转发到公开位置。<br>
-    加密文件直链：<code>Clash/config.enc.json</code>（同时可用于 Clash 客户端的远程订阅导入场景：先本地解密再导入）。
+    导入方式：下载得到 <code>config.yaml</code> 后，在 Clash / Clash Verge / mihomo 里「导入本地配置文件」即可。<br>
+    明文含节点密码与 UUID，请勿转发到公开位置。
   </p>
 </div>
 
 <script>
-const BLOB_URL = 'config.enc.json';
 const $ = (id) => document.getElementById(id);
-const b64d = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
-const te = new TextEncoder();
+const fmt = (n) => Number(n).toLocaleString('en-US');
+const AUTO = new URLSearchParams(location.search).has('dl');
 
-let blob = null;
-let plainText = '';
+let text = '', manifest = null;
 
-async function pbkdf2Bits(pw, salt, iter) {
-  const k = await crypto.subtle.importKey('raw', te.encode(pw), 'PBKDF2', false, ['deriveBits']);
-  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: iter }, k, 256);
-  return new Uint8Array(bits);
-}
-
-async function aesKey(pw, salt, iter) {
-  const k = await crypto.subtle.importKey('raw', te.encode(pw), 'PBKDF2', false, ['deriveKey']);
-  return crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: iter },
-    k, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
-}
-
-async function gunzip(bytes) {
-  if (typeof DecompressionStream === 'undefined') throw new Error('浏览器不支持 DecompressionStream，请用 Chrome / Edge / Firefox / Safari 16.4+');
-  const ds = new DecompressionStream('gzip');
-  const out = new Response(new Blob([bytes]).stream().pipeThrough(ds));
-  return new Uint8Array(await out.arrayBuffer());
-}
-
-const fmt = (n) => n.toLocaleString('en-US');
-
-// 只数区块里第一层列表项（策略组内部还嵌着节点列表，不能一起数进去）
-function countSection(text, key) {
-  const lines = text.split('\n');
+/* ── 统计 ───────────────────────────────────────────────────────────── */
+function countSection(t, key) {
+  const lines = t.split('\n');
   const start = lines.findIndex((l) => l.startsWith(key + ':'));
   if (start < 0) return 0;
   let indent = -1, n = 0;
   for (let i = start + 1; i < lines.length; i++) {
     const l = lines[i];
     if (l.trim() === '') continue;
-    if (!/^\s/.test(l)) break;              // 回到顶层键，区块结束
+    if (!/^\s/.test(l)) break;
     const m = l.match(/^(\s*)-\s/);
     if (!m) continue;
-    if (indent < 0) indent = m[1].length;   // 该区块列表项的缩进
+    if (indent < 0) indent = m[1].length;
     if (m[1].length === indent) n++;
   }
   return n;
 }
+const topValue = (t, k) => (t.match(new RegExp('^' + k + ':\\s*(.+)$', 'm')) || [, '—'])[1].trim();
+const sha256hex = async (bytes) =>
+  [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map((b) => b.toString(16).padStart(2, '0')).join('');
 
-function topValue(text, key) {
-  const m = text.match(new RegExp('^' + key + ':\\s*(.+)$', 'm'));
-  return m ? m[1].trim() : '—';
-}
-
-async function loadBlob() {
-  try {
-    const r = await fetch(BLOB_URL, { cache: 'no-cache' });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    blob = await r.json();
-    $('iter').textContent = fmt(blob.iter);
-    $('fileMeta').innerHTML =
-      `<span>更新 <b>${blob.updated || '—'}</b></span>` +
-      `<span>明文 <b>${fmt(blob.bytes)} B</b></span>` +
-      `<span>压缩后 <b>${fmt(blob.packed)} B</b></span>` +
-      `<span>算法 <b>${blob.cipher}</b></span>` +
-      `<span>KDF <b>${blob.kdf} × ${fmt(blob.iter)}</b></span>`;
-  } catch (e) {
-    $('fileMeta').innerHTML = `<span style="color:var(--warn)">读取 ${BLOB_URL} 失败：${e.message}</span>`;
-    $('go').disabled = true;
-  }
-}
-
-async function decrypt() {
-  const pw = $('pw').value;
-  if (!pw) { setMsg('请输入密码', 'err'); return; }
-  if (!blob) { setMsg('加密文件未就绪', 'err'); return; }
-  $('go').disabled = true;
-  setMsg('解密中…', 'info');
-  try {
-    const check = await pbkdf2Bits(pw, b64d(blob.checkSalt), blob.checkIter ?? blob.iter);
-    const want = b64d(blob.check);
-    let same = check.length === want.length;
-    for (let i = 0; same && i < check.length; i++) same = check[i] === want[i];
-    if (!same) throw new Error('密码错误');
-
-    const key = await aesKey(pw, b64d(blob.salt), blob.iter);
-    const packed = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64d(blob.iv), tagLength: 128 },
-      key, b64d(blob.data));
-    const bytes = blob.comp === 'gzip' ? await gunzip(new Uint8Array(packed)) : new Uint8Array(packed);
-    plainText = new TextDecoder().decode(bytes);
-
-    const nodes = countSection(plainText, 'proxies');
-    const groups = countSection(plainText, 'proxy-groups');
-    const rules = countSection(plainText, 'rules');
-    $('stats').innerHTML =
-      stat('节点', nodes) + stat('策略组', groups) + stat('规则', fmt(rules)) +
-      stat('模式', topValue(plainText, 'mode')) + stat('HTTP 端口', topValue(plainText, 'port')) +
-      stat('SOCKS 端口', topValue(plainText, 'socks-port'));
-    $('preview').textContent = plainText.split('\n').slice(0, 200).join('\n');
-    $('result').style.display = 'block';
-    setMsg('解密成功', 'ok');
-    $('okmsg').textContent = `已解出 ${fmt(plainText.length)} 字符，可下载或复制。`;
-    $('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  } catch (e) {
-    $('result').style.display = 'none';
-    plainText = '';
-    setMsg(e.message === '密码错误' ? '密码错误，请重试' : ('解密失败：' + e.message), 'err');
-  } finally {
-    $('go').disabled = false;
-  }
-}
-
-const stat = (label, value) => `<div class="stat"><span>${label}</span><b>${value}</b></div>`;
 function setMsg(t, cls) { const m = $('msg'); m.textContent = t; m.className = 'msg ' + cls; }
+const stat = (label, value) => `<div class="stat"><span>${label}</span><b>${value}</b></div>`;
 
-$('go').addEventListener('click', decrypt);
-$('pw').addEventListener('keydown', (e) => { if (e.key === 'Enter') decrypt(); });
-$('toggle').addEventListener('click', () => {
-  const i = $('pw');
-  i.type = i.type === 'password' ? 'text' : 'password';
-  $('toggle').textContent = i.type === 'password' ? '显示' : '隐藏';
-  i.focus();
-});
-$('save').addEventListener('click', () => {
-  const url = URL.createObjectURL(new Blob([plainText], { type: 'text/yaml' }));
+/* ── 加载 + 拼接 + 校验 ─────────────────────────────────────────────── */
+async function load() {
+  $('dl').style.display = 'none';
+  setMsg('正在加载 manifest.json …', 'info');
+  try {
+    manifest = await (await fetch('manifest.json', { cache: 'no-cache' })).json();
+    const segs = manifest.segments || [];
+    $('segChars').textContent = fmt(manifest.segChars || 0);
+    $('fileMeta').innerHTML =
+      `<span>名称 <b>${manifest.name}</b></span>` +
+      `<span>更新 <b>${manifest.updated || '—'}</b></span>` +
+      `<span>明文 <b>${fmt(manifest.bytes)} B</b></span>` +
+      `<span>分段 <b>${segs.length}</b></span>` +
+      `<span>编码 <b>${manifest.encoding}</b></span>`;
+
+    setMsg(`正在拉取 ${segs.length} 个分段…`, 'info');
+    let done = 0;
+    const chunks = await Promise.all(segs.map(async (f) => {
+      const r = await fetch(f, { cache: 'no-cache' });
+      if (!r.ok) throw new Error(`分段 ${f} 读取失败（HTTP ${r.status}）`);
+      const t = await r.text();
+      done++;
+      setMsg(`正在拉取分段… ${done}/${segs.length}`, 'info');
+      return t.replace(/\s+/g, '');
+    }));
+
+    const bytes = Uint8Array.from(atob(chunks.join('')), (c) => c.charCodeAt(0));
+    const got = await sha256hex(bytes);
+    if (bytes.length !== manifest.bytes) throw new Error(`长度不符：得到 ${bytes.length} B，应为 ${manifest.bytes} B`);
+    if (manifest.sha256 && got !== manifest.sha256) throw new Error('SHA-256 校验失败（分段被改动或缺失）');
+
+    text = new TextDecoder().decode(bytes);
+    $('stats').innerHTML =
+      stat('节点', countSection(text, 'proxies')) +
+      stat('策略组', countSection(text, 'proxy-groups')) +
+      stat('规则', fmt(countSection(text, 'rules'))) +
+      stat('模式', topValue(text, 'mode')) +
+      stat('HTTP 端口', topValue(text, 'port')) +
+      stat('SOCKS 端口', topValue(text, 'socks-port'));
+    $('preview').textContent = text.split('\n').slice(0, 200).join('\n');
+    $('okmsg').textContent = `SHA-256 ${got.slice(0, 16)}… 校验通过，共 ${fmt(bytes.length)} B / ${fmt(text.split('\n').length)} 行。`;
+    $('dl').style.display = 'block';
+    setMsg('还原完成', 'ok');
+    if (AUTO) setTimeout(download, 300);
+  } catch (e) {
+    setMsg('失败：' + e.message, 'err');
+  }
+}
+
+/* ── 下载 / 复制 ───────────────────────────────────────────────────── */
+function download() {
+  if (!text) return;
+  const url = URL.createObjectURL(new Blob([text], { type: 'text/yaml;charset=utf-8' }));
   const a = document.createElement('a');
-  a.href = url; a.download = 'config.yaml'; a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 4000);
-});
+  a.href = url; a.download = (manifest && manifest.name) || 'config.yaml';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+$('save').addEventListener('click', download);
+$('again').addEventListener('click', load);
 $('copy').addEventListener('click', async () => {
-  try { await navigator.clipboard.writeText(plainText); setMsg('已复制到剪贴板', 'ok'); }
+  try { await navigator.clipboard.writeText(text); setMsg('已复制到剪贴板', 'ok'); }
   catch { setMsg('复制失败，请手动选择预览内容', 'err'); }
 });
 $('raw').addEventListener('click', () => {
-  const url = URL.createObjectURL(new Blob([plainText], { type: 'text/plain;charset=utf-8' }));
+  const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
   window.open(url, '_blank');
   setTimeout(() => URL.revokeObjectURL(url), 20000);
 });
 
-loadBlob();
+load();
 </script>
 </body>
 </html>

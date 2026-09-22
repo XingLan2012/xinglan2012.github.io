@@ -1,0 +1,26 @@
+{
+ "v": 2,
+ "mode": "plain-segments",
+ "name": "config.yaml",
+ "encoding": "base64",
+ "bytes": 494304,
+ "sha256": "c8a196b7c5d36691f16b60c717faccc5f68e09c8c4cf7ce80f7849caf982312a",
+ "segChars": 48000,
+ "updated": "2026-09-22",
+ "segments": [
+  "parts/seg-01.txt",
+  "parts/seg-02.txt",
+  "parts/seg-03.txt",
+  "parts/seg-04.txt",
+  "parts/seg-05.txt",
+  "parts/seg-06.txt",
+  "parts/seg-07.txt",
+  "parts/seg-08.txt",
+  "parts/seg-09.txt",
+  "parts/seg-10.txt",
+  "parts/seg-11.txt",
+  "parts/seg-12.txt",
+  "parts/seg-13.txt",
+  "parts/seg-14.txt"
+ ]
+}
