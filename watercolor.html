@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>水彩 · Watercolor Studio</title>
+<meta name="description" content="一个可以真实流淌、扩散、结边、撒盐的水彩交互页面">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:rgba(255,255,255,.045); --line:rgba(255,255,255,.13);
+    --text:#eef2f8; --muted:rgba(255,255,255,.55); --accent:#8fb6ff; --warn:#ff9a8f;
+    --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
+    --serif:'Songti SC','Source Han Serif SC','Noto Serif SC',Georgia,'Times New Roman',serif;
+    --mono:'Roboto Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);overflow:hidden;
+    background-image:radial-gradient(1100px 620px at 8% -12%,rgba(120,150,255,.13),transparent 62%),
+                     radial-gradient(900px 520px at 102% 4%,rgba(255,170,110,.09),transparent 58%);}
+  .back{position:fixed;top:14px;left:16px;z-index:9;color:var(--muted);text-decoration:none;
+    font-size:12.5px;letter-spacing:.08em;padding:6px 10px;border:1px solid var(--line);border-radius:999px;
+    background:rgba(0,0,0,.35);backdrop-filter:blur(6px)}
+  .back:hover{color:var(--text);border-color:rgba(255,255,255,.3)}
+
+  .app{display:grid;grid-template-columns:1fr 306px;grid-template-rows:auto 1fr;height:100%;gap:0}
+  .top{grid-column:1/-1;display:flex;align-items:baseline;gap:14px;padding:14px 20px 10px 92px;flex:none}
+  .top h1{margin:0;font-family:var(--serif);font-weight:500;font-size:21px;letter-spacing:.08em}
+  .top h1 small{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;color:var(--muted);
+    text-transform:uppercase;margin-left:10px;vertical-align:2px}
+  .top .tip{color:var(--muted);font-size:12.5px;line-height:1.6}
+  .top .tip b{color:var(--accent);font-weight:500}
+
+  .stage{grid-column:1;grid-row:2;position:relative;padding:0 18px 18px 92px;min-height:0;display:flex}
+  .paper{position:relative;flex:1;min-height:0;border-radius:4px;overflow:hidden;
+    box-shadow:0 26px 60px rgba(0,0,0,.55), 0 2px 0 rgba(255,255,255,.06) inset;
+    background:#faf6ec;cursor:crosshair;touch-action:none}
+  .paper canvas{display:block;width:100%;height:100%}
+  .hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;
+    font-family:var(--serif);font-size:17px;letter-spacing:.28em;color:rgba(90,74,52,.42);
+    transition:opacity .6s ease;text-align:center;padding:0 24px;line-height:2}
+  .hint.gone{opacity:0}
+  .badge{position:absolute;left:14px;bottom:12px;font-family:var(--mono);font-size:10.5px;color:rgba(90,74,52,.5);
+    pointer-events:none;letter-spacing:.08em}
+  .busy{position:absolute;right:14px;bottom:12px;font-family:var(--mono);font-size:10.5px;color:rgba(90,74,52,.5);
+    pointer-events:none}
+
+  .tools{grid-column:2;grid-row:2;padding:0 18px 18px 0;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+  .box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .box h2{margin:0 0 11px;font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--muted);font-weight:500}
+  .swatches{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+  .sw{aspect-ratio:1;border-radius:50%;border:2px solid transparent;cursor:pointer;position:relative;
+    box-shadow:0 1px 3px rgba(0,0,0,.4)}
+  .sw:hover{transform:scale(1.09)}
+  .sw.on{border-color:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.55), 0 1px 4px rgba(0,0,0,.5)}
+  .sw i{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.5),transparent 62%)}
+  .pig{display:flex;align-items:center;gap:9px;margin-top:11px}
+  .pig-name{font-family:var(--serif);font-size:13px;letter-spacing:.06em;color:var(--text)}
+  .pig-hex{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-left:auto}
+  .pig input[type=color]{width:34px;height:24px;padding:0;border:1px solid var(--line);border-radius:5px;
+    background:transparent;cursor:pointer}
+
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{flex:1 1 auto;min-width:64px;background:rgba(255,255,255,.07);color:var(--text);
+    border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:12.5px;cursor:pointer;
+    font-family:var(--sans);letter-spacing:.03em;white-space:nowrap}
+  .btn:hover{background:rgba(255,255,255,.13)}
+  .btn.on{background:#fff;color:#0b0d12;border-color:#fff;font-weight:600}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#06101f;font-weight:600}
+  .btn.danger:hover{background:rgba(255,120,110,.22);border-color:rgba(255,120,110,.5)}
+  .btn kbd{font-family:var(--mono);font-size:9.5px;opacity:.6;margin-left:5px}
+
+  .sld{margin-bottom:11px}
+  .sld:last-child{margin-bottom:0}
+  .sld label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px}
+  .sld label b{color:var(--accent);font-family:var(--mono);font-weight:500}
+  input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:3px;border-radius:2px;
+    background:rgba(255,255,255,.18);outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+    background:#fff;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+  input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radius:50%;background:#fff;cursor:pointer}
+
+  .note{font-size:11.5px;color:var(--muted);line-height:1.75}
+  .note code{font-family:var(--mono);font-size:10.5px;color:var(--accent)}
+  details.note summary{cursor:pointer;color:var(--text);font-size:12px;margin-bottom:6px}
+
+  @media (max-width:1000px){
+    body{overflow:auto}
+    .app{grid-template-columns:1fr;grid-template-rows:auto auto auto;height:auto;min-height:100%}
+    .top{padding:14px 16px 8px 78px;flex-wrap:wrap}
+    .stage{grid-column:1;grid-row:2;padding:0 16px 14px;height:58vh;min-height:340px}
+    .tools{grid-column:1;grid-row:3;padding:0 16px 24px;flex-direction:row;flex-wrap:wrap;align-items:flex-start}
+    .box{flex:1 1 260px}
+    .swatches{grid-template-columns:repeat(7,1fr)}
+  }
+</style>
+</head>
+<body>
+<a class="back" href="/">← 星澜</a>
+
+<div class="app">
+  <div class="top">
+    <h1>水彩<small>Watercolor Studio</small></h1>
+    <div class="tip" id="tip">按住拖动即可落笔 · 水会自己<b>流淌、扩散、结边</b> · 右上角可换颜料与工具</div>
+  </div>
+
+  <div class="stage">
+    <div class="paper" id="paper">
+      <canvas id="cv"></canvas>
+      <div class="hint" id="hint">按 住 拖 动 ， 开 始 落 笔</div>
+      <div class="badge" id="badge">湿 0%</div>
+      <div class="busy" id="busy"></div>
+    </div>
+  </div>
+
+  <div class="tools">
+    <div class="box">
+      <h2>颜料 Pigments</h2>
+      <div class="swatches" id="swatches"></div>
+      <div class="pig">
+        <span class="pig-name" id="pigName">群青</span>
+        <span class="pig-hex" id="pigHex">#2f4b9b</span>
+        <input type="color" id="picker" value="#2f4b9b" title="自定义颜色">
+      </div>
+    </div>
+
+    <div class="box">
+      <h2>工具 Tools</h2>
+      <div class="row" id="toolRow">
+        <button class="btn on" data-tool="brush">画笔<kbd>1</kbd></button>
+        <button class="btn" data-tool="water">清水<kbd>2</kbd></button>
+        <button class="btn" data-tool="dry">干笔<kbd>3</kbd></button>
+        <button class="btn" data-tool="salt">撒盐<kbd>4</kbd></button>
+      </div>
+    </div>
+
+    <div class="box">
+      <h2>手感 Feel</h2>
+      <div class="sld">
+        <label>笔刷大小 <b id="vSize">18</b></label>
+        <input type="range" id="size" min="3" max="70" value="18">
+      </div>
+      <div class="sld">
+        <label>水量 <b id="vWater">0.55</b></label>
+        <input type="range" id="water" min="0" max="100" value="55">
+      </div>
+      <div class="sld">
+        <label>颜料浓度 <b id="vLoad">0.60</b></label>
+        <input type="range" id="load" min="5" max="100" value="60">
+      </div>
+      <div class="sld">
+        <label>干燥速度 <b id="vDry">1.0×</b></label>
+        <input type="range" id="dry" min="20" max="260" value="100">
+      </div>
+    </div>
+
+    <div class="box">
+      <h2>操作 Actions</h2>
+      <div class="row">
+        <button class="btn" id="undo">撤销<kbd>⌘Z</kbd></button>
+        <button class="btn" id="demo">示范一笔</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn primary" id="save">保存 PNG</button>
+        <button class="btn" id="dry2">晾干<kbd>D</kbd></button>
+        <button class="btn danger" id="clear">清空</button>
+      </div>
+    </div>
+
+    <div class="box">
+      <details class="note">
+        <summary>玩法与说明</summary>
+        <p>纸面是「湿」的：颜料会顺水扩散、在边缘沉积出色边（水彩的<b>结边</b>），水干后留下颗粒感。</p>
+        <p><b>湿画法</b>：先用清水笔铺一层水，再上色，颜色会自己晕开；<b>干笔</b>水量低，纸上纹理会透出来；<b>撒盐</b>会在湿颜料上炸开白色星点（和真的盐一样，要趁湿撒）。</p>
+        <p>控制台可用 <code>window.WC</code> 脚本作画：<code>WC.paint(0.5,0.5)</code>（比例坐标）、
+          <code>WC.stroke([[0.2,0.3],[0.6,0.5]])</code>、<code>WC.stats()</code>、<code>WC.demo()</code>。</p>
+        <p>快捷键：<code>1</code>-<code>4</code> 换工具，<code>⌘/Ctrl+Z</code> 撤销，<code>⌘/Ctrl+S</code> 保存。</p>
+      </details>
+      <p class="note" style="margin-top:10px">全部计算在浏览器本地完成，画完直接保存，不上传任何数据。</p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===========================================================================
+   水彩模拟：粗网格上的「水 + 悬浮颜料 + 沉积颜料」三态模型
+   每个动画步：水流带动颜料扩散 → 蒸发 → 干燥处沉积（含纸纹颗粒）→ 湿区边缘结边
+   渲染：网格 → ImageData → 放大插值绘制 → 叠加程序化纸纹（一次 multiply）
+   =========================================================================== */
+(() => {
+  'use strict';
+
+  const CELL = 4;                 // 每个网格单元 4 CSS px
+  const MAXD = 2;                 // devicePixelRatio 上限
+  const ABS  = 1.05;              // 颜料吸光度系数（越大越浓）
+  const EVAP = 0.055;             // 蒸发速度（/秒，再乘干燥倍率）
+  const WET_FULL = 0.75;          // 达到这个水量算「全湿」：此时颜料几乎不沉积，只跟着水跑
+  const DEP_K = 2.6;              // 沉积速率
+  const EDGE_K = 7.5;             // 结边强度
+  const EDGE_RATE = 3.2;
+  const GRAN_K = 1.15;            // 颗粒感强度
+  const FLOW = 0.26;              // 流动系数
+  const PIG_DIFF = 1.2;           // 颜料自身扩散（湿的时候晕得更开）
+
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  const paperEl = document.getElementById('paper');
+  const hintEl = document.getElementById('hint');
+  const badgeEl = document.getElementById('badge');
+  const busyEl = document.getElementById('busy');
+  const tipEl = document.getElementById('tip');
+
+  /* ── 颜料表 ───────────────────────────────────────────────────────── */
+  const PIGMENTS = [
+    { name:'柠檬黄', hex:'#f4e04d' }, { name:'土黄',   hex:'#c8a24a' },
+    { name:'镉橙',   hex:'#e0782c' }, { name:'镉红',   hex:'#d1372c' },
+    { name:'深茜红', hex:'#9b1b30' }, { name:'胭脂',   hex:'#b2465f' },
+    { name:'熟赭',   hex:'#8a4b2a' }, { name:'生褐',   hex:'#6b4a2f' },
+    { name:'沙普绿', hex:'#4a7c3f' }, { name:'翠绿',   hex:'#1f7a6b' },
+    { name:'天蓝',   hex:'#3f8fd0' }, { name:'酞菁蓝', hex:'#1b4f9c' },
+    { name:'群青',   hex:'#2f4b9b' }, { name:'紫罗兰', hex:'#6b3fa0' },
+    { name:'培恩灰', hex:'#4a5560' }, { name:'象牙黑', hex:'#2b2b2b' },
+    { name:'赭石',   hex:'#a86b3c' }, { name:'青莲',   hex:'#7d4a86' },
+    { name:'湖蓝',   hex:'#2aa3a8' }, { name:'橄榄绿', hex:'#6f7a3a' },
+    { name:'白',     hex:'#f2efe6' },
+  ];
+
+  /* 颜色 → 吸光度（减色混合：多色叠加自然变深） */
+  function absorption(hex) {
+    const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+    const n = m ? parseInt(m[1], 16) : 0x2f4b9b;
+    const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => Math.max(v / 255, 0.02));
+    return ch.map((v) => -Math.log(v) * 0.62);
+  }
+
+  /* ── 网格状态 ─────────────────────────────────────────────────────── */
+  let W = 0, H = 0, dpr = 1, GW = 0, GH = 0;
+  let water, pr, pg, pb, dr, dg, db, paperH, scratch;
+  const idxArr = [];
+
+  /* 备份 / 撤销 */
+  const undoStack = [];
+  const UNDO_MAX = 5;
+  function snapshot() {
+    if (!water) return;
+    undoStack.push({
+      w: water.slice(), r: pr.slice(), g: pg.slice(), b: pb.slice(),
+      dr: dr.slice(), dg: dg.slice(), db: db.slice(),
+    });
+    if (undoStack.length > UNDO_MAX) undoStack.shift();
+  }
+  function undo() {
+    const s = undoStack.pop();
+    if (!s) { flash('没有可撤销的笔触'); return; }
+    water.set(s.w); pr.set(s.r); pg.set(s.g); pb.set(s.b);
+    dr.set(s.dr); dg.set(s.dg); db.set(s.db);
+    dirty = true; simOn = true;
+  }
+
+  /* ── 纸纹 ─────────────────────────────────────────────────────────── */
+  let paperCanvas = null, paperCtx = null, paperGrid = null;
+  function buildPaper() {
+    const pw = Math.max(1, Math.round(W * dpr)), ph = Math.max(1, Math.round(H * dpr));
+    paperCanvas = document.createElement('canvas');
+    paperCanvas.width = pw; paperCanvas.height = ph;
+    paperCtx = paperCanvas.getContext('2d');
+    const img = paperCtx.createImageData(pw, ph);
+    const d = img.data;
+    for (let y = 0; y < ph; y++) {
+      for (let x = 0; x < pw; x++) {
+        const o = (y * pw + x) * 4;
+        // 细颗粒 + 低频斑驳，做出冷压纸的「牙」
+        const fine = (Math.random() - 0.5) * 11;
+        const blotch = Math.sin(x * 0.021 + y * 0.017) * 4 + Math.sin(x * 0.007 - y * 0.011) * 5;
+        const v = 250 + fine + blotch;
+        d[o] = Math.min(255, v); d[o + 1] = Math.min(255, v - 3); d[o + 2] = Math.min(255, v - 12); d[o + 3] = 255;
+      }
+    }
+    paperCtx.putImageData(img, 0, 0);
+    // 纸纤维
+    paperCtx.globalAlpha = 0.05;
+    for (let i = 0; i < Math.round(pw * ph / 2600); i++) {
+      const x = Math.random() * pw, y = Math.random() * ph, len = 4 + Math.random() * 26, a = Math.random() * Math.PI;
+      paperCtx.strokeStyle = Math.random() < 0.5 ? '#d9cdb4' : '#fffdf6';
+      paperCtx.lineWidth = Math.random() < 0.15 ? 1.4 : 0.7;
+      paperCtx.beginPath(); paperCtx.moveTo(x, y);
+      paperCtx.lineTo(x + Math.cos(a) * len, y + Math.sin(a) * len); paperCtx.stroke();
+    }
+    paperCtx.globalAlpha = 1;
+    // 少量压痕/斑点
+    paperCtx.globalAlpha = 0.045;
+    for (let i = 0; i < Math.round(pw * ph / 90000); i++) {
+      const x = Math.random() * pw, y = Math.random() * ph, r = 8 + Math.random() * 46;
+      const g = paperCtx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, '#d8cbb0'); g.addColorStop(1, 'rgba(216,203,176,0)');
+      paperCtx.fillStyle = g; paperCtx.beginPath(); paperCtx.arc(x, y, r, 0, 6.2832); paperCtx.fill();
+    }
+    paperCtx.globalAlpha = 1;
+
+    // 网格级纸纹（用于颗粒沉积 & 干笔断续）
+    paperGrid = new Float32Array(GW * GH);
+    for (let i = 0; i < paperGrid.length; i++) {
+      const x = i % GW, y = (i / GW) | 0;
+      const v = 0.5 + 0.34 * Math.sin(x * 0.83 + y * 0.61) * Math.sin(y * 0.37 - x * 0.29)
+              + (Math.random() - 0.5) * 0.5;
+      paperGrid[i] = Math.max(0, Math.min(1, v));
+    }
+  }
+
+  /* ── 尺寸 ─────────────────────────────────────────────────────────── */
+  function resize() {
+    const rect = paperEl.getBoundingClientRect();
+    dpr = Math.min(window.devicePixelRatio || 1, MAXD);
+    W = Math.max(80, Math.round(rect.width));
+    H = Math.max(80, Math.round(rect.height));
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    const nGW = Math.max(8, Math.ceil(W / CELL)), nGH = Math.max(8, Math.ceil(H / CELL));
+
+    const old = { water, pr, pg, pb, dr, dg, db, GW, GH };
+    GW = nGW; GH = nGH;
+    const n = GW * GH;
+    water = new Float32Array(n); pr = new Float32Array(n); pg = new Float32Array(n); pb = new Float32Array(n);
+    dr = new Float32Array(n); dg = new Float32Array(n); db = new Float32Array(n);
+    scratch = new Float32Array(n);
+
+    // 旧画面按比例搬过来，改变窗口大小不丢画
+    if (old.water && old.GW && old.GH) {
+      for (let y = 0; y < GH; y++) {
+        const oy = Math.min(old.GH - 1, Math.round(y * old.GH / GH));
+        for (let x = 0; x < GW; x++) {
+          const ox = Math.min(old.GW - 1, Math.round(x * old.GW / GW));
+          const i = y * GW + x, j = oy * old.GW + ox;
+          water[i] = old.water[j]; pr[i] = old.pr[j]; pg[i] = old.pg[j]; pb[i] = old.pb[j];
+          dr[i] = old.dr[j]; dg[i] = old.dg[j]; db[i] = old.db[j];
+        }
+      }
+    }
+    buildPaper();
+    gridCanvas.width = GW; gridCanvas.height = GH;
+    gctx = gridCanvas.getContext('2d');
+    gctx.imageSmoothingEnabled = true;
+    dirty = true; simOn = true;
+  }
+
+  /* ── 模拟一步 ─────────────────────────────────────────────────────── */
+  function transfer(i, j, frac) {
+    const w = water[i] * frac;
+    if (w > 0) { water[i] -= w; water[j] += w; }
+    const a = pr[i] * frac, b = pg[i] * frac, c = pb[i] * frac;
+    pr[i] -= a; pr[j] += a; pg[i] -= b; pg[j] += b; pb[i] -= c; pb[j] += c;
+  }
+
+  let evapMul = 1;
+  function step(dt) {
+    const fMax = Math.min(0.24, FLOW * dt * 6);
+    const diff = Math.min(0.2, PIG_DIFF * dt * 6);
+    const depF = 1 - Math.exp(-DEP_K * dt);
+    const edgeF = 1 - Math.exp(-EDGE_RATE * dt);
+
+    for (let y = 0; y < GH; y++) {
+      for (let x = 0; x < GW; x++) {
+        const i = y * GW + x;
+        const w = water[i];
+
+        // 1) 水的流动：沿水量差把「水 + 悬浮颜料」送到邻居（右、下、下右、下左）
+        if (w > 0.004) {
+          const nb = [x + 1 < GW ? i + 1 : -1, y + 1 < GH ? i + GW : -1,
+                      (x + 1 < GW && y + 1 < GH) ? i + GW + 1 : -1, (x > 0 && y + 1 < GH) ? i + GW - 1 : -1];
+          for (const j of nb) {
+            if (j < 0) continue;
+            const d = w - water[j];
+            if (d <= 0) continue;
+            transfer(i, j, Math.min(fMax, d * 0.34));
+          }
+          // 一点点向下的重力感，让水痕往下淌
+          if (y + 1 < GH) transfer(i, i + GW, Math.min(0.05, w * 0.05 * dt * 6));
+        }
+
+        // 2) 颜料自身扩散（湿的时候晕得更开）
+        if (w > 0.16) {
+          const jR = x + 1 < GW ? i + 1 : -1, jD = y + 1 < GH ? i + GW : -1;
+          for (const j of [jR, jD]) {
+            if (j < 0) continue;
+            const dpr_ = pr[i] - pr[j]; if (dpr_ > 0) { const t = Math.min(diff, dpr_ * 0.3); pr[i] -= t; pr[j] += t; }
+            const dpg = pg[i] - pg[j]; if (dpg > 0) { const t = Math.min(diff, dpg * 0.3); pg[i] -= t; pg[j] += t; }
+            const dpb = pb[i] - pb[j]; if (dpb > 0) { const t = Math.min(diff, dpb * 0.3); pb[i] -= t; pb[j] += t; }
+          }
+        }
+      }
+    }
+
+    // 3) 蒸发 + 沉积 + 结边（单独一趟，读的是更新后的场）
+    for (let y = 0; y < GH; y++) {
+      for (let x = 0; x < GW; x++) {
+        const i = y * GW + x;
+        let w = water[i];
+        if (w > 0) { w *= (1 - Math.min(0.9, EVAP * evapMul * dt)); water[i] = w < 0.0015 ? 0 : w; }
+
+        const p0 = pr[i] + pg[i] + pb[i];
+        if (p0 <= 0.0002) continue;
+
+        const dryness = 1 - Math.min(1, water[i] / WET_FULL);      // 1 = 全干
+        const gran = 0.55 + GRAN_K * (paperGrid[i] - 0.5);
+        let k = depF * dryness * Math.max(0.15, gran);
+
+        // 湿区边缘：邻居更湿 → 这里沉积更快，形成深色水痕
+        const wl = x > 0 ? water[i - 1] : 0, wr = x + 1 < GW ? water[i + 1] : 0;
+        const wu = y > 0 ? water[i - GW] : 0, wd = y + 1 < GH ? water[i + GW] : 0;
+        const wMax = Math.max(wl, wr, wu, wd);
+        const edge = Math.max(0, Math.min(1, (wMax - water[i]) * EDGE_K));
+        if (edge > 0 && water[i] > 0.01) k += edgeF * edge * 1.6;
+
+        k = Math.min(1, k);
+        const a = pr[i] * k, b = pg[i] * k, c = pb[i] * k;
+        pr[i] -= a; pg[i] -= b; pb[i] -= c;
+        dr[i] += a; dg[i] += b; db[i] += c;
+      }
+    }
+
+    // 干湿统计 & 是否还需要继续算
+    let wetSum = 0, pigSum = 0;
+    for (let i = 0; i < water.length; i++) {
+      wetSum += water[i];
+      pigSum += pr[i] + pg[i] + pb[i];
+    }
+    wetLevel = Math.min(1, wetSum / (GW * GH * 0.35));
+    const active = wetSum > 0.02 || pigSum > 0.02;
+    if (!active && simOn) { simOn = false; }
+    if (!active) { wetLevel = 0; }
+  }
+
+  /* ── 渲染 ─────────────────────────────────────────────────────────── */
+  const gridCanvas = document.createElement('canvas');
+  let gctx = null, gridImg = null;
+  let dirty = true, simOn = true, wetLevel = 0;
+
+  function render() {
+    if (!gridImg || gridImg.width !== GW || gridImg.height !== GH) {
+      gridImg = gctx.createImageData(GW, GH);
+    }
+    const d = gridImg.data;
+    for (let i = 0, o = 0; i < GW * GH; i++, o += 4) {
+      const tR = Math.exp(-(dr[i] + pr[i] * 0.9) * ABS);
+      const tG = Math.exp(-(dg[i] + pg[i] * 0.9) * ABS);
+      const tB = Math.exp(-(db[i] + pb[i] * 0.9) * ABS);
+      const wet = water[i] > 0 ? Math.min(1, water[i] * 1.6) : 0;
+      const base = 255 - 20 * wet;                    // 湿的地方纸色变深
+      d[o]     = Math.max(0, Math.min(255, base * tR));
+      d[o + 1] = Math.max(0, Math.min(255, (base - 3) * tG));
+      d[o + 2] = Math.max(0, Math.min(255, (base - 14) * tB));
+      d[o + 3] = Math.max(0, Math.min(255, (1 - Math.min(tR, Math.min(tG, tB))) * 268));
+    }
+    gctx.putImageData(gridImg, 0, 0);
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    if (paperCanvas) ctx.drawImage(paperCanvas, 0, 0, cv.width, cv.height);
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(gridCanvas, 0, 0, GW, GH, 0, 0, cv.width, cv.height);
+    if (paperCanvas) {                                 // 纸的「牙」压在所有颜料上 → 颗粒感
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.globalAlpha = 0.17;
+      ctx.drawImage(paperCanvas, 0, 0, cv.width, cv.height);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1;
+    }
+    dirty = false;
+  }
+
+  /* ── 笔刷 ─────────────────────────────────────────────────────────── */
+  const state = {
+    tool: 'brush', size: 18, water: 0.55, load: 0.60, dry: 1,
+    hex: '#2f4b9b', abs: absorption('#2f4b9b'),
+  };
+  let drawing = false, lastGX = 0, lastGY = 0, saltT = 0, firstStroke = true;
+
+  function stamp(gx, gy, rCells, opts) {
+    const { abs, waterAmt, pigAmt, mode } = opts;
+    const r2 = rCells * rCells;
+    const x0 = Math.max(0, Math.floor(gx - rCells)), x1 = Math.min(GW - 1, Math.ceil(gx + rCells));
+    const y0 = Math.max(0, Math.floor(gy - rCells)), y1 = Math.min(GH - 1, Math.ceil(gy + rCells));
+    for (let y = y0; y <= y1; y++) {
+      for (let x = x0; x <= x1; x++) {
+        const dx = x - gx, dy = y - gy, d2 = dx * dx + dy * dy;
+        if (d2 > r2) continue;
+        const f = 1 - Math.sqrt(d2) / rCells;
+        let fall = f * f * (3 - 2 * f);                       // smoothstep 边缘更软
+        if (mode === 'dry') fall *= Math.max(0, Math.min(1.35, 0.25 + 1.5 * paperGrid[y * GW + x]));
+        const i = y * GW + x;
+        if (waterAmt > 0) {
+          water[i] = Math.min(2.0, water[i] + waterAmt * fall);
+          // 清水笔会洗掉一点已经干掉的颜料（真实水彩的「提色 / 洗淡」）
+          if (mode === 'water') {
+            const lift = Math.min(0.55, 0.30 * waterAmt * fall);
+            const a2 = dr[i] * lift, b2 = dg[i] * lift, c2 = db[i] * lift;
+            dr[i] -= a2; dg[i] -= b2; db[i] -= c2;
+            pr[i] += a2; pg[i] += b2; pb[i] += c2;
+          }
+        }
+        if (abs && pigAmt > 0) {
+          pr[i] += abs[0] * pigAmt * fall;
+          pg[i] += abs[1] * pigAmt * fall;
+          pb[i] += abs[2] * pigAmt * fall;
+        }
+        if (mode === 'salt') {
+          // 盐粒：只有落点处（纸纹高点）且纸面还湿才吸颜料
+          if (paperGrid[i] < 0.58 || fall < 0.12) continue;
+          const wetness = Math.min(1, water[i] * 3);
+          if (wetness < 0.18) continue;
+          const strength = (0.60 + 0.40 * (paperGrid[i] - 0.5) * 2) * fall * wetness;
+          const lift = Math.min(1, strength * 1.8);                // 吸走的比例
+          const push = lift * 0.7;                                 // 一部分往四周推，形成深色环
+          const len = Math.max(0.6, Math.sqrt(d2));
+          const tx = Math.max(0, Math.min(GW - 1, Math.round(x + (dx / len) * 2.6)));
+          const ty = Math.max(0, Math.min(GH - 1, Math.round(y + (dy / len) * 2.6)));
+          const j = ty * GW + tx;
+          pr[j] += pr[i] * push; pg[j] += pg[i] * push; pb[j] += pb[i] * push;
+          const keep = Math.max(0, 1 - lift - push);
+          pr[i] *= keep; pg[i] *= keep; pb[i] *= keep;
+          water[i] = Math.min(2.0, water[i] + 0.35 * wetness);
+        }
+      }
+    }
+  }
+
+  function paintTo(gx, gy, first) {
+    const rCells = Math.max(1.1, state.size / CELL / 2);
+    const pressure = 0.75;
+    if (state.tool === 'salt') {
+      // 撒盐：盐粒散布在整个笔头范围内（纸纹决定落点稀疏），湿处才起效
+      stamp(gx, gy, rCells, { abs: null, waterAmt: 0.5, pigAmt: 0, mode: 'salt' });
+      simOn = true; dirty = true; return;
+    }
+    if (first) {
+      stamp(gx, gy, rCells, {
+        abs: state.tool === 'water' ? null : state.abs,
+        waterAmt: (state.tool === 'water' ? 0.85 : state.water) * pressure,
+        pigAmt: state.tool === 'water' ? 0 : state.load * 1.5 * pressure,
+        mode: state.tool === 'dry' ? 'dry' : (state.tool === 'water' ? 'water' : 'normal'),
+      });
+    } else {
+      // 沿笔迹插值补点，快速拖动也连续
+      const dx = gx - lastGX, dy = gy - lastGY;
+      const dist = Math.hypot(dx, dy);
+      const stepCells = Math.max(0.7, rCells * 0.32);
+      const n = Math.max(1, Math.ceil(dist / stepCells));
+      for (let s = 1; s <= n; s++) {
+        const t = s / n;
+        stamp(lastGX + dx * t, lastGY + dy * t, rCells, {
+          abs: state.tool === 'water' ? null : state.abs,
+          waterAmt: (state.tool === 'water' ? 0.85 : state.water) * pressure * (state.tool === 'dry' ? 0.55 : 1),
+          pigAmt: state.tool === 'water' ? 0 : state.load * 1.5 * pressure * (state.tool === 'dry' ? 0.85 : 1),
+          mode: state.tool === 'dry' ? 'dry' : (state.tool === 'water' ? 'water' : 'normal'),
+        });
+      }
+    }
+    lastGX = gx; lastGY = gy;
+    simOn = true; dirty = true;
+  }
+
+  /* ── 指针事件 ─────────────────────────────────────────────────────── */
+  function toGrid(e) {
+    const rect = paperEl.getBoundingClientRect();
+    return [(e.clientX - rect.left) / CELL, (e.clientY - rect.top) / CELL];
+  }
+  paperEl.addEventListener('pointerdown', (e) => {
+    if (e.button !== undefined && e.button !== 0) return;
+    paperEl.setPointerCapture(e.pointerId);
+    drawing = true; saltT = 0;
+    snapshot();
+    const [gx, gy] = toGrid(e);
+    lastGX = gx; lastGY = gy;
+    paintTo(gx, gy, true);
+    if (firstStroke) { firstStroke = false; hintEl.classList.add('gone'); }
+    e.preventDefault();
+  });
+  paperEl.addEventListener('pointermove', (e) => {
+    if (!drawing) return;
+    const [gx, gy] = toGrid(e);
+    paintTo(gx, gy, false);
+    e.preventDefault();
+  });
+  const endStroke = () => { drawing = false; };
+  paperEl.addEventListener('pointerup', endStroke);
+  paperEl.addEventListener('pointercancel', endStroke);
+  paperEl.addEventListener('pointerleave', endStroke);
+  paperEl.addEventListener('contextmenu', (e) => e.preventDefault());
+
+  /* ── UI ───────────────────────────────────────────────────────────── */
+  const swWrap = document.getElementById('swatches');
+  const nameEl = document.getElementById('pigName');
+  const hexEl = document.getElementById('pigHex');
+  const picker = document.getElementById('picker');
+  PIGMENTS.forEach((p, i) => {
+    const b = document.createElement('div');
+    b.className = 'sw' + (i === 12 ? ' on' : '');
+    b.style.background = p.hex; b.title = p.name + ' ' + p.hex; b.dataset.i = String(i);
+    b.innerHTML = '<i></i>';
+    b.addEventListener('click', () => setPigment(p.hex, p.name, b));
+    swWrap.appendChild(b);
+  });
+  function setPigment(hex, name, el) {
+    state.hex = hex; state.abs = absorption(hex);
+    nameEl.textContent = name || '自定义';
+    hexEl.textContent = hex;
+    picker.value = /^#[0-9a-f]{6}$/i.test(hex) ? hex : '#2f4b9b';
+    swWrap.querySelectorAll('.sw').forEach((s) => s.classList.toggle('on', s === el));
+    if (el) swWrap.querySelectorAll('.sw').forEach((s) => { if (s !== el) s.classList.remove('on'); });
+  }
+  picker.addEventListener('input', () => setPigment(picker.value, '自定义', null));
+
+  const toolRow = document.getElementById('toolRow');
+  toolRow.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    state.tool = b.dataset.tool;
+    toolRow.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
+    tipEl.innerHTML = TIPS[state.tool];
+  });
+  const TIPS = {
+    brush: '按住拖动即可落笔 · 水会自己<b>流淌、扩散、结边</b> · 右上角可换颜料与工具',
+    water: '清水笔：只加水不带色 —— 先用它<b>铺湿纸面</b>，再上色就会自己晕开',
+    dry:   '干笔：水量低、颜料断续，纸张纹理直接透出来，适合画<b>枯笔与山石</b>',
+    salt:  '撒盐：趁颜料还<b>湿</b>的时候点上去，盐会吸走颜料炸出白色星点',
+  };
+
+  const bind = (id, key, fmt) => {
+    const el = document.getElementById(id), out = document.getElementById('v' + id[0].toUpperCase() + id.slice(1));
+    const upd = () => {
+      const v = +el.value;
+      if (key === 'size') state.size = v;
+      else if (key === 'water') state.water = v / 100;
+      else if (key === 'load') state.load = v / 100;
+      else if (key === 'dry') { state.dry = v / 100; evapMul = state.dry; }
+      if (out) out.textContent = fmt(v);
+    };
+    el.addEventListener('input', upd); upd();
+  };
+  bind('size', 'size', (v) => String(v));
+  bind('water', 'water', (v) => (v / 100).toFixed(2));
+  bind('load', 'load', (v) => (v / 100).toFixed(2));
+  bind('dry', 'dry', (v) => (v / 100).toFixed(2) + '×');
+
+  document.getElementById('undo').addEventListener('click', undo);
+  document.getElementById('clear').addEventListener('click', () => {
+    snapshot();
+    water.fill(0); pr.fill(0); pg.fill(0); pb.fill(0); dr.fill(0); dg.fill(0); db.fill(0);
+    dirty = true; simOn = true; flash('纸面已清空（可撤销）');
+  });
+  document.getElementById('save').addEventListener('click', () => {
+    render();
+    const url = cv.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '水彩-' + new Date().toISOString().slice(0, 19).replace(/[:T]/g, '') + '.png';
+    document.body.appendChild(a); a.click(); a.remove();
+    flash('已保存 PNG');
+  });
+  document.getElementById('demo').addEventListener('click', () => demo());
+  document.getElementById('dry2').addEventListener('click', () => { settle(4); flash('已快进晾干 4 秒'); });
+
+  const flash = (() => {
+    let t = 0;
+    return (msg) => {
+      busyEl.textContent = msg;
+      clearTimeout(t);
+      t = setTimeout(() => { busyEl.textContent = ''; }, 2200);
+    };
+  })();
+
+  /** 快进模拟：等价于让画面自己晾 n 秒（不阻塞界面太久，按帧预算切片） */
+  function settle(seconds = 3) {
+    const dt = 1 / 60, n = Math.max(1, Math.round(seconds * 60));
+    for (let i = 0; i < n; i++) step(dt);
+    dirty = true; simOn = true;
+    render();
+  }
+
+  function demo() {
+    snapshot();
+    const H2 = GH, W2 = GW;
+    const strokes = [
+      { hex: '#f4e04d', pts: [[0.14, 0.66], [0.30, 0.52], [0.46, 0.46], [0.56, 0.36]] },
+      { hex: '#d1372c', pts: [[0.30, 0.78], [0.44, 0.62], [0.58, 0.52], [0.68, 0.44]] },
+      { hex: '#2f4b9b', pts: [[0.46, 0.86], [0.60, 0.72], [0.72, 0.62], [0.80, 0.52]] },
+    ];
+    const keep = { abs: state.abs, tool: state.tool, size: state.size, water: state.water, load: state.load };
+    state.tool = 'brush'; state.size = Math.max(26, W2 * CELL * 0.055); state.water = 0.95; state.load = 0.45;
+    for (const s of strokes) {
+      state.abs = absorption(s.hex);
+      const pts = s.pts.map(([x, y]) => [x * W2, y * H2]);
+      lastGX = pts[0][0]; lastGY = pts[0][1];
+      paintTo(pts[0][0], pts[0][1], true);
+      for (let i = 1; i < pts.length; i++) paintTo(pts[i][0], pts[i][1], false);
+    }
+    // 点几粒盐
+    state.tool = 'salt';
+    for (let i = 0; i < 4; i++) {
+      paintTo(W2 * (0.44 + Math.random() * 0.26), H2 * (0.56 + Math.random() * 0.2), true);
+    }
+    Object.assign(state, keep);
+    toolRow.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.tool === state.tool));
+    simOn = true; dirty = true;
+    hintEl.classList.add('gone');
+  }
+
+  /* ── 主循环 ───────────────────────────────────────────────────────── */
+  let last = performance.now(), statT = 0;
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    if (simOn) { step(dt); dirty = true; }
+    if (dirty) render();
+    if (now - statT > 180) {
+      statT = now;
+      badgeEl.textContent = '湿 ' + Math.round(wetLevel * 100) + '%';
+    }
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('resize', () => { clearTimeout(window.__rzT); window.__rzT = setTimeout(resize, 160); });
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT') return;
+    const map = { '1': 'brush', '2': 'water', '3': 'dry', '4': 'salt' };
+    if (map[e.key]) {
+      state.tool = map[e.key];
+      toolRow.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.tool === state.tool));
+      tipEl.innerHTML = TIPS[state.tool];
+    } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); }
+    else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') { e.preventDefault(); document.getElementById('save').click(); }
+    else if (e.key.toLowerCase() === 'd') { settle(4); flash('已快进晾干 4 秒'); }
+  });
+
+  resize();
+  requestAnimationFrame(frame);
+
+  /* ── 控制台 API ───────────────────────────────────────────────────── */
+  window.WC = {
+    pigments: PIGMENTS,
+    setTool(t) { state.tool = t; toolRow.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.tool === t)); },
+    setColor(hex) { setPigment(hex, '自定义', null); },
+    setSize(px) { state.size = px; document.getElementById('size').value = String(px); },
+    setWater(v) { state.water = Math.max(0, Math.min(1, v)); },
+    setLoad(v) { state.load = Math.max(0.05, Math.min(1, v)); },
+    paint(fx, fy) { if (fx <= 1 && fy <= 1) { fx = fx * GW; fy = fy * GH; } snapshot(); lastGX = fx; lastGY = fy; paintTo(fx, fy, true); },
+    stroke(pts, opts = {}) {
+      const keep = state.tool;
+      if (opts.tool) state.tool = opts.tool;
+      if (opts.color) state.abs = absorption(opts.color);
+      snapshot();
+      const g = pts.map(([x, y]) => [x <= 1 ? x * GW : x, y <= 1 ? y * GH : y]);
+      lastGX = g[0][0]; lastGY = g[0][1];
+      paintTo(g[0][0], g[0][1], true);
+      for (let i = 1; i < g.length; i++) paintTo(g[i][0], g[i][1], false);
+      state.tool = keep;
+    },
+    demo, undo, settle, clear: () => document.getElementById('clear').click(),
+    save: () => document.getElementById('save').click(),
+    grid: { get w() { return GW; }, get h() { return GH; }, get cell() { return CELL; } },
+    /** 采样：返回水/悬浮颜料/已沉积颜料的统计与逐点数据，便于调试与自动化检查 */
+    stats(sample = 400) {
+      let water_ = 0, susp = 0, dep = 0, wetCells = 0, maxDep = 0, maxDepAt = null;
+      for (let i = 0; i < water.length; i++) {
+        water_ += water[i];
+        susp += pr[i] + pg[i] + pb[i];
+        const d = dr[i] + dg[i] + db[i];
+        dep += d;
+        if (water[i] > 0.01) wetCells++;
+        if (d > maxDep) { maxDep = d; maxDepAt = [i % GW, (i / GW) | 0]; }
+      }
+      const pts = [];
+      for (let k = 0; k < sample; k++) {
+        const i = Math.floor(k * water.length / sample);
+        pts.push([i % GW, (i / GW) | 0, +water[i].toFixed(4), +(dr[i] + dg[i] + db[i]).toFixed(4)]);
+      }
+      return { w: GW, h: GH, cells: water.length, water: +water_.toFixed(3), suspended: +susp.toFixed(3),
+               deposited: +dep.toFixed(3), wetCells, maxDep: +maxDep.toFixed(4), maxDepAt, wetLevel: +wetLevel.toFixed(3),
+               simOn, sampled: pts };
+    },
+    /** 取某个比例坐标处的沉积颜料总量（用于验证「某处到底上色没有」） */
+    depAt(fx, fy) {
+      const x = Math.min(GW - 1, Math.max(0, Math.round(fx * GW)));
+      const y = Math.min(GH - 1, Math.max(0, Math.round(fy * GH)));
+      const i = y * GW + x;
+      return { x, y, dep: +(dr[i] + dg[i] + db[i]).toFixed(4), water: +water[i].toFixed(4) };
+    },
+    /** 网格单元的原始数据（水 / 悬浮 / 沉积 / 渲染前的网格像素） */
+    rawAt(fx, fy) {
+      const x = Math.min(GW - 1, Math.max(0, Math.round(fx * GW)));
+      const y = Math.min(GH - 1, Math.max(0, Math.round(fy * GH)));
+      const i = y * GW + x;
+      const g = gctx.getImageData(x, y, 1, 1).data;
+      return { x, y, water: +water[i].toFixed(4),
+               susp: [+pr[i].toFixed(3), +pg[i].toFixed(3), +pb[i].toFixed(3)],
+               dep: [+dr[i].toFixed(3), +dg[i].toFixed(3), +db[i].toFixed(3)],
+               gridPixel: [g[0], g[1], g[2], g[3]] };
+    },
+    /** 画布某个比例坐标的像素（含纸纹），返回 [r,g,b,a] */
+    pixelAt(fx, fy) {
+      const px = Math.round(fx * cv.width), py = Math.round(fy * cv.height);
+      return Array.from(ctx.getImageData(px, py, 1, 1).data);
+    },
+    /** 整幅画面的平均色与「有色像素」占比 */
+    image(fx0 = 0, fy0 = 0, fx1 = 1, fy1 = 1) {
+      const x = Math.round(fx0 * cv.width), y = Math.round(fy0 * cv.height);
+      const w = Math.max(1, Math.round((fx1 - fx0) * cv.width)), h = Math.max(1, Math.round((fy1 - fy0) * cv.height));
+      const d = ctx.getImageData(x, y, w, h).data;
+      let r = 0, g = 0, b = 0, colored = 0, n = 0;
+      for (let i = 0; i < d.length; i += 4) {
+        r += d[i]; g += d[i + 1]; b += d[i + 2]; n++;
+        const mx = Math.max(d[i], d[i + 1], d[i + 2]), mn = Math.min(d[i], d[i + 1], d[i + 2]);
+        if (mx < 232 || (mx - mn) > 24) colored++;
+      }
+      return { avg: [Math.round(r / n), Math.round(g / n), Math.round(b / n)], coloredRatio: +(colored / n).toFixed(4), px: n };
+    },
+  };
+})();
+</script>
+</body>
+</html>
