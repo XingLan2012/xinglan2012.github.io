@@ -1,33 +1,33 @@
 {
-  "total": 5080550,
+  "total": 5299478,
   "files": [
     {
       "path": "assets/archive-cassette.glb",
       "bytes": 3565116
     },
     {
-      "path": "assets/index-BYl4kPTV.js",
-      "bytes": 917827
-    },
-    {
       "path": "assets/index-DLhjq4G7.css",
       "bytes": 58239
     },
     {
+      "path": "assets/index-_l21nTSm.js",
+      "bytes": 917827
+    },
+    {
       "path": "fonts/MiSans-Bold.woff2",
-      "bytes": 135248
+      "bytes": 191796
     },
     {
       "path": "fonts/MiSans-Demibold.woff2",
-      "bytes": 135680
+      "bytes": 189884
     },
     {
       "path": "fonts/MiSans-Light.woff2",
-      "bytes": 134644
+      "bytes": 188900
     },
     {
       "path": "fonts/MiSans-Regular.woff2",
-      "bytes": 133796
+      "bytes": 187716
     }
   ]
 }

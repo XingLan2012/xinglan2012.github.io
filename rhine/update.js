@@ -39,7 +39,7 @@ button.addEventListener('click', async () => {
     location.replace(base.href);
   } catch {
     status.textContent = '更新未完成，已保留原有数据。请确认网络可用后重试。';
-    button.textContent = '重试更新 ↻';
+    button.textContent = '重试更新 ⇄';
     button.disabled = false;
   }
 });
