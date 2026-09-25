@@ -180,6 +180,11 @@ markdown    : kramdown
 highlighter : rouge
 permalink   : date
 
+# Jekyll 默认忽略下划线开头的文件/目录；m3e-canvas 的构建产物在 _next/ 下，
+# 必须显式 include，否则整站资源 404。
+include:
+  - _next
+
 exclude:
   - CHANGELOG.md
   - HOW_TO_RELEASE.md
