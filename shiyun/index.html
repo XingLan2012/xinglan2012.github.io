@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07080f">
+<title>诗云 · Poetry Cloud</title>
+<meta name="description" content="把中国三千年的诗放进一片可漫游的三维星系：每位诗人是一颗星，每首诗都有坐标。灵感来自刘慈欣《诗云》。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2307080f'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='%23e9b850'%3E%E8%AF%97%3C/text%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:title" content="诗云 · Poetry Cloud">
+<meta property="og:description" content="一张可漫游的三维星图：真实诗人是星团，星团之间的虚空是一切可能的诗。">
+<style>
+  :root{
+    --bg:#07080f; --gold:#e9b850; --sand:#d8c89a; --dim:#8b94a8; --line:rgba(233,184,80,.22);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--sand);
+    font-family:"Songti SC","Noto Serif SC","Source Han Serif SC",Georgia,serif;
+    display:flex; flex-direction:column; overflow:hidden;
+  }
+  /* ── 顶栏 ── */
+  header{
+    flex:0 0 auto; display:flex; align-items:center; gap:14px;
+    padding:10px 16px; border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(12,14,24,.96),rgba(7,8,15,.88));
+    backdrop-filter:blur(8px);
+  }
+  .brand{display:flex; align-items:baseline; gap:10px; min-width:0}
+  .brand b{font-size:19px; letter-spacing:.28em; color:var(--gold); font-weight:600}
+  .brand span{font-size:12px; letter-spacing:.14em; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .spacer{flex:1 1 auto}
+  .btn{
+    flex:0 0 auto; display:inline-flex; align-items:center; gap:6px;
+    padding:7px 13px; border:1px solid var(--line); border-radius:999px;
+    color:var(--sand); background:rgba(233,184,80,.06);
+    font-size:13px; text-decoration:none; cursor:pointer; white-space:nowrap;
+    transition:background .18s,border-color .18s,color .18s;
+  }
+  .btn:hover{background:rgba(233,184,80,.16); border-color:rgba(233,184,80,.5); color:#fff}
+  .btn.primary{background:rgba(233,184,80,.9); border-color:transparent; color:#1a1408; font-weight:600}
+  .btn.primary:hover{background:#f5ca6a; color:#1a1408}
+  /* ── 舞台 ── */
+  main{position:relative; flex:1 1 auto; min-height:0; background:#05060c}
+  iframe{position:absolute; inset:0; width:100%; height:100%; border:0; display:block}
+  /* 载入遮罩：星空 + 提示 */
+  #veil{
+    position:absolute; inset:0; z-index:2; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:16px; text-align:center; padding:24px;
+    background:
+      radial-gradient(1px 1px at 20% 30%,rgba(233,184,80,.9),transparent 60%),
+      radial-gradient(1px 1px at 70% 20%,rgba(216,200,154,.8),transparent 60%),
+      radial-gradient(1px 1px at 40% 70%,rgba(160,190,255,.8),transparent 60%),
+      radial-gradient(1px 1px at 85% 60%,rgba(233,184,80,.7),transparent 60%),
+      radial-gradient(1px 1px at 12% 82%,rgba(216,200,154,.7),transparent 60%),
+      #07080f;
+    transition:opacity .5s ease;
+  }
+  #veil.hide{opacity:0; pointer-events:none}
+  #veil h1{margin:0; font-size:34px; letter-spacing:.34em; color:var(--gold); font-weight:600}
+  #veil p{margin:0; max-width:32em; font-size:13.5px; line-height:2; color:var(--dim)}
+  .hint{font-size:12px; color:#6f7789; line-height:1.9}
+  .hint a{color:var(--sand)}
+  @media (max-width:640px){
+    .brand span{display:none}
+    header{padding:9px 12px; gap:8px}
+    .btn{padding:6px 10px; font-size:12px}
+    #veil h1{font-size:26px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <b>诗云</b>
+    <span>Poetry Cloud · 32,657 位诗人 / 933,857 首诗的三维星系</span>
+  </div>
+  <div class="spacer"></div>
+  <a class="btn" id="fullscreen" href="#" title="全屏显示">⛶ 全屏</a>
+  <a class="btn primary" href="https://shiyun.cohenjikan.com/" target="_blank" rel="noopener">在新标签页打开 ↗</a>
+</header>
+
+<main>
+  <div id="veil">
+    <h1>诗云</h1>
+    <p>正在载入星海 —— 每位诗人是一颗星，星与星之间的虚空是一切可能的诗。</p>
+    <p class="hint">首次进入需要一点时间（three.js 星系 + 诗篇数据）。<br>
+      若长时间空白，请<a href="https://shiyun.cohenjikan.com/" target="_blank" rel="noopener">直接打开官方站</a>。</p>
+  </div>
+  <iframe id="stage" src="https://shiyun.cohenjikan.com/"
+          title="诗云 · Poetry Cloud"
+          allow="fullscreen; autoplay; clipboard-write; accelerometer; gyroscope; xr-spatial-tracking"
+          allowfullscreen></iframe>
+</main>
+
+<script>
+  (function () {
+    var veil = document.getElementById('veil');
+    var frame = document.getElementById('stage');
+    // iframe 的 load 事件在跨域下依然会触发（只是拿不到内部 document），用它收起遮罩。
+    frame.addEventListener('load', function () { veil.classList.add('hide'); });
+    // 兜底：无论是否触发 load，若干秒后都让画面露出来（宁可露出 iframe，也不要把人挡在遮罩后面）。
+    setTimeout(function () { veil.classList.add('hide'); }, 9000);
+
+    document.getElementById('fullscreen').addEventListener('click', function (e) {
+      e.preventDefault();
+      var el = frame;
+      if (document.fullscreenElement) { document.exitFullscreen(); return; }
+      (el.requestFullscreen || el.webkitRequestFullscreen || function(){}).call(el);
+    });
+  })();
+</script>
+</body>
+</html>
