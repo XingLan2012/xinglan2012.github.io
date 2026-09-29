@@ -24,6 +24,11 @@ npm run build -- --base=/shiyun/     # 产物挂在本站子路径 /shiyun/ 下
   `gesture-worker.js` / `mediapipe-wasm` / `gesture_recognizer.task` 由根绝对路径改为
   `import.meta.env.BASE_URL` 前缀，否则挂在 `/shiyun/` 下时手势控制会 404。
 - 产物为本目录：`index.html` + `assets/`（js/css，约 1 MB）+ `data/`（语料）+ 手势模型与 wasm。
+- **配色统一（本站改动）**：上游把 15 个朝代各配了一个颜色（青→绿→金→薄荷→紫→粉→橙→洋红，
+  星野因此是一片彩虹）。本站把 `src/data/dynasties.ts` 里这 15 个颜色**全部改为同一个金色
+  `#ffd27a`**（即界面本身的金），于是星野、诗人星、诗轨、赠诗弧线、诗人标签、朝代筛选圆点
+  全部统一为同一色系；朝代身份仍由同心壳层、筛选开关与文字标签体现，功能不受影响
+  （朝代筛选改的是星点尺寸，不依赖颜色）。
 
 ## 数据范围（重要）
 
