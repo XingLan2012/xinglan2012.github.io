@@ -24,6 +24,7 @@ const state = {
   direction: 1,
   rate: 1 / 86400,     // 天 / 秒 —— 默认就是实时：1 秒 = 1 秒
   follow: true,
+  rocketView: false,   // 火箭跟拍视角
   adaptive: true,      // 帧率过低时自动降低渲染分辨率
   flags: {
     labels: true, orbits: true, moonOrbits: true, realSize: true, realDist: true,
@@ -149,7 +150,7 @@ function loop(now) {
   world.update(state.jd, elapsed);          // 位置 / 自转 / 轨道线
   updateCamera(dt);
   if (scaleAnim && hud.selected && !tween) refitCamera(hud.selected);
-  controls.update();                        // 相机最终就位
+  if (!state.rocketView) controls.update(); // 相机最终就位（火箭视角下由跟拍接管）
   world.updateShading();                    // 用本帧相机矩阵更新光照相关 uniform
   updateSunScreen();                        // 太阳的屏幕位置：体积光沿它拉伸
   updateOrbitVisibility();
@@ -230,6 +231,22 @@ let followId = null;
 /** 视角预设之间的过渡（内景 ↔ 全览），与天体取景互斥 */
 let viewTween = null;
 function updateCamera(dt) {
+  /* 火箭视角：相机吊在火箭后上方，视线顺着飞行方向。
+     由它接管相机，因此这一帧不再跑常规的跟随与取景逻辑。 */
+  if (state.rocketView) {
+    const rs = world.rocketState();
+    if (rs) {
+      const back = rs.length * 3.2;
+      const lift = rs.length * 1.1;
+      camera.position.copy(rs.pos)
+        .addScaledVector(rs.forward, -back)
+        .addScaledVector(YAXIS, lift);
+      tmp.copy(rs.pos).addScaledVector(rs.forward, rs.length * 4);
+      camera.lookAt(tmp);
+      controls.target.copy(tmp);
+    }
+    return;
+  }
   const sel = hud.selected;
   if (viewTween) {
     viewTween.t = Math.min(1, viewTween.t + dt / viewTween.dur);
@@ -501,6 +518,16 @@ const actions = {
   view(name) {
     tween = null;
     setFollow(false, null);
+    // 火箭视角接管相机，其余预设都要先退出它
+    state.rocketView = (name === 'rocket');
+    controls.enabled = !state.rocketView;
+    if (state.rocketView) {
+      const rs = world.rocketState();
+      if (rs) camera.position.copy(rs.pos);
+      controls.target.set(0, 0, 0);
+      hud.setView('rocket');
+      return;
+    }
     if (name === 'full') {
       flyTo(new THREE.Vector3(0, 56000, 168000), new THREE.Vector3(0, 0, 0), 1.4);
       hud.setView('full');

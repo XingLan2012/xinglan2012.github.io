@@ -622,7 +622,7 @@ function planeToEcliptic(xp, yp, m) {
 }
 
 /** 由 (i, Ω, ω) 生成 3×2 的平面→黄道旋转矩阵 */
-function planeMatrix(incDeg, nodeDeg, periDeg) {
+export function planeMatrix(incDeg, nodeDeg, periDeg) {
   const i = incDeg * DEG, O = nodeDeg * DEG, w = (periDeg - nodeDeg) * DEG;
   const cw = Math.cos(w), sw = Math.sin(w), ci = Math.cos(i), si = Math.sin(i);
   const cO = Math.cos(O), sO = Math.sin(O);

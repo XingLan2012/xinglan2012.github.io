@@ -22,7 +22,7 @@ import {
 import {
   auToUnits, bodyRadiusUnits, moonOrbitUnits, moonDisplayFloor, sunRadiusUnits, J2000,
 } from './scale.js';
-import { Populations, SAT_SYSTEMS } from './populations.js';
+import { Populations, SAT_SYSTEMS, planeMatrix } from './populations.js';
 import { buildAsteroidEntries } from './asteroids-catalog.js';
 import { buildCometEntries } from './comets.js';
 
@@ -82,6 +82,7 @@ export class World {
     onStage('小行星带与奥尔特云', 0.39);
     this.populations.build(this.bodies.get('earth'));
     this.pendingMoons = [...MOONS];
+    this.#buildRocket();
 
     /* 人造卫星没有「一颗一颗」的档案，但每个轨道壳层都该能被选中查看。
        这里给每个壳层造一个轻量运行体：位置直接引用地球的 position（同一个
@@ -246,6 +247,80 @@ export class World {
     }
     this.pendingMoons = [];
     this.refreshOrbits();
+  }
+
+  /**
+   * 火箭
+   * ----
+   * 一枚在 420 km 低轨上飞行的运载器，尾部有喷焰，供「火箭视角」跟拍。
+   * 真实火箭只有几十米长，在这个比例尺下连一个像素都不到，
+   * 因此按示意尺寸放大（约 0.12 倍地球半径），界面上标注为示意。
+   */
+  #buildRocket() {
+    const earth = this.bodies.get('earth');
+    if (!earth) return;
+    const group = new THREE.Object3D();
+    group.name = 'rocket';
+    const L = 0.12;
+    const body = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.16, 0.2, 0.62, 20, 1, false),
+      new THREE.MeshStandardMaterial({ color: 0xe8e6df, roughness: 0.42, metalness: 0.55 }),
+    );
+    body.position.y = 0.05;
+    group.add(body);
+    const nose = new THREE.Mesh(
+      new THREE.ConeGeometry(0.16, 0.26, 20),
+      new THREE.MeshStandardMaterial({ color: 0xd8503c, roughness: 0.5, metalness: 0.3 }),
+    );
+    nose.position.y = 0.49;
+    group.add(nose);
+    const ring = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.205, 0.205, 0.05, 20),
+      new THREE.MeshStandardMaterial({ color: 0x9aa0a8, roughness: 0.35, metalness: 0.8 }),
+    );
+    ring.position.y = -0.24;
+    group.add(ring);
+    for (let i = 0; i < 4; i++) {
+      const fin = new THREE.Mesh(
+        new THREE.BoxGeometry(0.02, 0.2, 0.24),
+        new THREE.MeshStandardMaterial({ color: 0xb8bcc2, roughness: 0.5, metalness: 0.6 }),
+      );
+      const a = (i / 4) * Math.PI * 2;
+      fin.position.set(Math.cos(a) * 0.19, -0.28, Math.sin(a) * 0.19);
+      fin.rotation.y = -a;
+      group.add(fin);
+    }
+    const flame = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: radialSprite('rgba(255,240,200,0.95)', 'rgba(255,150,60,0.35)', 128),
+      transparent: true, depthWrite: false, toneMapped: false,
+      blending: THREE.AdditiveBlending, opacity: 0.9,
+    }));
+    flame.position.y = -0.42;
+    group.add(flame);
+    this.rocket = {
+      group, flame, L,
+      aKm: 6371 + 420, inc: 51.64, e: 0.0006, node: 40, peri: 0, M0: 200,
+      forward: new THREE.Vector3(0, 0, 1),
+      scale: earth.radiusUnits * L,
+    };
+    earth.axisNode.add(group);
+    this.applyScale();
+  }
+
+  /** 火箭的世界位置与朝向（供跟拍相机使用） */
+  rocketState() {
+    if (!this.rocket) return null;
+    const g = this.rocket.group;
+    g.updateWorldMatrix(true, false);
+    const pos = new THREE.Vector3();
+    g.getWorldPosition(pos);
+    const q = new THREE.Quaternion();
+    g.getWorldQuaternion(q);
+    return {
+      pos,
+      forward: this.rocket.forward.clone().applyQuaternion(q).normalize(),
+      length: this.rocket.scale,
+    };
   }
 
   #register(runtime) {
@@ -915,6 +990,7 @@ export class World {
       geom.attributes.position.needsUpdate = true;
     }
 
+    this.#stepRocket(jd);
     // 小行星与彗星：位置、可见性、按需贴图，以及彗发与彗尾
     this.#stepSmallBodies(jd, ss);
 
@@ -999,6 +1075,37 @@ export class World {
         }
       }
     }
+  }
+
+  /** 火箭：420 km 低轨圆轨道，机头始终指向速度方向 */
+  #stepRocket(jd) {
+    const R = this.rocket;
+    if (!R) return;
+    const earth = this.bodies.get('earth');
+    const period = 2 * Math.PI * Math.sqrt(Math.pow(R.aKm * 1000, 3) / 3.986004418e14) / 86400;
+    const rUnits = moonOrbitUnits(R.aKm, earth.radiusKm, earth.radiusUnits);
+    const M = (R.M0 + (360 / period) * (jd - J2000)) * DEG;
+    const nu = M + (2 * R.e - 0.25 * R.e ** 3) * Math.sin(M) + 1.25 * R.e * R.e * Math.sin(2 * M);
+    const r = rUnits * (1 - R.e * R.e) / (1 + R.e * Math.cos(nu));
+    const m = planeMatrix(R.inc, R.node, R.peri);
+    const xp = r * Math.cos(nu), yp = r * Math.sin(nu);
+    const x = m[0] * xp + m[1] * yp;
+    const y = m[4] * xp + m[5] * yp;
+    const z = -(m[2] * xp + m[3] * yp);
+    R.group.position.set(x, y, z);
+    R.scale = earth.radiusUnits * R.L;
+    R.group.scale.setScalar(R.scale);
+    const dvx = -Math.sin(nu), dvy = Math.cos(nu);
+    const vx = m[0] * dvx + m[1] * dvy;
+    const vy = m[4] * dvx + m[5] * dvy;
+    const vz = -(m[2] * dvx + m[3] * dvy);
+    const dir = _v1.set(vx, vy, vz).normalize();
+    R.group.quaternion.setFromUnitVectors(YAXIS, dir);
+    const t = (jd - J2000) * 24 * 60;
+    const flick = 0.82 + 0.18 * Math.sin(t * 6.3) + 0.1 * Math.sin(t * 17.7);
+    R.flame.scale.setScalar(0.55 * flick);
+    R.flame.material.opacity = 0.72 * flick;
+    R.forward.copy(dir);
   }
 
   #applySpin(rt, jd) {
