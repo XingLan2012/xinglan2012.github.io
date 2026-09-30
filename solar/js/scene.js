@@ -11,6 +11,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { starSprite, milkywayTexture } from './textures.js';
 
 const AMBIENT = 0x1b2334;
@@ -92,8 +93,80 @@ export function createScene(canvas) {
      注意：一旦走 EffectComposer，WebGLRenderer 的 antialias 就失效了
      （渲染目标是 FBO，不是默认帧缓冲），所以显式给渲染目标开 MSAA。
      细轨道线与行星边缘在真实比例尺下非常细，抗锯齿是画质的关键。 */
+  /* 太阳体积光（神光）
+     沿「当前像素 → 太阳屏幕位置」采样，只累加超过阈值的亮部，
+     于是太阳的强光会沿着视线方向拉出光轴；密度与强度都可调。
+     放在泛光之前，所以光轴本身也会被 bloom 柔化一层。 */
+  const GodRayShader = {
+    uniforms: {
+      tDiffuse: { value: null },
+      uSun: { value: new THREE.Vector2(0.5, 0.5) },
+      uStrength: { value: 0.62 },
+      uDensity: { value: 0.72 },
+      uDecay: { value: 0.965 },
+      uThreshold: { value: 0.62 },
+    },
+    vertexShader: /* glsl */`
+      varying vec2 vUv;
+      void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+    `,
+    fragmentShader: /* glsl */`
+      uniform sampler2D tDiffuse;
+      uniform vec2 uSun;
+      uniform float uStrength, uDensity, uDecay, uThreshold;
+      varying vec2 vUv;
+      void main() {
+        vec4 base = texture2D(tDiffuse, vUv);
+        vec2 delta = (uSun - vUv) * uDensity / 28.0;
+        vec2 uv = vUv;
+        vec3 acc = vec3(0.0);
+        float w = 1.0;
+        for (int i = 0; i < 28; i++) {
+          uv += delta;
+          vec3 s = texture2D(tDiffuse, clamp(uv, 0.0, 1.0)).rgb;
+          float l = dot(s, vec3(0.2126, 0.7152, 0.0722));
+          acc += s * smoothstep(uThreshold, uThreshold + 0.9, l) * w;
+          w *= uDecay;
+        }
+        gl_FragColor = vec4(base.rgb + acc * uStrength / 28.0 * 2.2, base.a);
+      }
+    `,
+  };
+
+  /* 调色与暗角
+     轻微冷调阴影 + 暗角 + 一点点对比，模仿电影感调色。
+     放在色调映射之前，作用在 HDR 线性值上。 */
+  const GradeShader = {
+    uniforms: {
+      tDiffuse: { value: null },
+      uVignette: { value: 0.40 },
+      uTint: { value: new THREE.Vector3(0.965, 0.99, 1.045) },
+    },
+    vertexShader: /* glsl */`
+      varying vec2 vUv;
+      void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+    `,
+    fragmentShader: /* glsl */`
+      uniform sampler2D tDiffuse;
+      uniform float uVignette;
+      uniform vec3 uTint;
+      varying vec2 vUv;
+      void main() {
+        vec4 base = texture2D(tDiffuse, vUv);
+        /* 只做乘性调色与暗角。
+           这一步在线性 HDR 上、色调映射之前，
+           任何「以 0.18 为轴」的对比度拉伸都会把暗部推成负数后截断成纯黑。 */
+        vec3 c = base.rgb * uTint;
+        float d = distance(vUv, vec2(0.5));
+        c *= 1.0 - uVignette * smoothstep(0.30, 0.80, d);
+        gl_FragColor = vec4(max(c, 0.0), base.a);
+      }
+    `,
+  };
+
   let composer = null;
   let bloomPass = null;
+  let godRayPass = null;
   const bloom = { strength: 0.34 };
   // 轨道线在真实比例尺下只有一根发丝宽，MSAA 是画质的关键。
   // 设备支持就上 8×，不支持再退回 4× / 关闭。
@@ -112,6 +185,9 @@ export function createScene(canvas) {
     composer.addPass(new RenderPass(scene, camera));
     bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), bloom.strength, 0.32, 1.0);
     composer.addPass(bloomPass);
+    godRayPass = new ShaderPass(GodRayShader);
+    composer.addPass(godRayPass);
+    composer.addPass(new ShaderPass(GradeShader));
     composer.addPass(new OutputPass());
     if (samples > 0) composer.renderTarget1.texture.name = 'solar.rt1';
   } catch (err) {
@@ -153,6 +229,7 @@ export function createScene(canvas) {
   return {
     renderer, scene, camera, controls, sunLight, ambient,
     resize, render, skyR, bloom, setPixelRatio,
+    godRay: godRayPass,
     get pixelRatio() { return pixelRatio; },
     maxPixelRatio: maxRatio,
     samples,

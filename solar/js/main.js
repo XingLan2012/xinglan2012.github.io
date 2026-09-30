@@ -151,6 +151,7 @@ function loop(now) {
   if (scaleAnim && hud.selected && !tween) refitCamera(hud.selected);
   controls.update();                        // 相机最终就位
   world.updateShading();                    // 用本帧相机矩阵更新光照相关 uniform
+  updateSunScreen();                        // 太阳的屏幕位置：体积光沿它拉伸
   updateOrbitVisibility();
   hud.update({ jd: state.jd, camera, canvas }, t);
   scene3.render();
@@ -271,6 +272,20 @@ function setFollow(on, body) {
     followPrev.copy(body.position);
     followId = followKey(body);
   }
+}
+
+/** 太阳的屏幕位置（0..1），供体积光沿视线方向采样 */
+function updateSunScreen() {
+  const g = scene3.godRay;
+  if (!g) return;
+  const p = world.bodies.get('sun');
+  if (!p) return;
+  tmp.copy(p.position).project(camera);
+  const u = g.uniforms.uSun.value;
+  u.set(tmp.x * 0.5 + 0.5, tmp.y * 0.5 + 0.5);
+  // 太阳在画面外时削弱体积光，避免出现从边缘硬拉进来的光轴
+  const edge = Math.max(Math.abs(tmp.x), Math.abs(tmp.y));
+  g.uniforms.uStrength.value = edge > 1.25 ? 0.22 : 0.62;
 }
 
 function easeInOut(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
