@@ -170,6 +170,65 @@ html, body {
 }
 .sr-empty { padding: 8px 9px; font-family: var(--mono); font-size: 10px; color: var(--text-faint); }
 
+/* ── 目录里的「放置行星」表单 ─────────────────────────── */
+.forge { padding: 4px 14px 14px; display: flex; flex-direction: column; gap: 9px; }
+.forge label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+}
+.forge label b { color: var(--gold-hi); font-weight: 400; }
+.forge select, .forge input[type="range"] {
+  display: block;
+  width: 100%;
+  margin-top: 3px;
+}
+.forge select {
+  height: 22px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 0 4px;
+}
+.forge input[type="range"] {
+  appearance: none;
+  height: 14px;
+  background: transparent;
+  cursor: pointer;
+}
+.forge input[type="range"]::-webkit-slider-runnable-track { height: 1px; background: var(--line-hi); }
+.forge input[type="range"]::-webkit-slider-thumb {
+  appearance: none; width: 3px; height: 11px; margin-top: -5px; background: var(--gold-hi); border: 0;
+}
+.forge input[type="range"]::-moz-range-track { height: 1px; background: var(--line-hi); }
+.forge input[type="range"]::-moz-range-thumb { width: 3px; height: 11px; border: 0; background: var(--gold-hi); }
+.forge-out {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  color: var(--gold-lo);
+  letter-spacing: 0.04em;
+  border-top: 1px solid var(--line);
+  padding-top: 7px;
+}
+.forge-btns { display: flex; gap: 6px; }
+.forge-btns button {
+  flex: 1;
+  height: 24px;
+  border: 1px solid var(--line-hi);
+  background: transparent;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+.forge-btns button:hover { border-color: var(--gold-lo); color: var(--gold-hi); }
+#fgAdd { background: var(--gold); color: #0a0a06; border-color: var(--gold-hi); }
+
 /* ── 左上：搜索 + 目录入口 ───────────────────────────── */
 .mast-nav {
   display: flex;

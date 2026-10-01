@@ -361,6 +361,46 @@ export class World {
     };
   }
 
+  /**
+   * 放置一颗自定义行星
+   * -------------------
+   * 直接把条目推进 PLANETS 数据表，于是它和内置行星走完全相同的管线：
+   * 位置解算、轨道线、标签、目录、档案、取景全部自动生效。
+   * 只存在于内存中，刷新页面即消失。
+   */
+  addPlanet(data) {
+    PLANETS.push(data);
+    this.#buildPlanet(data);
+    const rt = this.bodies.get(data.id);
+    if (rt) rt.isCustom = true;
+    this.refreshOrbits();
+    this.applyScale();
+    this.update(this.currentJd, 0);
+    return rt;
+  }
+
+  /** 移除所有自定义行星 */
+  clearCustom() {
+    const ids = this.list.filter(b => b.isCustom).map(b => b.data.id);
+    for (const id of ids) {
+      const rt = this.bodies.get(id);
+      if (!rt) continue;
+      if (rt.orbitLine) {
+        rt.orbitLine.geometry.dispose();
+        rt.orbitLine.material.dispose();
+        rt.orbitLine.parent && rt.orbitLine.parent.remove(rt.orbitLine);
+      }
+      if (rt.group) rt.group.parent && rt.group.parent.remove(rt.group);
+      this.bodies.delete(id);
+      const i = this.list.indexOf(rt);
+      if (i >= 0) this.list.splice(i, 1);
+      const j = PLANETS.findIndex(p => p.id === id);
+      if (j >= 0) PLANETS.splice(j, 1);
+    }
+    this.refreshOrbits();
+    return ids;          // 返回 id 数组：调用方要靠它清理标签
+  }
+
   #register(runtime) {
     this.bodies.set(runtime.data.id, runtime);
     this.list.push(runtime);

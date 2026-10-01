@@ -562,6 +562,58 @@ const actions = {
     flyTo(wp.clone().addScaledVector(n, dist), wp.clone(), 1.2);
     setFollow(false, null);
   },
+  /**
+   * 放置一颗自定义行星
+   * 直接把条目推进数据表，因此它和内置行星共享全部管线；
+   * 不回写任何存储，刷新页面即消失。
+   */
+  placePlanet(spec) {
+    const n = (world.list.filter(b => b.isCustom).length + 1);
+    const TYPE = {
+      rocky: { color: '#5aa9ff', glow: '#7cc0ff', density: 5500 },
+      gas: { color: '#e0b98a', glow: '#f0cfa0', density: 1300 },
+      ice: { color: '#8fd8e8', glow: '#a8e4f0', density: 1700 },
+      dwarf: { color: '#9a948c', glow: '#b0a99f', density: 2000 },
+    };
+    const T = TYPE[spec.type] || TYPE.rocky;
+    const radiusKm = Math.max(1, spec.radiusKm);
+    const mass = (4 / 3) * Math.PI * Math.pow(radiusKm * 1000, 3) * T.density;
+    const id = `custom-${Date.now().toString(36)}-${n}`;
+    const a = spec.aAu;
+    const e = Math.min(0.93, Math.max(0, spec.e));
+    // 初始真近点角放在近日点，于是「初始速度」就是活力公式算出的近日点速度
+    const data = {
+      id, name: `自定义行星 ${n}`, en: `CUSTOM ${n}`, type: 'planet',
+      radiusKm, massKg: mass,
+      gravity: 6.674e-11 * mass / Math.pow(radiusKm * 1000, 2),
+      rotationHours: 24, pole: [0, 90],
+      tempC: 0, tempLabel: '自定义',
+      ui: T.color, glow: T.glow,
+      spin0: 0,
+      elements: {
+        a, e, i: spec.inc, L: 0, peri: 0, node: 0,
+        da: 0, de: 0, di: 0, dL: 360 / (Math.pow(a, 1.5) * 365.25) * 36525, dperi: 0, dnode: 0,
+      },
+      texture: spec.texture || null,
+      desc: `通过「放置行星」生成的${({ rocky: '岩石行星', gas: '气态巨行星', ice: '冰巨星', dwarf: '矮行星' })[spec.type] || '天体'}，`
+        + `半径 ${radiusKm.toLocaleString('zh-CN')} km，轨道半长轴 ${a.toFixed(3)} AU、`
+        + `偏心率 ${e.toFixed(3)}、倾角 ${spec.inc.toFixed(1)}°。只存在于当前页面，刷新后消失。`,
+      facts: [['来源', '放置行星'], ['半径', `${radiusKm.toLocaleString('zh-CN')} km`]],
+      isCustom: true,
+    };
+    const rt = world.addPlanet(data);
+    hud.addBody(rt);
+    setTimeout(() => { actions.select(id, true); }, 30);
+    return id;
+  },
+  clearCustom() {
+    const ids = world.clearCustom();
+    if (ids.length) {
+      hud.removeBodies(ids);
+      hud.setSelected(null);
+    }
+    return ids.length;
+  },
   clearLandmark() {
     world.hideLandmark();
     if (hud) hud.setLandmark(null, -1);

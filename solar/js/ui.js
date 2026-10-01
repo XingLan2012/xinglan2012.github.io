@@ -229,7 +229,40 @@ export class Hud {
           </div>
         </div>`;
     }
+    html += `<div class="cat-sep"></div>
+      <div class="sec" style="padding:10px 14px 4px">放置行星 <span class="u" style="color:var(--text-faint)">· 刷新即消失</span></div>
+      <div class="forge">
+        <label>类型
+          <select id="fgType">
+            <option value="rocky">岩石行星</option>
+            <option value="gas">气态巨行星</option>
+            <option value="ice">冰巨星</option>
+            <option value="dwarf">矮行星 / 小行星</option>
+          </select>
+        </label>
+        <label>半径 <b id="fgRadiusOut">6371</b> km
+          <input id="fgRadius" type="range" min="200" max="90000" step="100" value="6371">
+        </label>
+        <label>贴图
+          <select id="fgTex"></select>
+        </label>
+        <label>半长轴 <b id="fgAOut">2.00</b> AU
+          <input id="fgA" type="range" min="0.2" max="40" step="0.01" value="2">
+        </label>
+        <label>偏心率 <b id="fgEOut">0.05</b>
+          <input id="fgE" type="range" min="0" max="0.9" step="0.005" value="0.05">
+        </label>
+        <label>倾角 <b id="fgIOut">5</b>°
+          <input id="fgI" type="range" min="0" max="90" step="0.5" value="5">
+        </label>
+        <div class="forge-out" id="fgOut">—</div>
+        <div class="forge-btns">
+          <button id="fgAdd">放置</button>
+          <button id="fgClear">清空自定义</button>
+        </div>
+      </div>`;
     body.innerHTML = html;
+    this.#bindForge();
 
     const moonTotal = this.world.list.filter(x => x.isMoon).length;
     if (this.el.catalogMeta) {
@@ -263,6 +296,85 @@ export class Hud {
     }
     if (this.el.catalogToggle) this.el.catalogToggle.addEventListener('click', () => this.toggleCatalog());
     if (this.el.catalogClose) this.el.catalogClose.addEventListener('click', () => this.toggleCatalog(false));
+  }
+
+  /** 放置行星表单：类型给默认值，轨道参数实时换算出速度并显示 */
+  #bindForge() {
+    const q = id => document.getElementById(id);
+    const texSel = q('fgTex');
+    if (!texSel) return;
+    const TEX = [['earth', '地球'], ['mars', '火星'], ['venus', '金星'], ['mercury', '水星'],
+      ['jupiter', '木星'], ['saturn', '土星'], ['uranus', '天王星'], ['neptune', '海王星'],
+      ['moon', '月球'], ['sun', '太阳'], ['', '按类型生成']];
+    texSel.innerHTML = TEX.map(([v, n]) => `<option value="${v}">${n}</option>`).join('');
+
+    const DEFAULTS = {
+      rocky: { radius: 6371, tex: 'earth', color: '#5aa9ff' },
+      gas: { radius: 69911, tex: 'jupiter', color: '#e0b98a' },
+      ice: { radius: 25362, tex: 'uranus', color: '#8fd8e8' },
+      dwarf: { radius: 1200, tex: '', color: '#9a948c' },
+    };
+    const sync = () => {
+      q('fgRadiusOut').textContent = Number(q('fgRadius').value).toLocaleString('zh-CN');
+      q('fgAOut').textContent = Number(q('fgA').value).toFixed(2);
+      q('fgEOut').textContent = Number(q('fgE').value).toFixed(3);
+      q('fgIOut').textContent = Number(q('fgI').value).toFixed(1);
+      const a = Number(q('fgA').value), e = Number(q('fgE').value), inc = Number(q('fgI').value);
+      const r = a * (1 - e);
+      // 活力公式：给的是近日点处的速度
+      const v = Math.sqrt(1.32712440018e20 * (2 / (r * 1.495978707e11) - 1 / (a * 1.495978707e11))) / 1000;
+      const T = Math.pow(a, 1.5);
+      q('fgOut').textContent = `近日点 ${r.toFixed(3)} AU · 初始速度 ${v.toFixed(2)} km/s · 周期 ${T.toFixed(2)} 年`;
+    };
+    for (const id of ['fgRadius', 'fgA', 'fgE', 'fgI']) q(id).addEventListener('input', sync);
+    q('fgType').addEventListener('change', () => {
+      const d = DEFAULTS[q('fgType').value] || DEFAULTS.rocky;
+      q('fgRadius').value = d.radius;
+      texSel.value = d.tex;
+      sync();
+    });
+    sync();
+
+    q('fgAdd').addEventListener('click', () => {
+      this.actions.placePlanet({
+        type: q('fgType').value,
+        radiusKm: Number(q('fgRadius').value),
+        texture: texSel.value || null,
+        aAu: Number(q('fgA').value),
+        e: Number(q('fgE').value),
+        inc: Number(q('fgI').value),
+      });
+    });
+    q('fgClear').addEventListener('click', () => {
+      const n = this.actions.clearCustom();
+      this.toggleCatalog(false);
+      if (n) setTimeout(() => this.toggleCatalog(true), 60);
+    });
+  }
+
+  /** 动态新增的天体要补标签，否则它没有名字 */
+  addBody(rt) {
+    if (!rt || this.labels.has(rt.data.id)) return;
+    const div = document.createElement('div');
+    div.className = 'label' + (rt.isMoon ? ' moon' : '');
+    div.style.display = 'none';
+    div.innerHTML = `<i>${rt.data.en}</i><b>${rt.data.name}</b>`;
+    div.addEventListener('click', e => { e.stopPropagation(); this.actions.select(rt.data.id, true); });
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.style.display = 'none';
+    this.el.leaders.appendChild(line);
+    this.el.labels.appendChild(div);
+    this.labels.set(rt.data.id, { div, line, shown: false, leader: null, lx: 0, ly: 0, sx: 0, sy: 0 });
+  }
+
+  removeBodies(ids) {
+    for (const id of ids) {
+      const rec = this.labels.get(id);
+      if (!rec) continue;
+      rec.div.remove();
+      rec.line.remove();
+      this.labels.delete(id);
+    }
   }
 
   toggleCatalog(force) {
