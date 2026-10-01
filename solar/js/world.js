@@ -570,7 +570,7 @@ export class World {
   #makeOrbitLine(runtime) {
     const isMoon = !!runtime.isMoon;
     const n = isMoon ? 128 : (runtime.data.type === 'planet' ? 512 : 128);
-    const arr = new Float32Array(n * 3);
+    const arr = new Float32Array((n + 1) * 3);   // 多一个顶点用于闭合
     if (isMoon) {
       // 卫星轨道线挂到母星组下：母星每帧移动会自动带动它，
       // 几何只描述「轨道面内的椭圆」（单位 km），节点与近点进动用四元数表达。
@@ -583,6 +583,11 @@ export class World {
         arr[i * 3 + 1] = r * Math.sin(nu);
       }
     }
+    /* 闭合环：多留一个顶点，让最后一点与首点重合。
+       用 THREE.Line 时如果只给 n 个点，第 n−1 点回到第 0 点的那一段不会画出来——
+       地球轨道 512 点，缺口占 0.2%，在 30 单位半径的轨道上是约 0.37 单位，
+       看起来就像行星没接上自己的轨道。 */
+    for (let k = 0; k < 3; k++) arr[n * 3 + k] = arr[k];
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(arr, 3));
     const mat = new THREE.LineBasicMaterial({
@@ -644,7 +649,7 @@ export class World {
     const cO = Math.cos(node), sO = Math.sin(node);
     const arr = rt.orbitLine.geometry.attributes.position.array;
     const n = rt.orbitSegments;
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i <= n; i++) {
       const nu = (i / n) * Math.PI * 2;
       const r = a * (1 - e * e) / (1 + e * Math.cos(nu));
       const xp = r * Math.cos(nu), yp = r * Math.sin(nu);

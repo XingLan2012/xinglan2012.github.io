@@ -39,10 +39,11 @@ const SRGB_KEYS = new Set(Object.keys(FILES));
  * 因此除地球昼面（最常被拉近看的那张）外，一律降到 1024×512，显存直接降到四分之一。
  */
 const MAX_W = {
-  earth: 2048, mercury: 2048, sun: 2048, venus: 2048, venusAtmosphere: 2048,
-  earthNight: 2048, earthClouds: 2048,
+  /* 行星表面与月球一律按原生 2k 载入；
+     大气、云层、夜灯这三张本身是柔和层，1k 足够，省下的显存意义更大。 */
+  venusAtmosphere: 1024, earthClouds: 1024, earthNight: 1024,
 };
-const DEFAULT_MAX_W = 1024;   // 尚未恢复 2k 源图的几张，按 1k 载入
+const DEFAULT_MAX_W = 2048;   // 其余（行星表面与月球）按原生 2k 载入
 
 export const textures = {};
 let maxAniso = 4;
