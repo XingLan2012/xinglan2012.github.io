@@ -262,40 +262,78 @@ export class World {
     const group = new THREE.Object3D();
     group.name = 'rocket';
     const L = 0.12;
-    const body = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.16, 0.2, 0.62, 20, 1, false),
-      new THREE.MeshStandardMaterial({ color: 0xe8e6df, roughness: 0.42, metalness: 0.55 }),
-    );
-    body.position.y = 0.05;
-    group.add(body);
-    const nose = new THREE.Mesh(
-      new THREE.ConeGeometry(0.16, 0.26, 20),
-      new THREE.MeshStandardMaterial({ color: 0xd8503c, roughness: 0.5, metalness: 0.3 }),
-    );
-    nose.position.y = 0.49;
-    group.add(nose);
-    const ring = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.205, 0.205, 0.05, 20),
-      new THREE.MeshStandardMaterial({ color: 0x9aa0a8, roughness: 0.35, metalness: 0.8 }),
-    );
-    ring.position.y = -0.24;
-    group.add(ring);
-    for (let i = 0; i < 4; i++) {
-      const fin = new THREE.Mesh(
-        new THREE.BoxGeometry(0.02, 0.2, 0.24),
-        new THREE.MeshStandardMaterial({ color: 0xb8bcc2, roughness: 0.5, metalness: 0.6 }),
-      );
-      const a = (i / 4) * Math.PI * 2;
-      fin.position.set(Math.cos(a) * 0.19, -0.28, Math.sin(a) * 0.19);
-      fin.rotation.y = -a;
-      group.add(fin);
+    /* 两级运载器构型（局部坐标，整体长约 0.85）
+       一级 → 级间段 → 二级 → 整流罩，尾部四台喷管 + 四片梯形尾翼。 */
+    const M = {
+      paint: new THREE.MeshStandardMaterial({ color: 0xf2f1ea, roughness: 0.34, metalness: 0.12 }),
+      metal: new THREE.MeshStandardMaterial({ color: 0x9aa0a8, roughness: 0.28, metalness: 0.88 }),
+      dark: new THREE.MeshStandardMaterial({ color: 0x2c2e33, roughness: 0.48, metalness: 0.55 }),
+      red: new THREE.MeshStandardMaterial({ color: 0xd8503c, roughness: 0.42, metalness: 0.2 }),
+      glow: new THREE.MeshStandardMaterial({ color: 0x1a2a33, emissive: 0x7fd8ff, emissiveIntensity: 1.4, roughness: 0.2 }),
+    };
+    const add = (geo, mat, y, r) => {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.y = y;
+      if (r) m.rotation.y = r;
+      group.add(m);
+      return m;
+    };
+    // 一级（略带上收的锥台）
+    add(new THREE.CylinderGeometry(0.198, 0.216, 0.34, 28, 1, true), M.paint, -0.11);
+    add(new THREE.CylinderGeometry(0.216, 0.216, 0.012, 28), M.dark, -0.278);   // 底部裙边
+    // 级间段
+    add(new THREE.CylinderGeometry(0.216, 0.216, 0.062, 28), M.dark, 0.09);
+    // 二级
+    add(new THREE.CylinderGeometry(0.172, 0.198, 0.20, 28, 1, true), M.paint, 0.222);
+    // 整流罩：用旋转体做出卵形母线，比直圆锥真实
+    {
+      const pts = [];
+      for (let i = 0; i <= 14; i++) {
+        const t = i / 14;
+        pts.push(new THREE.Vector2(0.174 * Math.cos(t * Math.PI / 2) ** 0.62, 0.32 + t * 0.235));
+      }
+      add(new THREE.LatheGeometry(pts, 28), M.paint, 0);
+      add(new THREE.CylinderGeometry(0.176, 0.176, 0.016, 28), M.red, 0.328);   // 罩体根部红环
     }
+    // 涂装：一级上部红环 + 一处白色标识带
+    add(new THREE.CylinderGeometry(0.2005, 0.2005, 0.05, 28, 1, true), M.red, 0.028);
+    add(new THREE.CylinderGeometry(0.2205, 0.2205, 0.02, 28, 1, true), M.dark, -0.20);
+    // 尾翼：梯形薄板，比长方体更像真实气动面
+    {
+      const sh = new THREE.Shape();
+      sh.moveTo(0, 0); sh.lineTo(0.20, -0.045); sh.lineTo(0.20, -0.175); sh.lineTo(0, -0.22); sh.closePath();
+      const geo = new THREE.ExtrudeGeometry(sh, { depth: 0.014, bevelEnabled: false });
+      geo.translate(0, 0, -0.007);
+      for (let i = 0; i < 4; i++) {
+        const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
+        const fin = new THREE.Mesh(geo, M.metal);
+        fin.position.set(Math.cos(a) * 0.205, -0.135, Math.sin(a) * 0.205);
+        fin.rotation.y = -a;
+        group.add(fin);
+      }
+    }
+    // 四台喷管（钟形）
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
+      const noz = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.062, 0.085, 16, 1, true), M.dark);
+      noz.position.set(Math.cos(a) * 0.088, -0.325, Math.sin(a) * 0.088);
+      group.add(noz);
+    }
+    // 外侧管路：一根细长导管贴着箭体
+    {
+      const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.52, 8), M.metal);
+      pipe.position.set(0.208, -0.03, 0);
+      group.add(pipe);
+    }
+    // 舷窗
+    add(new THREE.SphereGeometry(0.026, 14, 10), M.glow, 0.30, 0).position.x = 0.175;
+    // 尾焰
     const flame = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: radialSprite('rgba(255,240,200,0.95)', 'rgba(255,150,60,0.35)', 128),
+      map: radialSprite('rgba(255,245,215,0.95)', 'rgba(255,150,60,0.35)', 128),
       transparent: true, depthWrite: false, toneMapped: false,
       blending: THREE.AdditiveBlending, opacity: 0.9,
     }));
-    flame.position.y = -0.42;
+    flame.position.y = -0.46;
     group.add(flame);
     this.rocket = {
       group, flame, L,
