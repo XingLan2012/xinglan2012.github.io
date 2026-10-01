@@ -568,8 +568,13 @@ export function starSprite(size = 64) {
   const cv = makeCanvas(size, size);
   const ctx = cv.getContext('2d');
   const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-  g.addColorStop(0, 'rgba(255,255,255,1)');
-  g.addColorStop(0.35, 'rgba(255,255,255,0.55)');
+  /* 能量铺得更开：星点普遍只有 1~2 像素，如果中心一个硬核，
+     相机一转它就在「命中像素 / 错失像素」之间跳，整片星场随之闪烁。
+     把能量摊到更大的半径上，亚像素移动就变成亮度的连续变化。 */
+  g.addColorStop(0, 'rgba(255,255,255,0.95)');
+  g.addColorStop(0.18, 'rgba(255,255,255,0.62)');
+  g.addColorStop(0.45, 'rgba(255,255,255,0.22)');
+  g.addColorStop(0.75, 'rgba(255,255,255,0.05)');
   g.addColorStop(1, 'rgba(255,255,255,0)');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, size, size);

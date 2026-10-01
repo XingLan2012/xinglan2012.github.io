@@ -24,7 +24,8 @@ const state = {
   direction: 1,
   rate: 1 / 86400,     // 天 / 秒 —— 默认就是实时：1 秒 = 1 秒
   follow: true,
-  rocketView: false,   // 火箭跟拍视角
+  rocketView: false,   // 火箭自由飞行视角
+  flySpeedExp: -2.2,   // 10^x 场景单位/秒，滚轮调节
   adaptive: true,      // 帧率过低时自动降低渲染分辨率
   flags: {
     labels: true, orbits: true, moonOrbits: true, realSize: true, realDist: true,
@@ -226,6 +227,46 @@ function adaptQuality(fps, t) {
   }
 }
 
+/* ── 火箭自由飞行 ─────────────────────────────────────
+   WASD 前后左右 · 空格上升 / Shift 下降 · 拖拽鼠标自由观察 · 滚轮调飞行速度 */
+const keys = new Set();
+const flyCam = { yaw: 0, pitch: -0.22, dist: 1, dragging: false };
+let flySpeedShown = null;
+
+function flyDir() {
+  // 由环绕角得到「视线方向」
+  return new THREE.Vector3(
+    Math.sin(flyCam.yaw) * Math.cos(flyCam.pitch),
+    Math.sin(flyCam.pitch),
+    Math.cos(flyCam.yaw) * Math.cos(flyCam.pitch),
+  ).normalize();
+}
+
+function updateFly(dt) {
+  const rs = world.rocketState();
+  if (!rs) return;
+  const dir = flyDir();
+  const speed = Math.pow(10, state.flySpeedExp);
+  const move = { f: 0, s: 0, u: 0 };
+  if (keys.has('KeyW')) move.f += 1;
+  if (keys.has('KeyS')) move.f -= 1;
+  if (keys.has('KeyA')) move.s -= 1;
+  if (keys.has('KeyD')) move.s += 1;
+  if (keys.has('Space')) move.u += 1;
+  if (keys.has('ShiftLeft') || keys.has('ShiftRight')) move.u -= 1;
+  world.flyRocket(dt, move, dir, YAXIS, speed);
+  const st = world.rocketState();
+  // 相机吊在火箭后方：距离由滚轮控制，方向由鼠标拖拽控制
+  camera.position.copy(st.pos).addScaledVector(dir, -flyCam.dist).addScaledVector(YAXIS, flyCam.dist * 0.16);
+  tmp.copy(st.pos);
+  camera.lookAt(tmp);
+  controls.target.copy(tmp);
+  if (flySpeedShown !== state.flySpeedExp) {
+    flySpeedShown = state.flySpeedExp;
+    hud.setFlySpeed(state.flySpeedExp, st.speed);
+  }
+}
+
 let followPrev = new THREE.Vector3();
 let followId = null;
 /** 视角预设之间的过渡（内景 ↔ 全览），与天体取景互斥 */
@@ -233,20 +274,7 @@ let viewTween = null;
 function updateCamera(dt) {
   /* 火箭视角：相机吊在火箭后上方，视线顺着飞行方向。
      由它接管相机，因此这一帧不再跑常规的跟随与取景逻辑。 */
-  if (state.rocketView) {
-    const rs = world.rocketState();
-    if (rs) {
-      const back = rs.length * 3.2;
-      const lift = rs.length * 1.1;
-      camera.position.copy(rs.pos)
-        .addScaledVector(rs.forward, -back)
-        .addScaledVector(YAXIS, lift);
-      tmp.copy(rs.pos).addScaledVector(rs.forward, rs.length * 4);
-      camera.lookAt(tmp);
-      controls.target.copy(tmp);
-    }
-    return;
-  }
+  if (state.rocketView) { updateFly(dt); return; }
   const sel = hud.selected;
   if (viewTween) {
     viewTween.t = Math.min(1, viewTween.t + dt / viewTween.dur);
@@ -450,6 +478,9 @@ function bindGlobalEvents() {
       case 'Equal': case 'NumpadAdd': actions.rate(state.rate * 1.6); break;
       case 'Minus': case 'NumpadSubtract': actions.rate(state.rate / 1.6); break;
       case 'KeyN': actions.now(); break;
+      case 'KeyW': case 'KeyA': case 'KeyS': case 'KeyD': case 'Space': case 'ShiftLeft': case 'ShiftRight':
+        if (state.rocketView) { keys.add(e.code); e.preventDefault(); }
+        break;
       case 'Slash': if (hud._focusSearch) { e.preventDefault(); hud._focusSearch(); } break;
       case 'KeyK': if (e.ctrlKey || e.metaKey) { e.preventDefault(); if (hud._focusSearch) hud._focusSearch(); } break;
       case 'KeyC': hud.toggleCatalog(); break;
@@ -464,6 +495,31 @@ function bindGlobalEvents() {
       default: break;
     }
   });
+  window.addEventListener('keyup', e => keys.delete(e.code));
+  window.addEventListener('blur', () => keys.clear());
+
+  /* 火箭视角下的鼠标与滚轮：拖拽自由观察、滚轮调飞行速度 */
+  canvas.addEventListener('pointerdown', e => {
+    if (!state.rocketView) return;
+    flyCam.dragging = true;
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointerup', e => {
+    flyCam.dragging = false;
+    if (state.rocketView) { try { canvas.releasePointerCapture(e.pointerId); } catch (err) { /* 忽略 */ } }
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (!state.rocketView || !flyCam.dragging) return;
+    flyCam.yaw -= e.movementX * 0.0042;
+    flyCam.pitch = Math.max(-1.45, Math.min(1.45, flyCam.pitch - e.movementY * 0.0042));
+  }, { passive: true });
+  canvas.addEventListener('wheel', e => {
+    if (!state.rocketView) return;
+    e.preventDefault();
+    e.stopPropagation();
+    state.flySpeedExp = Math.max(-6, Math.min(3.4, state.flySpeedExp - e.deltaY * 0.0016));
+    flySpeedShown = null;
+  }, { passive: false, capture: true });
 
   document.addEventListener('visibilitychange', () => { lastTime = 0; });
 }
@@ -522,10 +578,15 @@ const actions = {
     state.rocketView = (name === 'rocket');
     controls.enabled = !state.rocketView;
     if (state.rocketView) {
+      world.resetRocket(state.jd);
       const rs = world.rocketState();
-      if (rs) camera.position.copy(rs.pos);
-      controls.target.set(0, 0, 0);
+      flyCam.yaw = 0;
+      flyCam.pitch = -0.22;
+      flyCam.dist = (rs ? rs.length : 1) * 7;
+      if (rs) camera.position.copy(rs.pos).addScaledVector(rs.forward, -flyCam.dist);
+      keys.clear();
       hud.setView('rocket');
+      hud.setFlySpeed(state.flySpeedExp);
       return;
     }
     if (name === 'full') {

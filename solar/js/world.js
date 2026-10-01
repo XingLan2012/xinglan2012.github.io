@@ -303,23 +303,61 @@ export class World {
       forward: new THREE.Vector3(0, 0, 1),
       scale: earth.radiusUnits * L,
     };
-    earth.axisNode.add(group);
+    this.scene.add(group);          // 挂在场景上，才能飞出地球轨道
+    this.rocket = Object.assign(this.rocket, {
+      free: false,
+      vel: new THREE.Vector3(),
+      quat: new THREE.Quaternion(),
+    });
     this.applyScale();
+  }
+
+  /** 把火箭摆回 420 km 低轨（进入 / 退出自由飞行时调用） */
+  resetRocket(jd) {
+    const R = this.rocket;
+    if (!R) return;
+    R.free = false;
+    R.vel.set(0, 0, 0);
+    this.#stepRocket(jd == null ? this.currentJd : jd);
+  }
+
+  /**
+   * 自由飞行积分
+   * dt 秒 · move 为相机坐标系下的输入 (前后, 左右, 上下)，均已归一化到 [-1,1]
+   * dir 与 up 为相机基向量，speed 为当前速度（场景单位 / 秒）
+   */
+  flyRocket(dt, move, dir, up, speed) {
+    const R = this.rocket;
+    if (!R) return;
+    R.free = true;
+    const right = _v1.copy(dir).cross(up).normalize();
+    const wish = _v2.set(0, 0, 0)
+      .addScaledVector(dir, move.f)
+      .addScaledVector(right, move.s)
+      .addScaledVector(YAXIS, move.u);
+    if (wish.lengthSq() > 1e-9) wish.normalize();
+    R.vel.lerp(wish.multiplyScalar(speed), Math.min(1, dt * 2.6));
+    R.group.position.addScaledVector(R.vel, dt);
+    if (R.vel.lengthSq() > 1e-12) {
+      const q = _qc.setFromUnitVectors(YAXIS, _v3.copy(R.vel).normalize());
+      R.group.quaternion.slerp(q, Math.min(1, dt * 3.2));
+    }
+    R.forward.set(0, 1, 0).applyQuaternion(R.group.quaternion);
+    const t = (this.currentJd - J2000) * 1440;
+    const flick = 0.82 + 0.18 * Math.sin(t * 6.3) + 0.1 * Math.sin(t * 17.7);
+    R.flame.scale.setScalar(R.vel.lengthSq() > 1e-10 ? 0.62 * flick : 0.3 * flick);
   }
 
   /** 火箭的世界位置与朝向（供跟拍相机使用） */
   rocketState() {
-    if (!this.rocket) return null;
-    const g = this.rocket.group;
-    g.updateWorldMatrix(true, false);
-    const pos = new THREE.Vector3();
-    g.getWorldPosition(pos);
-    const q = new THREE.Quaternion();
-    g.getWorldQuaternion(q);
+    const R = this.rocket;
+    if (!R) return null;
     return {
-      pos,
-      forward: this.rocket.forward.clone().applyQuaternion(q).normalize(),
-      length: this.rocket.scale,
+      pos: R.group.position.clone(),
+      forward: R.forward.clone().normalize(),
+      length: R.scale,
+      free: R.free,
+      speed: R.vel.length(),
     };
   }
 
@@ -1085,7 +1123,7 @@ export class World {
   /** 火箭：420 km 低轨圆轨道，机头始终指向速度方向 */
   #stepRocket(jd) {
     const R = this.rocket;
-    if (!R) return;
+    if (!R || R.free) return;      // 自由飞行时由 flyRocket 接管
     const earth = this.bodies.get('earth');
     const period = 2 * Math.PI * Math.sqrt(Math.pow(R.aKm * 1000, 3) / 3.986004418e14) / 86400;
     const rUnits = moonOrbitUnits(R.aKm, earth.radiusKm, earth.radiusUnits);
@@ -1097,14 +1135,15 @@ export class World {
     const x = m[0] * xp + m[1] * yp;
     const y = m[4] * xp + m[5] * yp;
     const z = -(m[2] * xp + m[3] * yp);
-    R.group.position.set(x, y, z);
+    _v2.set(x, y, z).applyQuaternion(earth.axisNode.quaternion).add(earth.position);
+    R.group.position.copy(_v2);
     R.scale = earth.radiusUnits * R.L;
     R.group.scale.setScalar(R.scale);
     const dvx = -Math.sin(nu), dvy = Math.cos(nu);
     const vx = m[0] * dvx + m[1] * dvy;
     const vy = m[4] * dvx + m[5] * dvy;
     const vz = -(m[2] * dvx + m[3] * dvy);
-    const dir = _v1.set(vx, vy, vz).normalize();
+    const dir = _v1.set(vx, vy, vz).applyQuaternion(earth.axisNode.quaternion).normalize();
     R.group.quaternion.setFromUnitVectors(YAXIS, dir);
     const t = (jd - J2000) * 24 * 60;
     const flick = 0.82 + 0.18 * Math.sin(t * 6.3) + 0.1 * Math.sin(t * 17.7);

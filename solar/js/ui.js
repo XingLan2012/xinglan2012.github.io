@@ -1323,6 +1323,15 @@ export class Hud {
     set('tmEarth', `${pct}<span class="u">% ${pct > 60 ? '（活跃）' : pct > 15 ? '（微弱）' : '（近乎静止）'}</span>`);
   }
 
+  /** 火箭视角的速度读数：滚轮每动一下都会刷新 */
+  setFlySpeed(exp, cur) {
+    if (!this.el.hint) return;
+    const v = Math.pow(10, exp);
+    const txt = `${v >= 1000 ? v.toExponential(1) : v.toFixed(v < 1 ? 4 : 2)} 单位/秒`;
+    this.el.hint.textContent = `WASD 飞行 · 空格升 / Shift 降 · 拖拽自由观察 · 滚轮调速（当前 ${txt}）`;
+    this.el.hint.classList.remove('hide');
+  }
+
   setFps(v) { if (this.el.fps) this.el.fps.textContent = `${v} FPS`; }
 }
 

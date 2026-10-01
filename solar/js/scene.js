@@ -85,9 +85,11 @@ export function createScene(canvas) {
   }
 
   /* 程序化恒星星点：远、亮、带色 */
-  const stars = makeStarLayer(skyR * 0.92, 1400, 1.5, 0.5);
+  /* 星点直径不小于约 2.6px：再小就落到亚像素区间，
+     相机一动就会整片闪烁（实测旋转时上部星空区有 5.5% 像素帧间跳变 >25）。 */
+  const stars = makeStarLayer(skyR * 0.92, 1400, 2.8, 0.5);
   scene.add(stars);
-  scene.add(makeStarLayer(skyR * 0.8, 5200, 1.05, 0.34));
+  scene.add(makeStarLayer(skyR * 0.8, 5200, 2.2, 0.34));
 
   /* 后期
      注意：一旦走 EffectComposer，WebGLRenderer 的 antialias 就失效了
@@ -101,10 +103,10 @@ export function createScene(canvas) {
     uniforms: {
       tDiffuse: { value: null },
       uSun: { value: new THREE.Vector2(0.5, 0.5) },
-      uStrength: { value: 0.62 },
-      uDensity: { value: 0.72 },
-      uDecay: { value: 0.965 },
-      uThreshold: { value: 0.62 },
+      uStrength: { value: 0.50 },
+      uDensity: { value: 0.62 },
+      uDecay: { value: 0.955 },
+      uThreshold: { value: 0.48 },
     },
     vertexShader: /* glsl */`
       varying vec2 vUv;
@@ -125,7 +127,9 @@ export function createScene(canvas) {
           uv += delta;
           vec3 s = texture2D(tDiffuse, clamp(uv, 0.0, 1.0)).rgb;
           float l = dot(s, vec3(0.2126, 0.7152, 0.0722));
-          acc += s * smoothstep(uThreshold, uThreshold + 0.9, l) * w;
+          /* 过渡带拉到 1.7：原来 0.9 太窄，远处亮点的亮度只要在阈值附近抖动，
+             光轴就会整段忽明忽暗。 */
+          acc += s * smoothstep(uThreshold, uThreshold + 1.7, l) * w;
           w *= uDecay;
         }
         gl_FragColor = vec4(base.rgb + acc * uStrength / 28.0 * 2.2, base.a);
@@ -167,7 +171,7 @@ export function createScene(canvas) {
   let composer = null;
   let bloomPass = null;
   let godRayPass = null;
-  const bloom = { strength: 0.34 };
+  const bloom = { strength: 0.30, threshold: 1.35 };
   // 轨道线在真实比例尺下只有一根发丝宽，MSAA 是画质的关键。
   // 设备支持就上 8×，不支持再退回 4× / 关闭。
   const maxS = renderer.capabilities.maxSamples || 0;
@@ -183,7 +187,7 @@ export function createScene(canvas) {
     rt.texture.name = 'solar.rt1';
     composer = new EffectComposer(renderer, rt);
     composer.addPass(new RenderPass(scene, camera));
-    bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), bloom.strength, 0.32, 1.0);
+    bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), bloom.strength, 0.34, bloom.threshold);
     composer.addPass(bloomPass);
     godRayPass = new ShaderPass(GodRayShader);
     composer.addPass(godRayPass);
