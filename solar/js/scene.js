@@ -103,10 +103,13 @@ export function createScene(canvas) {
     uniforms: {
       tDiffuse: { value: null },
       uSun: { value: new THREE.Vector2(0.5, 0.5) },
-      uStrength: { value: 0.50 },
+      uStrength: { value: 0.42 },
       uDensity: { value: 0.62 },
       uDecay: { value: 0.955 },
-      uThreshold: { value: 0.48 },
+      /* 阈值抬到 1.05：只让真正过曝的内容（日面与日冕）参与，
+         行星与亮地表都在阈值之下，不会再被沿线复制。 */
+      uThreshold: { value: 0.72 },
+      uNear: { value: 0.30 },
     },
     vertexShader: /* glsl */`
       varying vec2 vUv;
@@ -115,10 +118,15 @@ export function createScene(canvas) {
     fragmentShader: /* glsl */`
       uniform sampler2D tDiffuse;
       uniform vec2 uSun;
-      uniform float uStrength, uDensity, uDecay, uThreshold;
+      uniform float uStrength, uDensity, uDecay, uThreshold, uNear;
       varying vec2 vUv;
       void main() {
         vec4 base = texture2D(tDiffuse, vUv);
+        /* 只累加太阳附近的内容。
+           原先没有任何空间限制，等于把「像素到太阳」这条线上的所有亮物
+           各复制 28 份——行星与亮地表会拖出一串重影。
+           加上距离权重后，光轴只从日面附近发散出来，远处亮物不再参与。 */
+        float nearW = 1.0 - smoothstep(0.0, uNear, distance(vUv, uSun));
         vec2 delta = (uSun - vUv) * uDensity / 28.0;
         vec2 uv = vUv;
         vec3 acc = vec3(0.0);
@@ -129,7 +137,7 @@ export function createScene(canvas) {
           float l = dot(s, vec3(0.2126, 0.7152, 0.0722));
           /* 过渡带拉到 1.7：原来 0.9 太窄，远处亮点的亮度只要在阈值附近抖动，
              光轴就会整段忽明忽暗。 */
-          acc += s * smoothstep(uThreshold, uThreshold + 1.7, l) * w;
+          acc += s * smoothstep(uThreshold, uThreshold + 1.7, l) * w * nearW;
           w *= uDecay;
         }
         gl_FragColor = vec4(base.rgb + acc * uStrength / 28.0 * 2.2, base.a);
