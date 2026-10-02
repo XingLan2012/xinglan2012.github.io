@@ -105,6 +105,10 @@ export class Hud {
       catalogMeta: document.getElementById('catalogMeta'),
       catalogToggle: document.getElementById('catalogToggle'),
       catalogClose: document.getElementById('catalogClose'),
+      trackBtn: document.getElementById('trackBtn'),
+      immerseBtn: document.getElementById('immerseBtn'),
+      ihName: document.getElementById('ihName'),
+      ihInfo: document.getElementById('ihInfo'),
       catExpand: document.getElementById('catExpand'),
       catCollapse: document.getElementById('catCollapse'),
     };
@@ -295,6 +299,13 @@ export class Hud {
       });
     }
     if (this.el.catalogToggle) this.el.catalogToggle.addEventListener('click', () => this.toggleCatalog());
+    if (this.el.trackBtn) {
+      this.el.trackBtn.addEventListener('click', () => {
+        if (this.following) this.actions.untrack();
+        else this.actions.track();
+      });
+    }
+    if (this.el.immerseBtn) this.el.immerseBtn.addEventListener('click', () => this.actions.toggleImmersive());
     if (this.el.catalogClose) this.el.catalogClose.addEventListener('click', () => this.toggleCatalog(false));
   }
 
@@ -1037,6 +1048,7 @@ export class Hud {
   }
 
   setFollowing(on) {
+    if (this.el.trackBtn) this.el.trackBtn.classList.toggle('on', !!on);
     this.following = on;
     const b = this.el.inspBody && this.el.inspBody.querySelector('#btnFollow');
     if (b) b.classList.toggle('on', !!on);
@@ -1442,6 +1454,17 @@ export class Hud {
     const txt = `${v >= 1000 ? v.toExponential(1) : v.toFixed(v < 1 ? 4 : 2)} 单位/秒`;
     this.el.hint.textContent = `WASD 飞行 · 空格升 / Shift 降 · 拖拽自由观察 · 滚轮调速（当前 ${txt}）`;
     this.el.hint.classList.remove('hide');
+  }
+
+  /** 沉浸模式的极简读数 */
+  setImmerseHud(name, info) {
+    if (this.el.ihName && this.el.ihName.__v !== name) { this.el.ihName.__v = name; this.el.ihName.textContent = name; }
+    if (this.el.ihInfo && this.el.ihInfo.__v !== info) { this.el.ihInfo.__v = info; this.el.ihInfo.textContent = info; }
+  }
+
+  setImmersive(on) {
+    if (this.el.immerseBtn) this.el.immerseBtn.classList.toggle('on', on);
+    if (!on && this.el.ihName) { this.el.ihName.__v = null; this.el.ihInfo.__v = null; }
   }
 
   setFps(v) { if (this.el.fps) this.el.fps.textContent = `${v} FPS`; }

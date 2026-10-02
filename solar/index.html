@@ -68,6 +68,8 @@
     <button class="chip" data-view="earth" title="飞到地球，看人造卫星星座">地球</button>
     <button class="chip" data-view="full" title="拉到奥尔特星云之外，看整个太阳系">全览</button>
     <button class="chip" data-view="rocket" title="跟在近地轨道的一枚火箭后方（火箭为示意尺寸）">火箭视角</button>
+    <button class="chip" id="trackBtn" title="锁定当前选中的天体，时间推进时保持居中（F1 进入沉浸模式）">追踪</button>
+    <button class="chip" id="immerseBtn" title="隐藏全部界面，只留星空（F1）">沉浸</button>
   </div>
   <div class="chips" id="populations">
     <button class="chip tgl on" data-flag="belt" title="主小行星带 2.1–3.3 AU，按真实分布取样并挖掉柯克伍德空隙">小行星带</button>
@@ -148,6 +150,14 @@
 
 <!-- 画面中央：比例尺说明（参考图里那行「NOT TO SCALE」） -->
 <div class="vista-note" id="vistaNote">SOLAR SYSTEM ORRERY · 1 AU = 30 UNITS · NOT TO SCALE</div>
+
+<!-- 沉浸模式下的极简 HUD：只显示追踪目标与距离 -->
+<div class="immerse-hud" id="immerseHud" hidden>
+  <span class="ih-dot"></span>
+  <b id="ihName">—</b>
+  <span id="ihInfo">—</span>
+  <span class="ih-key">F1</span>
+</div>
 
 <div class="hint" id="hint">单击天体 / 标签：查看档案并前往 · 拖拽旋转 · 滚轮缩放 · 空格暂停</div>
 

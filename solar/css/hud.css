@@ -1036,6 +1036,61 @@ body.has-card .topright { opacity: 0; pointer-events: none; }
   z-index: 90;
 }
 
+/* ── 沉浸模式：隐藏全部界面 ─────────────────────────── */
+.masthead, .topright, .readout, .timeline, .hint, .datacard, .labels, .vista-note, .catalog {
+  transition: opacity 0.35s ease;
+}
+body.immersive .masthead,
+body.immersive .topright,
+body.immersive .readout,
+body.immersive .timeline,
+body.immersive .hint,
+body.immersive .datacard,
+body.immersive .labels,
+body.immersive .vista-note,
+body.immersive .catalog {
+  opacity: 0;
+  pointer-events: none;
+}
+.immerse-hud {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 13px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(4px);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  z-index: 30;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+body.immersive .immerse-hud { opacity: 1; }
+.immerse-hud[hidden] { display: none; }
+.immerse-hud b { color: var(--gold-hi); font-weight: 400; letter-spacing: 0.16em; }
+.ih-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--gold-hi);
+  box-shadow: 0 0 7px var(--gold-hi);
+  animation: pulse 1.6s infinite;
+}
+.ih-key {
+  margin-left: 4px;
+  padding: 1px 5px;
+  border: 1px solid var(--line-hi);
+  color: var(--text-faint);
+  font-size: 8.5px;
+}
+
 /* ── 响应式 ───────────────────────────────────────────── */
 @media (max-width: 1280px) {
   .masthead { width: 296px; }

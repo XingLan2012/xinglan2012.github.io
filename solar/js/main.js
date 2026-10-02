@@ -25,6 +25,7 @@ const state = {
   rate: 1 / 86400,     // 天 / 秒 —— 默认就是实时：1 秒 = 1 秒
   follow: true,
   rocketView: false,   // 火箭自由飞行视角
+  immersive: false,    // 沉浸模式：隐藏全部界面
   flySpeedExp: -2.2,   // 10^x 场景单位/秒，滚轮调节
   adaptive: true,      // 帧率过低时自动降低渲染分辨率
   flags: {
@@ -156,6 +157,7 @@ function loop(now) {
   updateSunScreen();                        // 太阳的屏幕位置：体积光沿它拉伸
   updateOrbitVisibility();
   hud.update({ jd: state.jd, camera, canvas }, t);
+  if (state.immersive) updateImmerseHud();
   scene3.render();
 
   fpsAcc += dt; fpsFrames++;
@@ -333,6 +335,23 @@ function updateSunScreen() {
   g.uniforms.uStrength.value = edge > 1.25 ? 0.22 : 0.62;
 }
 
+/** 沉浸模式下的极简读数：追踪目标 + 与相机的实时距离 */
+function updateImmerseHud() {
+  const el = hud.el.ihName;
+  if (!el) return;
+  const rt = hud.selected;
+  if (!rt) {
+    hud.setImmerseHud('未锁定目标', '在目录里选一个天体后按 F1');
+    return;
+  }
+  const d = camera.position.distanceTo(rt.position);
+  const km = d / S.KM_UNITS;
+  const fmtKm = km >= 1e8 ? `${(km / S.AU_KM).toFixed(3)} AU`
+    : (km >= 1e6 ? `${(km / 1e6).toFixed(2)} 百万 km` : `${Math.round(km).toLocaleString('zh-CN')} km`);
+  hud.setImmerseHud(`${rt.data.name} ${rt.data.en || ''}`.trim(),
+    `${state.follow ? '追踪中' : '未追踪'} · 距离 ${fmtKm} · 视半径 ${fmt(rt.radiusKm * 2, 0)} km`);
+}
+
 function easeInOut(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
 
 /** 跟随目标的唯一标识：人造卫星壳层用 sat: 前缀，避免和天体 id 撞车 */
@@ -488,8 +507,13 @@ function bindGlobalEvents() {
       case 'KeyO': actions.toggle('orbits', !state.flags.orbits); break;
       case 'KeyR': actions.toggle('realDist', !state.flags.realDist); break;
       case 'KeyF': actions.follow(!state.follow); break;
+      case 'F1':
+        e.preventDefault();
+        actions.toggleImmersive();
+        break;
       case 'Escape':
-        if (hud.el.catalog && hud.el.catalog.classList.contains('open')) hud.toggleCatalog(false);
+        if (state.immersive) actions.toggleImmersive(false);
+        else if (hud.el.catalog && hud.el.catalog.classList.contains('open')) hud.toggleCatalog(false);
         else actions.select(null);
         break;
       default: break;
@@ -541,6 +565,23 @@ const actions = {
     }
   },
   frame() { if (hud.selected) frameBody(hud.selected); },
+  /** 追踪当前选中的天体（行星或恒星都行）：时间推进时相机始终咬住它 */
+  track(id) {
+    const rt = id ? (world.bodies.get(id) || world.satTargets.get(id)
+      || world.minorTargets.get(id) || world.cometTargets.get(id)) : hud.selected;
+    if (!rt) return false;
+    if (hud.selected !== rt) hud.setSelected(rt);
+    setFollow(true, rt);
+    frameBody(rt);
+    return true;
+  },
+  untrack() { setFollow(false, null); },
+  toggleImmersive(force) {
+    state.immersive = force === undefined ? !state.immersive : !!force;
+    document.body.classList.toggle('immersive', state.immersive);
+    if (hud.setImmersive) hud.setImmersive(state.immersive);
+    return state.immersive;
+  },
   /**
    * 飞到某个著名地点
    * 标记挂在天体的 mesh 上随自转走，所以这里先把标记摆好、再取它此刻的世界坐标，
