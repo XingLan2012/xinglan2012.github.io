@@ -38,7 +38,6 @@ const GEO_GLOW = new THREE.SphereGeometry(1, 24, 12);    // 日冕 / 光晕
 const _v1 = new THREE.Vector3();
 const _v2 = new THREE.Vector3();
 const _v3 = new THREE.Vector3();
-const _proj = { x: 0, y: 0, radius: 0, visible: false };
 const YAXIS = new THREE.Vector3(0, 1, 0);
 const AXIS_X = new THREE.Vector3(1, 0, 0);
 const AXIS_Z = new THREE.Vector3(0, 0, 1);
@@ -1288,10 +1287,16 @@ export class World {
       _v2.add(worldPos).project(camera);
       radius = Math.hypot((_v2.x - _v1.x) * 0.5 * w, (_v2.y - _v1.y) * 0.5 * h);
     }
-    const out = _proj;
-    out.x = x; out.y = y; out.radius = radius;
-    out.visible = inFront && _v1.z < 1 && x > -180 && x < w + 180 && y > -180 && y < h + 180;
-    return out;
+    /* 每次返回独立对象。
+       原先复用同一个 _proj，调用方只要连着调用两次（例如先算卫星再算母星），
+       第一次的结果就会被悄悄覆盖——卫星标签因此被画到母星旁边，很难查。
+       每帧约 160 次分配，相对它消除的这类 bug 完全不值一提。 */
+    return {
+      x,
+      y,
+      radius,
+      visible: inFront && _v1.z < 1 && x > -180 && x < w + 180 && y > -180 && y < h + 180,
+    };
   }
 }
 

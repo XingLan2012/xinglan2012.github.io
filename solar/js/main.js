@@ -157,7 +157,8 @@ function loop(now) {
   updateSunScreen();                        // 太阳的屏幕位置：体积光沿它拉伸
   updateOrbitVisibility();
   hud.update({ jd: state.jd, camera, canvas }, t);
-  if (state.immersive) updateImmerseHud();
+  // 沉浸读数限到 8 Hz：它只是给人看的数字，没必要逐帧拼字符串
+  if (state.immersive && t - immerseAt > 0.125) { immerseAt = t; updateImmerseHud(); }
   scene3.render();
 
   fpsAcc += dt; fpsFrames++;
@@ -269,6 +270,7 @@ function updateFly(dt) {
   }
 }
 
+let immerseAt = -1;
 let followPrev = new THREE.Vector3();
 let followId = null;
 /** 视角预设之间的过渡（内景 ↔ 全览），与天体取景互斥 */
@@ -333,6 +335,11 @@ function updateSunScreen() {
   // 太阳在画面外时削弱体积光，避免出现从边缘硬拉进来的光轴
   const edge = Math.max(Math.abs(tmp.x), Math.abs(tmp.y));
   g.uniforms.uStrength.value = edge > 1.25 ? 0.22 : 0.62;
+  /* 太阳不在画面内、或在画面上只有几个像素时直接停掉这一级后处理。
+     实测默认视距下它的贡献恰好为 0——日面够不到阈值、一个像素都不参与累加，
+     那就没必要每帧白跑一次全屏 28 次采样。 */
+  const proj = world.project(p.position, camera, p.radiusUnits);
+  g.enabled = proj.visible && proj.radius >= 3;
 }
 
 /** 沉浸模式下的极简读数：追踪目标 + 与相机的实时距离 */
