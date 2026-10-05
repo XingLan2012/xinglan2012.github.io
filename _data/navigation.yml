@@ -77,6 +77,9 @@ header:
       # @end locale config
     url: /gacha.html
 
+  - title: 历史导图
+    url: /history-mindmap.html
+
   - titles:
       # @start locale config
       en      : &EN       About

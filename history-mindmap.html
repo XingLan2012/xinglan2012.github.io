@@ -1,0 +1,1039 @@
+---
+layout: none
+---
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>八上历史 · 思维导图（第1—6课）</title>
+<style>
+  :root{
+    --bg:#0a0e13;
+    --bg2:#0f151c;
+    --panel:rgba(255,255,255,.035);
+    --line:rgba(255,255,255,.09);
+    --fg:#e6edf3;
+    --fg2:#a9b6c3;
+    --fg3:#6f7d8b;
+    --gold:#ffd700;
+    --gold-dim:rgba(255,215,0,.16);
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:
+      radial-gradient(1100px 600px at 12% -10%,rgba(255,215,0,.05),transparent 60%),
+      radial-gradient(900px 520px at 105% 10%,rgba(86,204,242,.05),transparent 60%),
+      var(--bg);
+    color:var(--fg);font-family:var(--font);
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  /* ===== 顶栏 ===== */
+  header{flex:0 0 auto;border-bottom:1px solid var(--line);background:rgba(10,14,19,.86);backdrop-filter:blur(10px);z-index:20}
+  .top{display:flex;align-items:center;gap:14px;padding:10px 16px;flex-wrap:wrap}
+  .brand{display:flex;align-items:baseline;gap:9px;white-space:nowrap}
+  .brand .back{color:var(--fg3);text-decoration:none;font-size:14px;transition:.18s;align-self:center}
+  .brand .back:hover{color:var(--gold)}
+  .brand b{color:var(--gold);font-size:16px;letter-spacing:2px;font-weight:600}
+  .brand span{color:var(--fg3);font-size:11px;letter-spacing:1px}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+  .tab{
+    border:1px solid var(--line);background:transparent;color:var(--fg2);
+    font-family:inherit;font-size:12px;padding:5px 11px;border-radius:999px;cursor:pointer;
+    transition:.18s;white-space:nowrap;
+  }
+  .tab:hover{color:var(--gold);border-color:var(--gold-dim)}
+  .tab.on{background:var(--gold-dim);border-color:rgba(255,215,0,.45);color:var(--gold)}
+  .tab i{font-style:normal;opacity:.55;margin-right:4px;font-size:10px}
+  .tools{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .btn{
+    border:1px solid var(--line);background:rgba(255,255,255,.02);color:var(--fg2);
+    font-family:inherit;font-size:12px;padding:5px 10px;border-radius:7px;cursor:pointer;transition:.18s;white-space:nowrap;
+  }
+  .btn:hover{color:var(--gold);border-color:var(--gold-dim);background:rgba(255,215,0,.04)}
+  .btn.on{color:var(--gold);border-color:rgba(255,215,0,.4);background:var(--gold-dim)}
+  .search{
+    border:1px solid var(--line);background:rgba(255,255,255,.02);color:var(--fg);
+    font-family:inherit;font-size:12px;padding:5px 10px;border-radius:7px;width:132px;outline:none;
+  }
+  .search:focus{border-color:rgba(255,215,0,.4)}
+  .search::placeholder{color:var(--fg3)}
+  /* ===== 课头 + 时间轴 ===== */
+  .bar{flex:0 0 auto;padding:9px 16px 8px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.02),transparent)}
+  .ltitle{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+  .ltitle h1{margin:0;font-size:15px;font-weight:600;letter-spacing:1px;color:#fff}
+  .ltitle .yr{font-size:12px;color:var(--gold);letter-spacing:1px;border:1px solid var(--gold-dim);border-radius:5px;padding:1px 7px}
+  .ltitle .cnt{font-size:11px;color:var(--fg3);margin-left:auto}
+  .tl{display:flex;gap:0;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}
+  .tl::-webkit-scrollbar{height:4px}
+  .tl::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:4px}
+  .ti{display:flex;align-items:center;gap:8px;padding:3px 14px 3px 0;flex:0 0 auto;position:relative}
+  .ti::after{content:'';position:absolute;right:4px;top:50%;width:8px;height:1px;background:var(--line)}
+  .ti:last-child::after{display:none}
+  .ti .y{font-size:11px;color:var(--gold);background:rgba(255,215,0,.08);border:1px solid var(--gold-dim);border-radius:4px;padding:1px 6px;font-variant-numeric:tabular-nums}
+  .ti .e{font-size:11.5px;color:var(--fg2);white-space:nowrap}
+  /* ===== 画布 ===== */
+  .stage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;cursor:grab}
+  .stage.drag{cursor:grabbing}
+  svg{display:block;width:100%;height:100%;touch-action:none}
+  .hint{
+    position:absolute;left:14px;bottom:12px;font-size:11px;color:var(--fg3);pointer-events:none;
+    letter-spacing:.5px;background:rgba(10,14,19,.55);padding:3px 8px;border-radius:6px;
+  }
+  .zoom{position:absolute;right:12px;bottom:12px;display:flex;flex-direction:column;gap:6px}
+  .zoom .btn{width:30px;height:28px;padding:0;font-size:14px;line-height:1}
+  /* ===== 记忆卡 ===== */
+  .foot{flex:0 0 auto;padding:7px 16px 9px;border-top:1px solid var(--line);background:rgba(255,255,255,.015);display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+  .foot .k{font-size:11px;color:var(--gold);letter-spacing:1px;flex:0 0 auto}
+  .foot .v{font-size:12px;color:var(--fg2);line-height:1.6}
+  .foot .src{font-size:10.5px;color:var(--fg3);margin-left:auto}
+  /* ===== 弹层 ===== */
+  .toast{
+    position:fixed;left:50%;bottom:56px;transform:translate(-50%,14px);opacity:0;pointer-events:none;
+    background:rgba(20,26,34,.96);border:1px solid var(--line);color:var(--fg);
+    font-size:12px;padding:8px 14px;border-radius:8px;transition:.25s;z-index:99;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  /* ===== 打印 ===== */
+  @media print{
+    @page{size:A4 landscape;margin:8mm}
+    header,.zoom,.hint,.toast{display:none!important}
+    body{background:#fff;color:#111;display:block;overflow:visible;height:auto}
+    .bar{border-color:#ddd;background:#fff;padding:4px 0}
+    .ltitle h1{color:#111}.ltitle .yr{color:#8a6d00;border-color:#d8c98a}
+    .ti .y{color:#8a6d00;background:#faf6e4;border-color:#e6ddb4}.ti .e{color:#333}
+    .stage{height:150mm;overflow:visible}
+    .foot{border-color:#ddd;background:#fff;color:#333}.foot .v{color:#333}
+    .foot .k{color:#8a6d00}
+  }
+  @media (max-width:640px){
+    .brand span{display:none}
+    .search{width:96px}
+    .foot .src{display:none}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="top">
+    <div class="brand"><a class="back" href="/" title="返回首页">←</a><b>八上历史 · 思维导图</b><span>第 1—6 课 / 中国近代史</span></div>
+    <nav class="tabs" id="tabs"></nav>
+    <div class="tools">
+      <input class="search" id="search" type="search" placeholder="搜索关键词…" autocomplete="off">
+      <button class="btn" id="btnExpand">展开全部</button>
+      <button class="btn" id="btnQuiz">自测模式</button>
+      <button class="btn" id="btnPng">导出 PNG</button>
+      <button class="btn" id="btnPrint">打印</button>
+      <button class="btn" id="btnFull">全屏</button>
+    </div>
+  </div>
+</header>
+
+<div class="bar">
+  <div class="ltitle">
+    <h1 id="ltTitle"></h1>
+    <span class="yr" id="ltYear"></span>
+    <span class="cnt" id="ltCount"></span>
+  </div>
+  <div class="tl" id="tl"></div>
+</div>
+
+<div class="stage" id="stage">
+  <svg id="map" xmlns="http://www.w3.org/2000/svg"></svg>
+  <div class="hint" id="hint">拖拽平移 · 滚轮缩放 · 点击节点折叠 / 展开</div>
+  <div class="zoom">
+    <button class="btn" id="zin" title="放大">＋</button>
+    <button class="btn" id="zout" title="缩小">－</button>
+    <button class="btn" id="zfit" title="适应屏幕">⤢</button>
+  </div>
+</div>
+
+<div class="foot">
+  <span class="k">记忆口诀</span><span class="v" id="mnemonic"></span>
+  <span class="src">依据《八上历史笔记.pdf》整理 · 第 6 课按统编版教材补充</span>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* =======================================================================
+   数据：中心主题 → 一级分支 → 二级分支 → 关键词
+   ======================================================================= */
+var LESSONS = [
+{
+  id:1, title:"鸦片战争", period:"1840—1842",
+  timeline:[["1839.6","虎门销烟"],["1840.6","英军北上，战争爆发"],["1841","强占香港岛"],["1842.6","吴淞之战·陈化成殉国"],["1842.8","《南京条约》签订"]],
+  mnemonic:"《南京条约》＝割香港岛、赔款 2100 万银元、开五口通商、协定关税（割地·赔款·通商·关税）。",
+  root:{n:"鸦片战争（1840—1842）",c:[
+    {n:"一、背景",c:[
+      {n:"国际：英国完成工业革命，头号工业强国，加紧殖民扩张"},
+      {n:"国内：清朝危机四伏，自给自足的小农经济占主导"},
+      {n:"中英贸易：中国出超，英国入超"},
+      {n:"英国对策：向中国走私鸦片"}
+    ]},
+    {n:"二、鸦片走私与危害",c:[
+      {n:"概况：18世纪末—战争前夕，输入 40 多万箱，掠走 3—4 亿银元"},
+      {n:"危害：白银外流、财政危机、体质摧残、军队削弱、政治腐败"}
+    ]},
+    {n:"三、林则徐禁烟",c:[
+      {n:"人物：湖广总督 → 钦差大臣"},
+      {n:"措施：缉拿烟贩、收缴鸦片"},
+      {n:"虎门销烟：1839 年 6 月 3—25 日"},
+      {n:"意义：伟大胜利，显示中华民族反抗外来侵略的坚强意志"}
+    ]},
+    {n:"四、战争过程",c:[
+      {n:"根本原因：英国要打开中国市场，倾销商品、掠夺原料"},
+      {n:"直接原因：虎门销烟"},
+      {n:"第一阶段：1840.6—1841，英军北上，攻定海，逼大沽"},
+      {n:"第二阶段：1841—1842，占香港，攻虎门（关天培殉国），犯吴淞（陈化成殉国），抵南京"},
+      {n:"抗争：三元里抗英、关天培、陈化成"}
+    ]},
+    {n:"五、结果与条约",c:[
+      {n:"中国战败，签订《南京条约》（1842 年）"},
+      {n:"内容：五口通商、割香港岛、赔款 2100 万银元、协定关税"},
+      {n:"其他：《虎门条约》《望厦条约》《黄埔条约》"}
+    ]},
+    {n:"六、影响",c:[
+      {n:"中国开始沦为半殖民地半封建社会"},
+      {n:"中国近代史的开端"}
+    ]}
+  ]}
+},
+{
+  id:2, title:"第二次鸦片战争", period:"1856—1860",
+  timeline:[["1856","炮轰广州，战争爆发"],["1858","《天津条约》"],["1859","大沽之战"],["1860.10","火烧圆明园 ·《北京条约》"],["1850s—80s","俄国割占 150 多万平方千米"]],
+  mnemonic:"实质＝鸦片战争的继续和扩大；《天津条约》增开十口，《北京条约》割九龙司、增开天津。",
+  root:{n:"第二次鸦片战争（1856—1860）",c:[
+    {n:"一、原因",c:[
+      {n:"根本：西方列强要进一步打开中国市场，扩大侵略权益"},
+      {n:"借口：亚罗号事件、马神甫事件"},
+      {n:"实质：鸦片战争的继续和扩大"}
+    ]},
+    {n:"二、过程",c:[
+      {n:"第一阶段：1856 年炮轰广州 → 1858 年《天津条约》"},
+      {n:"第二阶段：1859 年大沽之战 → 1860 年占天津、北京 → 火烧圆明园 →《北京条约》"}
+    ]},
+    {n:"三、条约",c:[
+      {n:"《天津条约》：公使驻京、增开十口、长江航行、赔款"},
+      {n:"《北京条约》：承认《天津条约》、增开天津、割九龙司、赔款增加"}
+    ]},
+    {n:"四、火烧圆明园",c:[
+      {n:"时间：1860 年 10 月"},
+      {n:"罪行：英法联军抢劫并焚毁"},
+      {n:"认识：列强侵华罪行，人类文明史上可耻的一页"}
+    ]},
+    {n:"五、俄国侵占领土",c:[
+      {n:"时间：19 世纪 50—80 年代"},
+      {n:"条约：《瑷珲条约》《北京条约》《勘分西北界约记》等"},
+      {n:"面积：共 150 多万平方千米"},
+      {n:"地位：近代侵占中国领土最多的国家"}
+    ]},
+    {n:"六、影响",c:[
+      {n:"中国半殖民地化程度进一步加深"},
+      {n:"西方侵略势力深入长江中下游"},
+      {n:"清政府设立总理衙门"}
+    ]}
+  ]}
+},
+{
+  id:3, title:"太平天国运动", period:"1851—1864",
+  timeline:[["1851","金田起义"],["1851后","永安建制（封王）"],["1853","攻占南京，改名天京"],["1856","军事全盛 · 天京事变由盛转衰"],["1864","天京陷落，运动失败"]],
+  mnemonic:"金田起义→永安建制→定都天京→北伐西征→天京事变→天京陷落；两大纲领＝《天朝田亩制度》《资政新篇》。",
+  root:{n:"太平天国运动（1851—1864）",c:[
+    {n:"一、背景",c:[
+      {n:"根本：清政府统治危机，阶级矛盾尖锐"},
+      {n:"直接：广西自然灾害严重"},
+      {n:"准备：洪秀全创立拜上帝会"}
+    ]},
+    {n:"二、过程",c:[
+      {n:"开始：1851 年金田起义"},
+      {n:"初建：永安建制（封王）"},
+      {n:"定都：1853 年攻占南京，改名天京"},
+      {n:"全盛：北伐、西征，1856 年军事全盛"}
+    ]},
+    {n:"三、纲领",c:[
+      {n:"《天朝田亩制度》：绝对平均主义，空想性，未能推行"},
+      {n:"《资政新篇》：洪仁玕，发展资本主义，未能实践"}
+    ]},
+    {n:"四、转折与失败",c:[
+      {n:"天京事变：1856 年，由盛转衰"},
+      {n:"重建：洪仁玕、陈玉成、李秀成"},
+      {n:"失败：1864 年天京陷落"}
+    ]},
+    {n:"五、评价",c:[
+      {n:"性质：中国历史上规模宏大的农民战争"},
+      {n:"意义：沉重打击清朝统治和外国侵略势力"},
+      {n:"局限：农民阶级局限性，无法提出切合实际的革命纲领"},
+      {n:"启示：农民阶级不能领导中国民主革命取得胜利"}
+    ]}
+  ]}
+},
+{
+  id:4, title:"洋务运动和边疆危机", period:"19世纪60年代—1895",
+  timeline:[["1860s—90s","洋务运动（自强·求富）"],["1874","日军进攻台湾南部"],["1878","收复新疆（除伊犁）"],["1884","新疆建省"],["1885","台湾建省 · 镇南关大捷"],["1895","威海卫战役，北洋舰队全军覆没"]],
+  mnemonic:"洋务运动：自强（军事工业）→ 求富（民用企业），指导思想「中学为体，西学为用」；边疆危机＝东南台湾、西北新疆、西南中法。",
+  root:{n:"洋务运动与边疆危机",c:[
+    {n:"一、洋务运动",c:[
+      {n:"背景：内忧外患（太平天国、两次鸦片战争）"},
+      {n:"时间：19 世纪 60 年代—90 年代中期"},
+      {n:"领导：地主阶级洋务派（奕䜣、曾国藩、李鸿章、左宗棠、张之洞）"},
+      {n:"口号：自强、求富　指导思想：中学为体，西学为用"},
+      {n:"内容",c:[
+        {n:"经济",c:[
+          {n:"军事工业：江南机器制造总局、福州船政局"},
+          {n:"民用企业：轮船招商局、开平煤矿、汉阳铁厂"}
+        ]},
+        {n:"军事：新式洋枪队；新式海军（北洋舰队）"},
+        {n:"教育：新式学校、翻译馆、派遣留学生"},
+        {n:"外交：总理衙门"}
+      ]},
+      {n:"评价",c:[
+        {n:"积极性：中国早期现代化的初步探索，促进民族资本主义产生"},
+        {n:"局限：未变革封建制度，未实现求强求富"},
+        {n:"失败标志：1895 年威海卫战役，北洋舰队全军覆没"}
+      ]}
+    ]},
+    {n:"二、边疆危机",c:[
+      {n:"东南：美日侵略台湾",c:[
+        {n:"美国：19 世纪 60 年代进犯台湾"},
+        {n:"日本：1874 年进攻台湾南部，勒索白银 50 万两"}
+      ]},
+      {n:"西北：收复新疆",c:[
+        {n:"背景：阿古柏入侵，俄国占领伊犁"},
+        {n:"应对：左宗棠「先北后南，缓进急战」"},
+        {n:"结果：1878 年收复新疆（除伊犁），1884 年新疆建省"}
+      ]},
+      {n:"西南：中法战争",c:[
+        {n:"背景：法国侵略越南，黑旗军助越抗法"},
+        {n:"过程：马尾海战、台湾抗法、镇南关大捷（冯子材）"},
+        {n:"结果：中国「不败而败」，签订《越南条款》"},
+        {n:"台湾建省：1885 年，刘铭传为第一任巡抚"}
+      ]}
+    ]}
+  ]}
+},
+{
+  id:5, title:"甲午中日战争与瓜分狂潮", period:"1894—1895",
+  timeline:[["1894","丰岛海战爆发 · 平壤战役 · 黄海海战"],["1894.11","旅顺大屠杀"],["1895","威海卫战役，北洋舰队全军覆没"],["1895.4","《马关条约》签订"],["1895后","三国干涉还辽 → 列强瓜分狂潮"]],
+  mnemonic:"《马关条约》＝割辽东半岛·台湾全岛及附属岛屿·澎湖列岛，赔 2 亿两，开沙市重庆苏州杭州，允许日本设厂。",
+  root:{n:"甲午中日战争与民族危机加剧",c:[
+    {n:"一、甲午中日战争",c:[
+      {n:"原因",c:[
+        {n:"根本：日本要征服朝鲜、侵略中国、称霸世界"},
+        {n:"国际：欧美列强默许、支持"},
+        {n:"直接：朝鲜东学党起义"}
+      ]},
+      {n:"过程",c:[
+        {n:"爆发：1894 年丰岛海战"},
+        {n:"平壤战役：左宝贵牺牲"},
+        {n:"黄海海战：邓世昌、林永升殉国，北洋舰队主力尚存"},
+        {n:"辽东战役：旅顺大屠杀"},
+        {n:"威海卫战役：1895 年，北洋舰队全军覆没"}
+      ]},
+      {n:"结果：中国战败，签订《马关条约》"}
+    ]},
+    {n:"二、《马关条约》",c:[
+      {n:"内容：割辽东半岛、台湾全岛及附属岛屿、澎湖列岛；赔款 2 亿两；开放沙市、重庆、苏州、杭州；允许日本设厂"},
+      {n:"影响：大大加深半殖民地化程度；民族危机空前严重；列强掀起瓜分狂潮"}
+    ]},
+    {n:"三、列强瓜分中国狂潮",c:[
+      {n:"契机：三国干涉还辽"},
+      {n:"表现：抢夺路矿利权、强租租借地、划分势力范围"},
+      {n:"美国：门户开放政策"}
+    ]},
+    {n:"四、民族资本主义的发展",c:[
+      {n:"产生：19 世纪 70 年代"},
+      {n:"初步发展：甲午战后，清政府放松民间设厂限制"},
+      {n:"代表：张謇创办大生纱厂，「实业救国」"},
+      {n:"特点：资金少、规模小、技术落后，集中在轻工业，沿海沿江"}
+    ]}
+  ]}
+},
+{
+  id:6, title:"戊戌变法", period:"1898",
+  timeline:[["1895","公车上书 · 强学会成立"],["1896后","《时务报》《国闻报》宣传维新"],["1898.6.11","百日维新开始"],["1898.9.21","慈禧发动戊戌政变"],["1898.9.28","戊戌六君子就义（谭嗣同）"]],
+  mnemonic:"百日维新内容＝政治上裁冗官、经济上办工矿、文化上废八股办新学（京师大学堂）、军事上练新军。",
+  root:{n:"戊戌变法（1898）",c:[
+    {n:"一、背景",c:[
+      {n:"甲午战败，民族危机加剧"},
+      {n:"民族资本主义初步发展"},
+      {n:"维新思想传播（康有为、梁启超）"}
+    ]},
+    {n:"二、维新运动",c:[
+      {n:"公车上书：1895 年，康有为、梁启超"},
+      {n:"强学会：1895 年，北京"},
+      {n:"刊物：《时务报》《国闻报》"}
+    ]},
+    {n:"三、百日维新",c:[
+      {n:"时间：1898 年 6 月 11 日—9 月 21 日"},
+      {n:"政治：裁撤冗官，允许官民上书言事"},
+      {n:"经济：鼓励私人兴办工矿企业"},
+      {n:"文化：废八股，办新式学堂（京师大学堂）"},
+      {n:"军事：训练新式军队"},
+      {n:"结果：慈禧太后发动戊戌政变，囚禁光绪帝，戊戌六君子就义（谭嗣同）"}
+    ]},
+    {n:"四、评价",c:[
+      {n:"性质：自上而下的资产阶级改良运动"},
+      {n:"意义：在思想文化方面产生广泛而持久的影响，起到思想启蒙作用"},
+      {n:"局限：依靠无实权的皇帝，脱离群众，最终失败"}
+    ]}
+  ]}
+}
+];
+
+/* =======================================================================
+   常量与测量
+   ======================================================================= */
+var SVGNS = "http://www.w3.org/2000/svg";
+var FONT = '-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif';
+
+// 一级分支配色（按分支顺序取用）
+var PALETTE = ["#ff8a80","#ffb74d","#ffe082","#81c995","#5ec8f0","#c39bf5","#f48fb1","#4dd0c4"];
+var GOLD = "#ffd700";
+
+// 各层级：字号 / 行高 / 内边距 / 折行宽度 / 子树间距
+var FS  = [19, 15, 13, 12, 11.5, 11];
+var LH  = [26, 22, 20, 18.5, 17.5, 17];
+var PX  = [18, 13, 8, 6, 5, 5];
+var PY  = [12, 9, 5, 4, 3, 3];
+var WRAP= [190, 168, 250, 270, 280, 280];
+var VGAP= [26, 16, 10, 8, 7, 6];
+var HGAP= 44;
+
+var meas = document.createElement("canvas").getContext("2d");
+function fnt(d){ var i = Math.min(d, FS.length-1); return (d===0||d===1?"600 ":"") + FS[i] + "px " + FONT; }
+function tw(s, d){ meas.font = fnt(d); return meas.measureText(s).width; }
+function wrap(s, d){
+  var maxW = WRAP[Math.min(d, WRAP.length-1)];
+  meas.font = fnt(d);
+  var lines = [], cur = "";
+  for (var i=0;i<s.length;i++){
+    var ch = s.charAt(i), t = cur + ch;
+    if (cur && meas.measureText(t).width > maxW){ lines.push(cur); cur = ch; }
+    else cur = t;
+  }
+  if (cur) lines.push(cur);
+  return lines.length ? lines : [""];
+}
+function el(tag, attrs){
+  var e = document.createElementNS(SVGNS, tag);
+  for (var k in attrs) if (attrs.hasOwnProperty(k)) e.setAttribute(k, attrs[k]);
+  return e;
+}
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+/* =======================================================================
+   状态
+   ======================================================================= */
+var state = {
+  lesson: 0,
+  quiz: false,
+  query: "",
+  collapsed: {},   // lessonId -> {nodeId:true}
+  revealed: {},    // lessonId -> {nodeId:true}
+  nodes: [],
+  byId: {},
+  bbox: {w:0,h:0},
+  view: {x:0,y:0,k:1}
+};
+
+var svg = document.getElementById("map");
+var stage = document.getElementById("stage");
+var toastEl = document.getElementById("toast");
+var toastTimer = null;
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 1600);
+}
+
+function setOf(map, id){ if(!map[id]) map[id] = {}; return map[id]; }
+function isCollapsed(lid, nid){ return !!(state.collapsed[lid] && state.collapsed[lid][nid]); }
+function isRevealed(lid, nid){ return !!(state.revealed[lid] && state.revealed[lid][nid]); }
+function isHidden(n){ return state.quiz && n.__depth >= 2 && !isRevealed(n.__lesson, n.__id); }
+
+/* =======================================================================
+   布局
+   ======================================================================= */
+function prepare(lesson){
+  var root = lesson.root;
+  var branches = root.c || [];
+  var rect = stage.getBoundingClientRect();
+  // 宽屏时左右分侧，窄屏（手机）时单侧右展
+  var twoSide = rect.width >= 860 && branches.length >= 2;
+  state.twoSide = twoSide;
+  var half = Math.ceil(branches.length / 2);
+  var colR = [], colL = [], count = 0;
+
+  (function walk(nd, depth, color, pid, side){
+    nd.__depth = depth;
+    nd.__color = color;
+    nd.__lesson = lesson.id;
+    nd.__id = pid;
+    nd.__side = side;
+    nd.__lines = wrap(nd.n, depth);
+    var w = 0, i;
+    for (i=0;i<nd.__lines.length;i++) w = Math.max(w, tw(nd.__lines[i], depth));
+    var d = Math.min(depth, FS.length-1);
+    nd.__tw = w;
+    nd.__bw = w + PX[d]*2;
+    nd.__bh = nd.__lines.length*LH[d] + PY[d]*2;
+    if (depth > 0){
+      var col = (side < 0) ? colL : colR;
+      col[depth] = Math.max(col[depth] || 0, nd.__bw);
+    }
+    count++;
+    var kids = nd.c || [];
+    for (i=0;i<kids.length;i++){
+      var cs = (depth === 0) ? ((twoSide && i >= half) ? -1 : 1) : side;
+      var cc = (depth === 0) ? PALETTE[i % PALETTE.length] : color;
+      walk(kids[i], depth+1, cc, pid + "-" + i, cs);
+    }
+  })(root, 0, GOLD, "r", 0);
+
+  root.__x = -root.__bw / 2;
+
+  // 列坐标：右侧深度 d 节点的左边缘；左侧深度 d 节点的右边缘
+  var XR = [], XL = [], d;
+  XR[1] = root.__x + root.__bw + HGAP;
+  for (d=2; d<colR.length; d++) XR[d] = XR[d-1] + (colR[d-1] || 0) + HGAP;
+  XL[1] = root.__x - HGAP;
+  for (d=2; d<colL.length; d++) XL[d] = XL[d-1] - HGAP - (colL[d-1] || 0);
+
+  function gap(depth){ return VGAP[Math.min(depth, VGAP.length-1)]; }
+
+  // 1) 子树高度
+  (function subH(nd){
+    var kids = nd.c || [];
+    if (!kids.length || isCollapsed(lesson.id, nd.__id)){ nd.__subH = nd.__bh; return nd.__bh; }
+    var sum = 0;
+    for (var i=0;i<kids.length;i++){
+      sum += subH(kids[i]);
+      if (i) sum += gap(nd.__depth + 1);
+    }
+    nd.__subH = Math.max(nd.__bh, sum);
+    return nd.__subH;
+  })(root);
+
+  // 2) 自上而下定位：父节点在自己槽位中居中，子块在父槽位中居中
+  function assign(nd, top){
+    if (nd.__side < 0){
+      var r = XL[Math.min(nd.__depth, XL.length-1)];
+      if (r === undefined) r = XL[XL.length-1] || -HGAP;
+      nd.__x = r - nd.__bw;
+    } else {
+      var l = XR[Math.min(nd.__depth, XR.length-1)];
+      if (l === undefined) l = XR[XR.length-1] || (root.__bw + HGAP);
+      nd.__x = l;
+    }
+    nd.__y = top + nd.__subH/2;
+    var kids = nd.c || [];
+    if (!kids.length || isCollapsed(lesson.id, nd.__id)) return;
+    var total = 0, i;
+    for (i=0;i<kids.length;i++){ total += kids[i].__subH; if (i) total += gap(nd.__depth + 1); }
+    var cy = top + (nd.__subH - total)/2;
+    for (i=0;i<kids.length;i++){
+      assign(kids[i], cy);
+      cy += kids[i].__subH + gap(nd.__depth + 1);
+    }
+  }
+
+  // 3) 左右两侧分别排版，再整体垂直居中
+  var totals = {}, totalH = root.__bh;
+  [1, -1].forEach(function(side){
+    var ks = branches.filter(function(k){ return k.__side === side; });
+    var t = 0;
+    for (var i=0;i<ks.length;i++){ t += ks[i].__subH; if (i) t += gap(1); }
+    totals[side] = t;
+    totalH = Math.max(totalH, t);
+  });
+  [1, -1].forEach(function(side){
+    var ks = branches.filter(function(k){ return k.__side === side; });
+    var cy = (totalH - totals[side]) / 2;
+    for (var i=0;i<ks.length;i++){
+      if (i) cy += gap(1);
+      assign(ks[i], cy);
+      cy += ks[i].__subH;
+    }
+  });
+  root.__y = totalH / 2;
+
+  var nodes = [];
+  (function collect(nd){
+    nodes.push(nd);
+    if (isCollapsed(lesson.id, nd.__id)) return;
+    var kids = nd.c || [];
+    for (var i=0;i<kids.length;i++) collect(kids[i]);
+  })(root);
+
+  var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (var i=0;i<nodes.length;i++){
+    var n = nodes[i];
+    minX = Math.min(minX, n.__x);
+    maxX = Math.max(maxX, n.__x + n.__bw);
+    minY = Math.min(minY, n.__y - n.__bh/2);
+    maxY = Math.max(maxY, n.__y + n.__bh/2);
+  }
+  state.nodes = nodes;
+  state.byId = {};
+  for (i=0;i<nodes.length;i++) state.byId[nodes[i].__id] = nodes[i];
+  state.bbox = {minX:minX, minY:minY, w:Math.max(1, maxX-minX), h:Math.max(1, maxY-minY)};
+  return count;
+}
+
+/* =======================================================================
+   绘制
+   ======================================================================= */
+function draw(lesson){
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+  var defs = el("defs");
+  var grad = el("linearGradient", {id:"gRoot", x1:"0", y1:"0", x2:"1", y2:"1"});
+  grad.appendChild(el("stop", {offset:"0%", "stop-color":"#ffd700"}));
+  grad.appendChild(el("stop", {offset:"100%", "stop-color":"#ffb300"}));
+  defs.appendChild(grad);
+  svg.appendChild(defs);
+
+  var world = el("g", {id:"world"});
+  world.setAttribute("transform", "translate(" + state.view.x + "," + state.view.y + ") scale(" + state.view.k + ")");
+  svg.appendChild(world);
+
+  var layerEdge = el("g"), layerNode = el("g");
+  world.appendChild(layerEdge);
+  world.appendChild(layerNode);
+
+  var q = state.query.trim().toLowerCase();
+  var keep = buildKeepSet(lesson.root, q);
+  var anyHit = false;
+  if (q){ for (var kk in keep) if (keep.hasOwnProperty(kk)){ anyHit = true; break; } }
+  if (!anyHit) keep = null;   // 无匹配时不做压暗处理
+
+  // 连线（父 → 子）
+  for (var i=0;i<state.nodes.length;i++){
+    var nd = state.nodes[i];
+    if (isCollapsed(lesson.id, nd.__id)) continue;
+    var kids = nd.c || [];
+    for (var j=0;j<kids.length;j++){
+      var ch = kids[j];
+      var x1, x2;
+      if (ch.__side < 0){ x1 = nd.__x; x2 = ch.__x + ch.__bw; }
+      else { x1 = nd.__x + nd.__bw; x2 = ch.__x; }
+      var y1 = nd.__y, y2 = ch.__y;
+      var dx = Math.max(20, Math.abs(x2 - x1) * 0.5) * (x2 >= x1 ? 1 : -1);
+      var path = el("path", {
+        d: "M" + x1 + "," + y1 + " C" + (x1+dx) + "," + y1 + " " + (x2-dx) + "," + y2 + " " + x2 + "," + y2,
+        fill: "none",
+        stroke: ch.__color,
+        "stroke-width": Math.max(1.1, 3.2 - ch.__depth*0.55),
+        "stroke-opacity": Math.max(0.22, 0.78 - ch.__depth*0.13),
+        "stroke-linecap": "round"
+      });
+      if (q && !keep[ch.__id]) path.setAttribute("stroke-opacity", "0.06");
+      layerEdge.appendChild(path);
+    }
+  }
+
+  // 节点
+  for (i=0;i<state.nodes.length;i++){
+    var n = state.nodes[i];
+    var g = el("g", {"data-nid": n.__id, "class":"node"});
+    var hidden = isHidden(n);
+    var hit = q ? matchNode(n, q) : false;
+    if (q && !keep[n.__id]) g.setAttribute("opacity", 0.15);
+
+    var d = Math.min(n.__depth, FS.length-1);
+
+    if (n.__depth === 0){
+      g.appendChild(el("rect", {x:n.__x, y:n.__y-n.__bh/2, width:n.__bw, height:n.__bh,
+        rx:12, ry:12, fill:"url(#gRoot)", stroke:"rgba(255,255,255,.5)", "stroke-width":1}));
+      var t0 = el("text", {x:n.__x+n.__bw/2, y:n.__y, fill:"#1a1405", "text-anchor":"middle",
+        "dominant-baseline":"middle", "font-size":FS[0], "font-weight":700});
+      t0.textContent = n.__lines[0];
+      g.appendChild(t0);
+    } else if (n.__depth === 1){
+      var left = n.__side < 0;
+      g.appendChild(el("rect", {x:n.__x, y:n.__y-n.__bh/2, width:n.__bw, height:n.__bh, rx:9, ry:9,
+        fill:hexA(n.__color, .13), stroke:hexA(n.__color, .42), "stroke-width":1.2}));
+      g.appendChild(el("rect", {x: left ? n.__x+n.__bw-3.2 : n.__x, y:n.__y-n.__bh/2+4,
+        width:3.2, height:n.__bh-8, rx:2, fill:n.__color}));
+      var tx1 = left ? n.__x + n.__bw - PX[1] : n.__x + PX[1];
+      var t1 = el("text", {x:tx1, y:n.__y, fill:n.__color, "dominant-baseline":"middle",
+        "text-anchor": left ? "end" : "start", "font-size":FS[1], "font-weight":600});
+      for (var a=0;a<n.__lines.length;a++){
+        var ts = el("tspan", {x:tx1, y: n.__y - (n.__lines.length-1)*LH[1]/2 + a*LH[1],
+          "text-anchor": left ? "end" : "start"});
+        ts.textContent = n.__lines[a];
+        t1.appendChild(ts);
+      }
+      g.appendChild(t1);
+    } else {
+      var leftN = n.__side < 0;
+      if (hidden){
+        g.appendChild(el("rect", {x:n.__x, y:n.__y-n.__bh/2, width:n.__bw, height:n.__bh, rx:6, ry:6,
+          fill:"rgba(255,255,255,.05)", stroke:"rgba(255,255,255,.18)", "stroke-dasharray":"4 3"}));
+        var qm = el("text", {x:n.__x+n.__bw/2, y:n.__y, fill:"rgba(255,255,255,.42)",
+          "text-anchor":"middle", "dominant-baseline":"middle", "font-size":FS[d]+1});
+        qm.textContent = "？";
+        g.appendChild(qm);
+      } else {
+        var dotX = leftN ? n.__x + n.__bw - 3 : n.__x + 3;
+        g.appendChild(el("circle", {cx:dotX, cy:n.__y, r: n.__depth===2?2.6:1.8,
+          fill:hexA(n.__color, n.__depth===2?.85:.5)}));
+        var tx = leftN ? n.__x + n.__bw - PX[d] - 2 : n.__x + PX[d] + 2;
+        var tEl = el("text", {x:tx, y:n.__y,
+          "text-anchor": leftN ? "end" : "start",
+          fill: n.__depth===2 ? "#e8eef4" : (n.__depth===3 ? "#b9c4cf" : "#98a4b0"),
+          "dominant-baseline":"middle", "font-size":FS[d]});
+        for (var b=0;b<n.__lines.length;b++){
+          var ts2 = el("tspan", {x:tx, y: n.__y - (n.__lines.length-1)*LH[d]/2 + b*LH[d],
+            "text-anchor": leftN ? "end" : "start"});
+          ts2.textContent = n.__lines[b];
+          tEl.appendChild(ts2);
+        }
+        g.appendChild(tEl);
+        if (hit){
+          g.appendChild(el("rect", {x:n.__x-4, y:n.__y-n.__bh/2-2, width:n.__bw+8, height:n.__bh+4,
+            rx:6, ry:6, fill:"none", stroke:"rgba(255,215,0,.7)", "stroke-width":1.2}));
+        }
+      }
+    }
+
+    // 折叠开关
+    var kids2 = n.c || [];
+    if (kids2.length){
+      var collapsed = isCollapsed(lesson.id, n.__id);
+      var cxp = n.__side < 0 ? n.__x - 11 : n.__x + n.__bw + 11, cyp = n.__y;
+      g.appendChild(el("circle", {cx:cxp, cy:cyp, r:7.5,
+        fill: collapsed ? hexA(n.__color,.9) : "rgba(10,14,19,.9)",
+        stroke: hexA(n.__color,.75), "stroke-width":1.1}));
+      var sg = el("text", {x:cxp, y:cyp, fill: collapsed ? "#0a0e13" : n.__color,
+        "text-anchor":"middle", "dominant-baseline":"middle", "font-size":11, "font-weight":700});
+      sg.textContent = collapsed ? "+" : "−";
+      g.appendChild(sg);
+    }
+
+    layerNode.appendChild(g);
+  }
+
+  applyView();
+}
+
+function hexA(hex, a){
+  var h = hex.replace("#","");
+  if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+  var r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
+  return "rgba(" + r + "," + g + "," + b + "," + a + ")";
+}
+function nodeText(n){ return n.__lines.join(""); }
+function matchNode(n, q){ return nodeText(n).toLowerCase().indexOf(q) >= 0; }
+// 搜索保留集：命中节点 + 其祖先链 + 其子树
+function buildKeepSet(root, q){
+  var keep = {};
+  if (!q) return keep;
+  function hasMatch(nd){
+    var m = matchNode(nd, q), kids = nd.c || [], i;
+    for (i=0;i<kids.length;i++) if (hasMatch(kids[i])) m = true;
+    nd.__hasMatch = m;
+    return m;
+  }
+  hasMatch(root);
+  (function walk(nd, ancHit){
+    if (ancHit || nd.__hasMatch) keep[nd.__id] = true;
+    var kids = nd.c || [];
+    for (var i=0;i<kids.length;i++) walk(kids[i], ancHit || matchNode(nd, q));
+  })(root, false);
+  return keep;
+}
+
+/* =======================================================================
+   视图变换
+   ======================================================================= */
+function applyView(){
+  var w = svg.querySelector("#world");
+  if (w) w.setAttribute("transform", "translate(" + state.view.x + "," + state.view.y + ") scale(" + state.view.k + ")");
+}
+function fit(){
+  var r = stage.getBoundingClientRect();
+  var b = state.bbox;
+  var kFit = Math.min((r.width - 80) / b.w, (r.height - 56) / b.h, 1.3);
+  if (!isFinite(kFit) || kFit <= 0) kFit = 1;
+  // 不缩得比 0.52 更小（保证可读），超出部分靠拖拽查看
+  var k = Math.max(kFit, Math.min(0.52, 1.3));
+  state.view.k = k;
+  if (k <= kFit + 1e-6){
+    state.view.x = (r.width - b.w * k) / 2 - b.minX * k;
+    state.view.y = (r.height - b.h * k) / 2 - b.minY * k;
+  } else {
+    state.view.x = r.width / 2;              // 中心主题水平居中
+    state.view.y = 22 - b.minY * k;          // 内容顶部对齐
+  }
+  applyView();
+}
+function zoomAt(cx, cy, factor){
+  var k2 = Math.max(0.15, Math.min(4, state.view.k * factor));
+  var f = k2 / state.view.k;
+  state.view.x = cx - (cx - state.view.x) * f;
+  state.view.y = cy - (cy - state.view.y) * f;
+  state.view.k = k2;
+  applyView();
+}
+
+/* =======================================================================
+   交互
+   ======================================================================= */
+var drag = null;
+var active = {};      // pointerId -> {x,y}
+var pinchPrev = 0;
+
+function activeCount(){ return Object.keys(active).length; }
+function pinchDist(){
+  var ids = Object.keys(active);
+  if (ids.length < 2) return 0;
+  var a = active[ids[0]], b = active[ids[1]];
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+function pinchMid(){
+  var ids = Object.keys(active);
+  var a = active[ids[0]], b = active[ids[1]];
+  var r = svg.getBoundingClientRect();
+  return {x:(a.x + b.x)/2 - r.left, y:(a.y + b.y)/2 - r.top};
+}
+
+svg.addEventListener("pointerdown", function(e){
+  active[e.pointerId] = {x:e.clientX, y:e.clientY};
+  if (activeCount() === 1){
+    drag = {x:e.clientX, y:e.clientY, vx:state.view.x, vy:state.view.y, moved:false};
+  } else {
+    drag = null;
+    pinchPrev = pinchDist();
+  }
+  try { svg.setPointerCapture(e.pointerId); } catch(err){}
+});
+
+svg.addEventListener("pointermove", function(e){
+  if (!active[e.pointerId]) return;
+  active[e.pointerId] = {x:e.clientX, y:e.clientY};
+
+  if (activeCount() >= 2){
+    var d = pinchDist();
+    if (pinchPrev > 0 && d > 0){
+      var m = pinchMid();
+      zoomAt(m.x, m.y, d / pinchPrev);
+    }
+    pinchPrev = d;
+    return;
+  }
+  if (!drag) return;
+  var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  if (Math.abs(dx) + Math.abs(dy) > 3){ drag.moved = true; stage.classList.add("drag"); }
+  state.view.x = drag.vx + dx;
+  state.view.y = drag.vy + dy;
+  applyView();
+});
+
+function endPointer(e){
+  if (active[e.pointerId]) delete active[e.pointerId];
+  if (activeCount() === 0){ stage.classList.remove("drag"); pinchPrev = 0; }
+  else if (activeCount() === 1){
+    var ids = Object.keys(active);
+    pinchPrev = 0;
+    drag = {x:active[ids[0]].x, y:active[ids[0]].y, vx:state.view.x, vy:state.view.y, moved:true};
+  }
+}
+svg.addEventListener("pointerup", endPointer);
+svg.addEventListener("pointercancel", endPointer);
+svg.addEventListener("pointerleave", endPointer);
+
+svg.addEventListener("click", function(e){
+  var g = e.target.closest ? e.target.closest("[data-nid]") : null;
+  if (!g) return;
+  if (drag && drag.moved) return;
+  var nid = g.getAttribute("data-nid");
+  var n = state.byId[nid];
+  if (!n) return;
+  var lesson = LESSONS[state.lesson];
+
+  if (state.quiz && n.__depth >= 2 && !isRevealed(lesson.id, nid)){
+    setOf(state.revealed, lesson.id)[nid] = true;
+    draw(lesson);
+    return;
+  }
+  if (n.c && n.c.length){
+    var col = setOf(state.collapsed, lesson.id);
+    if (col[nid]) delete col[nid]; else col[nid] = true;
+    prepare(lesson);
+    draw(lesson);
+  }
+});
+
+svg.addEventListener("wheel", function(e){
+  e.preventDefault();
+  var r = svg.getBoundingClientRect();
+  zoomAt(e.clientX - r.left, e.clientY - r.top, e.deltaY < 0 ? 1.12 : 1/1.12);
+}, {passive:false});
+
+/* =======================================================================
+   顶部 UI
+   ======================================================================= */
+var tabsEl = document.getElementById("tabs");
+LESSONS.forEach(function(l, i){
+  var b = document.createElement("button");
+  b.className = "tab" + (i===0 ? " on" : "");
+  b.innerHTML = "<i>第" + (i+1) + "课</i>" + esc(l.title);
+  b.addEventListener("click", function(){ show(i); });
+  tabsEl.appendChild(b);
+});
+
+function countNodes(nd){
+  var n = 1, kids = nd.c || [];
+  for (var i=0;i<kids.length;i++) n += countNodes(kids[i]);
+  return n;
+}
+
+function show(i){
+  state.lesson = i;
+  var lesson = LESSONS[i];
+  [].forEach.call(tabsEl.children, function(b, k){ b.classList.toggle("on", k===i); });
+
+  document.getElementById("ltTitle").textContent = "第" + (i+1) + "课　" + lesson.title;
+  document.getElementById("ltYear").textContent = lesson.period;
+  document.getElementById("ltCount").textContent = "共 " + (countNodes(lesson.root) - 1) + " 个考点";
+  document.getElementById("mnemonic").textContent = lesson.mnemonic;
+
+  var tl = document.getElementById("tl");
+  tl.innerHTML = "";
+  lesson.timeline.forEach(function(t){
+    var d = document.createElement("div");
+    d.className = "ti";
+    d.innerHTML = '<span class="y">' + esc(t[0]) + '</span><span class="e">' + esc(t[1]) + "</span>";
+    tl.appendChild(d);
+  });
+
+  prepare(lesson);
+  draw(lesson);
+  fit();
+}
+
+document.getElementById("btnExpand").addEventListener("click", function(){
+  var lesson = LESSONS[state.lesson];
+  var all = state.collapsed[lesson.id] || {};
+  var any = Object.keys(all).length > 0;
+  state.collapsed[lesson.id] = {};
+  if (state.quiz){ state.revealed[lesson.id] = {}; }
+  prepare(lesson); draw(lesson);
+  toast(any ? "已展开全部节点" : "已展开全部节点");
+});
+
+document.getElementById("btnQuiz").addEventListener("click", function(e){
+  state.quiz = !state.quiz;
+  e.currentTarget.classList.toggle("on", state.quiz);
+  var lesson = LESSONS[state.lesson];
+  state.collapsed[lesson.id] = {};
+  if (state.quiz) state.revealed[lesson.id] = {};
+  prepare(lesson); draw(lesson);
+  document.getElementById("hint").textContent = state.quiz
+    ? "自测模式：先自己回忆「？」处内容，点击即可揭晓"
+    : "拖拽平移 · 滚轮缩放 · 点击节点折叠 / 展开";
+  toast(state.quiz ? "自测模式：二级以下内容已隐藏" : "已退出自测模式");
+});
+
+document.getElementById("search").addEventListener("input", function(e){
+  state.query = e.target.value;
+  draw(LESSONS[state.lesson]);
+});
+
+document.getElementById("zin").addEventListener("click", function(){
+  var r = svg.getBoundingClientRect(); zoomAt(r.width/2, r.height/2, 1.2);
+});
+document.getElementById("zout").addEventListener("click", function(){
+  var r = svg.getBoundingClientRect(); zoomAt(r.width/2, r.height/2, 1/1.2);
+});
+document.getElementById("zfit").addEventListener("click", fit);
+
+document.getElementById("btnFull").addEventListener("click", function(){
+  if (document.fullscreenElement) document.exitFullscreen();
+  else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+  setTimeout(fit, 400);
+});
+
+document.getElementById("btnPrint").addEventListener("click", function(){ window.print(); });
+
+document.getElementById("btnPng").addEventListener("click", function(){
+  var lesson = LESSONS[state.lesson];
+  var pad = 34;
+  var b = state.bbox;
+  var w = b.w + pad*2, h = b.h + pad*2;
+  var x0 = b.minX - pad, y0 = b.minY - pad;
+  var clone = svg.cloneNode(true);
+  clone.setAttribute("xmlns", SVGNS);
+  clone.setAttribute("width", w);
+  clone.setAttribute("height", h);
+  clone.setAttribute("viewBox", x0 + " " + y0 + " " + w + " " + h);
+  clone.querySelector("#world").setAttribute("transform", "translate(0,0) scale(1)");
+  // 深色底 + 标题
+  var bg = el("rect", {x:x0, y:y0, width:w, height:h, fill:"#0a0e13"});
+  clone.insertBefore(bg, clone.firstChild);
+  var title = el("text", {x:b.minX, y:b.minY - 12, fill:"#ffd700", "font-size":17,
+    "font-weight":600, "font-family":FONT});
+  title.textContent = "第" + (state.lesson+1) + "课　" + lesson.title + "（" + lesson.period + "）";
+  clone.appendChild(title);
+
+  var data = new XMLSerializer().serializeToString(clone);
+  var blob = new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + data], {type:"image/svg+xml;charset=utf-8"});
+  var url = URL.createObjectURL(blob);
+  var img = new Image();
+  img.onload = function(){
+    var scale = 2;
+    var cv = document.createElement("canvas");
+    cv.width = Math.round(w*scale); cv.height = Math.round(h*scale);
+    var ctx = cv.getContext("2d");
+    ctx.fillStyle = "#0a0e13"; ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.drawImage(img, 0, 0, cv.width, cv.height);
+    URL.revokeObjectURL(url);
+    cv.toBlob(function(b){
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(b);
+      a.download = "第" + (state.lesson+1) + "课-" + lesson.title + "-思维导图.png";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+      toast("已导出 PNG（2 倍分辨率）");
+    }, "image/png");
+  };
+  img.onerror = function(){ toast("导出失败，请改用「打印」或截图"); URL.revokeObjectURL(url); };
+  img.src = url;
+});
+
+document.addEventListener("keydown", function(e){
+  if (/input|textarea/i.test((e.target.tagName||""))) return;
+  if (e.key === "ArrowRight" || e.key === "ArrowLeft"){
+    var i = state.lesson + (e.key === "ArrowRight" ? 1 : -1);
+    if (i >= 0 && i < LESSONS.length) show(i);
+  } else if (e.key === "0"){ fit(); }
+  else if (e.key === " "){ e.preventDefault(); document.getElementById("btnExpand").click(); }
+});
+
+var rt = null;
+window.addEventListener("resize", function(){
+  clearTimeout(rt);
+  rt = setTimeout(function(){
+    var lesson = LESSONS[state.lesson];
+    prepare(lesson); draw(lesson); fit();
+  }, 160);
+});
+
+/* 启动 */
+function boot(){ show(0); }
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(boot); else boot();
+window.addEventListener("load", function(){ setTimeout(function(){ prepare(LESSONS[state.lesson]); draw(LESSONS[state.lesson]); fit(); }, 60); });
+
+})();
+</script>
+</body>
+</html>
